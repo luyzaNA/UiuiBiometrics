@@ -54,3 +54,16 @@ export const pulseAnimation = {
         },
     },
 };
+
+export const barAnimation = {
+    animate: (i: number) => ({
+        height: ["10%", "80%", "10%"],
+        opacity: [0.3, 1, 0.3],
+        transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.2,
+        },
+    }),
+};
