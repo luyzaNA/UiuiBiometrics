@@ -20,3 +20,37 @@ export const itemVariants = {
         }
     }
 };
+
+export const floatAnimation = {
+    animate: {
+        y: [0, -15, 0],
+        transition: {
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+        },
+    },
+};
+
+export const rotateAnimation = {
+    animate: {
+        rotate: 360,
+        transition: {
+            duration: 10,
+            repeat: Infinity,
+            ease: "linear",
+        },
+    },
+};
+
+export const pulseAnimation = {
+    animate: {
+        scale: [1, 1.05, 1],
+        opacity: [0.5, 0.8, 0.5],
+        transition: {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+        },
+    },
+};
