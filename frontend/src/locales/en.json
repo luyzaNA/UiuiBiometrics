@@ -7,5 +7,14 @@
   "Language": "Language",
   "Login": "Login",
   "language.en": "English",
-  "language.ro": "Română"
+  "language.ro": "Română",
+  "Actions": "Actions",
+  "Live": "Live",
+  "Secured": "Secured",
+  "Peak Mind": "Peak Mind",
+  "stop": "stop",
+  "guessing": "guessing",
+  "Biometric decode in ": "Biometric decode in ",
+  "seconds": "seconds",
+  "initiate scan": "initiate scan"
 }

@@ -1,11 +1,20 @@
 {
   "The greatest wealth is the intelligence of the human body.": "Cea mai mare bogăție este inteligența corpului uman.",
-  "Home": "Acasă",
-  "Experience": "Experiență",
-  "Science": "Știință",
+  "Home": "Concept",
+  "Experience": "Poveste",
+  "Science": "Bio-Știință",
   "Precision": "Precizie",
   "Language": "Limbă",
   "Login": "Autentificare",
   "language.en": "English",
-  "language.ro": "Română"
+  "language.ro": "Română",
+  "Actions": "Acțiuni",
+  "Live": "În timp real",
+  "Secured": "Securizat",
+  "Peak Mind": "Potențial Maxim",
+  "stop": "stop",
+  "guessing": "presupuneri",
+  "Biometric decode in ": "Decodare biometrică în ",
+  "seconds": "secunde",
+  "initiate scan": "Inițiază scanarea"
 }
