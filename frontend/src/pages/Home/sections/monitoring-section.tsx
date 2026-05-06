@@ -1,4 +1,4 @@
-import {Plus, Sparkles } from "lucide-react";
+import {Plus } from "lucide-react";
 import {useTranslation} from "react-i18next";
 
 export default function MonitoringSection() {
