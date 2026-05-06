@@ -16,20 +16,9 @@ export const itemVariants = {
         y: 0,
         transition: {
             duration: 0.6,
-            ease: [0.22, 1, 0.36, 1]
+            ease: [0.22, 1, 0.36, 1] as const
         }
     }
-};
-
-export const floatAnimation = {
-    animate: {
-        y: [0, -15, 0],
-        transition: {
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-        },
-    },
 };
 
 export const rotateAnimation = {
@@ -38,19 +27,7 @@ export const rotateAnimation = {
         transition: {
             duration: 10,
             repeat: Infinity,
-            ease: "linear",
-        },
-    },
-};
-
-export const pulseAnimation = {
-    animate: {
-        scale: [1, 1.05, 1],
-        opacity: [0.5, 0.8, 0.5],
-        transition: {
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
+            ease: "linear" as const,
         },
     },
 };
@@ -62,7 +39,7 @@ export const barAnimation = {
         transition: {
             duration: 2,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
             delay: i * 0.2,
         },
     }),
