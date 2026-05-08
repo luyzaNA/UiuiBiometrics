@@ -15,7 +15,7 @@ export function LanguageSelect({trigger}: { trigger: React.ReactNode }) {
     ];
 
     return (
-        <DropdownMenu modal={false}> {/* modal={false} prevents the body scroll lock/jump */}
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <div className="data-[state=open]:text-[#ad7bbd] transition-colors cursor-pointer">
                     {trigger}

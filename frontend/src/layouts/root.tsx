@@ -1,66 +1,49 @@
-import {
-    Outlet,
-    useNavigation,
-    type Navigation,
-} from "react-router-dom";
-import {Progress} from "@/components/ui/progress";
-import {useEffect, useState} from "react";
-import {Toaster} from "../components/ui/sonner";
-import {Layout} from "@/components/layout.tsx";
+import { Outlet, useNavigation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Toaster } from "../components/ui/sonner";
+import { Layout } from "@/components/layout.tsx";
+import { useAuth } from "react-oidc-context";
+import { LoadingScreen } from "@/components/loading-screen.tsx";
 
 export default function RootLayout() {
-    const navigation: Navigation = useNavigation();
-    const [progress, setProgress] = useState(0);
-    const [visible, setVisible] = useState(false);
+    const navigation = useNavigation();
+    const auth = useAuth();
+
+    // Logic: We show the loader if the router is fetching a page OR auth is checking the session
+    const isActuallyLoading = navigation.state === "loading" || auth.isLoading;
+
+    // This state controls the mounting/unmounting for the exit animation
+    const [visible, setVisible] = useState(isActuallyLoading);
 
     useEffect(() => {
-        let interval: number | undefined;
-
-        if (navigation.state === "loading") {
+        if (isActuallyLoading) {
             setVisible(true);
-            setProgress(10);
-
-            interval = window.setInterval(() => {
-                setProgress((prev) => {
-                    if (prev < 80) return prev + 2 + Math.random();
-                    return prev;
-                });
-            }, 33);
         } else {
-            setProgress(100);
-            const timeout = setTimeout(() => {
-                setVisible(false);
-                setProgress(0);
-            }, 500);
-
+            // Small delay to ensure the exit animation from LoadingScreen feels "Wow"
+            const timeout = setTimeout(() => setVisible(false), 800);
             return () => clearTimeout(timeout);
         }
-
-        return () => clearInterval(interval);
-    }, [navigation.state]);
+    }, [isActuallyLoading]);
 
     return (
         <>
-            {visible && (
-                <Progress
-                    style={{zIndex: 9999}}
-                    className="h-1 fixed top-0 left-0right-0 animate-pulse z-50 rounded-none transition-all duration-500"
-                    value={progress}
-                />
+            <LoadingScreen isLoading={visible} />
+
+            {/* Render the app only when auth is initialized to avoid UI flickering */}
+            {!auth.isLoading && (
+                <Layout>
+                    <Outlet />
+                </Layout>
             )}
-            <Layout>
-                <Outlet/>
-            </Layout>
+
             <Toaster
                 visibleToasts={50}
-                duration={5 * 1000}
+                duration={5000}
                 position="top-center"
-                className={"pointer-events-auto"}
+                className="pointer-events-auto"
                 toastOptions={{
                     closeButton: true,
-                    classNames: {
-                        toast: "lg:!w-max",
-                    },
+                    classNames: { toast: "lg:!w-max" },
                 }}
             />
         </>
