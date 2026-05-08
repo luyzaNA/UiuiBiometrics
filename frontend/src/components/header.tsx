@@ -3,21 +3,31 @@ import { Container } from '@/components/container'
 import { Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet";
 import { Button } from "./ui/button";
-import { Menu, User, ArrowRight, Globe } from "lucide-react";
+import { Menu, User, ArrowRight, Globe, LogOut } from "lucide-react";
 import { LanguageSelect } from "@/components/language-select.tsx";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import {containerVariants, itemVariants} from "@/utils/animations.tsx";
+import { containerVariants, itemVariants } from "@/utils/animations.tsx";
+import { useAuth } from "react-oidc-context";
+import {poolData} from "@/cognito-config.ts";
 
 export function Header() {
     const { t, i18n } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
+    const auth = useAuth();
 
     const navItems = [
         { label: t("Home"), href: "/#home" },
         { label: t("Experience"), href: "/#how-it-works" },
         { label: t("Science"), href: "/#science" },
     ];
+
+    const signOutRedirect = () => {
+        auth.removeUser();
+        const logoutUri = 'http://localhost:5173'
+        window.location.href = `${poolData.cognitoDomain}/logout?client_id=${poolData.ClientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    };
+
 
     return (
         <header className="fixed top-0 z-[100] w-full bg-navbar backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500">
@@ -28,8 +38,8 @@ export function Header() {
                         <div
                             className={`relative w-24 h-5 flex items-center transition-all duration-500 ease-in-out ${
                                 isOpen
-                                    ? 'opacity-0 scale-90 pointer-events-none' 
-                                    : 'opacity-100 scale-100'                    
+                                    ? 'opacity-0 scale-90 pointer-events-none'
+                                    : 'opacity-100 scale-100'
                             }`}
                         >
                             <Link to="/" aria-label="Home" className="group absolute top-1/2 left-0 -translate-y-1/2 flex items-center gap-2">
@@ -61,11 +71,11 @@ export function Header() {
                         <div className="lg:hidden">
                             <Sheet open={isOpen} onOpenChange={setIsOpen}>
                                 <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="hover:bg-[#adcce0]/20 rounded-full transition-colors">
+                                    <Button variant="ghost" size="icon" className="hover:bg-[#adcce0]/20 rounded-full transition-colors hover:cursor-pointer">
                                         <Menu className="h-6 w-6 text-primary" />
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent className="w-[85%] sm:w-[400px] flex flex-col bg-navbar px-8 py-10 z-[110] border-l border-white/10">
+                                <SheetContent className="w-[85%] sm:w-[400px] flex flex-col bg-navbar px-8 py-10 z-[110] border-l border-secondary/10">
                                     <AnimatePresence>
                                         {isOpen && (
                                             <motion.div
@@ -93,7 +103,7 @@ export function Header() {
                                                         </motion.div>
                                                     ))}
 
-                                                    <motion.div variants={itemVariants} className="flex items-center justify-between py-8">
+                                                    <motion.div variants={itemVariants} className="flex items-center justify-between py-8  ">
                                                         <span className="text-[10px] font-black text-secondary-foreground/70 uppercase tracking-widest">{t("Language")}</span>
                                                         <LanguageSelect
                                                             trigger={
@@ -105,13 +115,29 @@ export function Header() {
                                                     </motion.div>
                                                 </div>
                                                 <span className="border border-t border-gray-100"/>
-                                                <motion.div variants={itemVariants} className=" flex flex-col items-center gap-4 mt-8">
-                                                    <Link to="/login" className="group relative flex items-center gap-3 py-1 px-2 overflow-hidden">
-                                                        <User strokeWidth={1} className="w-5 h-5 text-primary" />
-                                                        <span className="text-[12px] font-medium uppercase tracking-[0.4em] text-primary">
-                                                            {t("Login")}
-                                                        </span>
-                                                    </Link>
+
+                                                <motion.div variants={itemVariants} className=" flex flex-col items-center gap-4 mt-8 ">
+                                                    {auth.isAuthenticated ? (
+                                                        <button
+                                                            onClick={signOutRedirect}
+                                                            className="group relative flex items-center gap-3 py-1 px-2"
+                                                        >
+                                                            <LogOut strokeWidth={1} className="w-5 h-5 text-primary" />
+                                                            <span className="text-[12px] font-medium uppercase tracking-[0.4em] text-primary">
+                                                               {auth.user?.profile.email?.match(/^[a-zA-Z]+/)?.[0] || t("Logout")}
+                                                            </span>
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => auth.signinRedirect()}
+                                                            className="group relative flex items-center gap-3 py-1 px-2"
+                                                        >
+                                                            <User strokeWidth={1} className="w-5 h-5 text-primary" />
+                                                            <span className="text-[12px] font-medium uppercase tracking-[0.4em] text-primary ">
+                                                                {t("Login")}
+                                                            </span>
+                                                        </button>
+                                                    )}
                                                 </motion.div>
                                             </motion.div>
                                         )}
@@ -119,8 +145,9 @@ export function Header() {
                                 </SheetContent>
                             </Sheet>
                         </div>
+
                         <div className="flex items-center gap-8 max-lg:hidden">
-                            <div className="flex items-center hover:bg-white transition-colors">
+                            <div className="flex items-center hover:bg-secondary transition-colors">
                                 <LanguageSelect
                                     trigger={
                                         <Button
@@ -134,18 +161,38 @@ export function Header() {
                                         </Button>
                                     }
                                 />
-                        </div>
+                            </div>
                             <div className="h-4 w-[1px] bg-primary/20" />
-                            <Link to="/login" className="group relative flex items-center gap-3 py-1 px-2 overflow-hidden">
-                                <User
-                                    strokeWidth={1}
-                                    className="w-5 h-5 text-primary group-hover:text-secondary-foreground transition-colors duration-500"
-                                />
-                                <span className="text-[12px] font-medium uppercase tracking-[0.4em] text-primary group-hover:text-secondary-foreground transition-all duration-500">
-                                    {t("Login")}
-                                </span>
-                                <span className="absolute bottom-0 left-2 w-0 h-[1px] bg-secondary-foreground group-hover:w-[calc(100%-16px)] transition-all duration-500 ease-out" />
-                            </Link>
+
+                            {auth.isAuthenticated ? (
+                                <button
+                                    onClick={signOutRedirect}
+                                    className="group relative flex items-center gap-3 py-1 px-2 overflow-hidden cursor-pointer"
+                                >
+                                    <LogOut
+                                        strokeWidth={1}
+                                        className="w-5 h-5 text-primary group-hover:text-secondary-foreground transition-colors duration-500"
+                                    />
+                                    <span className="text-[12px] uppercase font-medium tracking-[0.4em] text-primary group-hover:text-secondary-foreground transition-all duration-500">
+                                        {auth.user?.profile.email?.match(/^[a-zA-Z]+/)?.[0] || t("Logout")}
+                                    </span>
+                                    <span className="absolute bottom-0 left-2 w-0 h-[1px] bg-secondary-foreground group-hover:w-[calc(100%-16px)] transition-all duration-500 ease-out" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => auth.signinRedirect()}
+                                    className="group relative flex items-center gap-3 py-1 px-2 overflow-hidden cursor-pointer"
+                                >
+                                    <User
+                                        strokeWidth={1}
+                                        className="w-5 h-5 text-primary group-hover:text-secondary-foreground transition-colors duration-500"
+                                    />
+                                    <span className="text-[12px] font-medium uppercase tracking-[0.4em] text-primary group-hover:text-secondary-foreground transition-all duration-500 cursor-pointer">
+                                        {t("Login")}
+                                    </span>
+                                    <span className="absolute bottom-0 left-2 w-0 h-[1px] bg-secondary-foreground group-hover:w-[calc(100%-16px)] transition-all duration-500 ease-out" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </Container>
