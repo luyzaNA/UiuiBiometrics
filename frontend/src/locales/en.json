@@ -175,5 +175,11 @@
   "e.g. 25": "e.g. 25",
   "Please enter a valid age": "Please enter a valid age",
   "Gender selection is required" : "Gender selection is required",
-  "Age is required" : "Age is required"
+  "Age is required" : "Age is required",
+  "Good morning": "Good morning",
+  "Good afternoon": "Good afternoon",
+  "Good evening": "Good evening",
+  "Profile updated successfully!": "Profile updated successfully!",
+  "Profile created successfully!": "Profile created successfully!",
+  "Failed to save profile:" : "Failed to save profile:"
 }

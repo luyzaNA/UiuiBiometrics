@@ -21,7 +21,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {useNavigate} from "react-router-dom";
-import {formatDate} from "@/utils/form-data.ts";
+import {formatDateMs, formatDateUnix} from "@/utils/form-data.ts";
+import { toast } from "sonner";
 
 const ProfileSchema = z.object({
     age: z.string().refine((val) => val !== "", {
@@ -44,12 +45,7 @@ export function ProfilePage() {
     const {t} = useTranslation();
     const { user } = useUser();
 
-    const derivedFirstName =
-        user?.firstName ||
-        user?.email?.split("@")[0].match(/^[a-zA-Z]+/)?.[0] ||
-        "User";
-
-    const lastLogin = formatDate(user?.auth_time);
+    const lastLogin = formatDateUnix(user?.auth_time);
 
     const [profile, setProfile] = useState<ProfileI>(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
@@ -124,12 +120,11 @@ export function ProfilePage() {
             setValue('age', savedProfile.age.toString());
             setValue('gender', savedProfile.gender);
 
-            alert(profile?.profileId
-                ? "Profile updated successfully!"
-                : "Profile created successfully!");
+            toast.success(profile?.profileId
+                ? t("Profile updated successfully!")
+                : t("Profile created successfully!"));
         } catch (error) {
-            console.error("Failed to save profile:", error);
-            alert("Failed to save profile.");
+            toast.error(t("Failed to save profile."));
         } finally {
             setSaving(false);
         }
@@ -165,7 +160,7 @@ export function ProfilePage() {
                                         />
                                     ) : (
                                         <span className="text-3xl font-light tracking-tighter text-secondary-foreground/40 uppercase">
-                                            {derivedFirstName.charAt(0)}
+                                            {user.nameInitial}
                                         </span>
                                     )}
                                 </div>
@@ -176,7 +171,7 @@ export function ProfilePage() {
 
                             <div>
                                 <h1 className="text-4xl font-medium tracking-tight mb-1 capitalize">
-                                    {`${derivedFirstName} ${user?.lastName || ''}`}
+                                    {user.givenName}
                                 </h1>
                                 <p className="text-sm text-secondary-foreground/40 font-medium tracking-wide flex items-center gap-2">
                                     <Mail size={12} /> {user?.email}
@@ -225,7 +220,7 @@ export function ProfilePage() {
                                             </span>
                                             <span className="text-xs font-semibold text-secondary-foreground/70">
                                                 {profile?.updatedAt
-                                                    ? formatDate(profile.updatedAt)
+                                                    ? formatDateMs(profile.updatedAt)
                                                     : "N/A"}
                                             </span>
                                         </div>

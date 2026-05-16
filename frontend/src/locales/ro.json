@@ -174,5 +174,11 @@
     "e.g. 25" : "ex: 25",
     "Please enter a valid age": "Te rugăm să introduci o vârstă validă",
     "Gender selection is required": "Selectarea genului este obligatorie",
-    "Age is required": "Vârsta este obligatorie"
+    "Age is required": "Vârsta este obligatorie",
+    "Good morning" : "Bună dimineața",
+    "Good afternoon" : "Bună ziua",
+    "Good evening" : "Bună seara",
+    "Profile updated successfully!": "Profil actualizat cu succes!",
+    "Profile created successfully!" : "Profil creat cu succes!",
+    "Failed to save profile:" : "Eroare la salvarea profilului:"
 }

@@ -10,17 +10,20 @@ export const useUser = () => {
 
         const { profile, access_token } = auth.user;
         const groups = (profile["cognito:groups"] as string[]) || [];
+        const givenName = (profile.given_name as string) ||
+            user?.email?.split("@")[0].match(/^[a-zA-Z]+/)?.[0] ||
+            "User";
 
         return {
             id: profile.sub || "",
             email: (profile.email as string) || "",
-            username: (profile["cognito:username"] as string) || "",
-            firstName: (profile.given_name as string) || "",
-            lastName: (profile.family_name as string) || "",
+            familyName: (profile.family_name as string) || "",
+            givenName: givenName,
             groups,
             isAdmin: groups.includes("admin"),
             accessToken: access_token,
             auth_time: profile.iat as number,
+            nameInitial: givenName.charAt(0).toUpperCase() || "U"
         };
     }, [auth.user]);
 

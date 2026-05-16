@@ -20,7 +20,7 @@ import { LanguageSelect } from "@/components/language-select.tsx";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    containerVariants,
+    containerVariants, dropdownAnimation,
     itemVariants,
 } from "@/utils/animations.tsx";
 import { useUser } from "@/hooks/use-user.ts";
@@ -36,18 +36,6 @@ export function Header() {
         { label: t("Experience"), href: "/#how-it-works" },
         { label: t("Science"), href: "/#science" },
     ];
-
-    const emailPrefix =
-        user?.email
-            ?.split("@")?.[0]
-            ?.match(/^[a-zA-Z]+/)?.[0];
-
-    const displayName =
-        user?.firstName ||
-        emailPrefix ||
-        t("Profile");
-
-    const initial = displayName?.charAt(0)?.toUpperCase() || "U";
 
     return (
         <header className="fixed top-0 z-[100] w-full bg-navbar backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500">
@@ -202,11 +190,11 @@ export function Header() {
                                 >
                                     <button className="group relative flex items-center gap-3 py-1 px-3 cursor-pointer outline-none z-[120]">
                                         <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary text-secondary flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-500 group-hover:scale-105">
-                                            {initial}
+                                            {user.nameInitial}
                                         </div>
                                         <div className="flex flex-col items-start">
                                             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">
-                                                {displayName}
+                                                {user.givenName}
                                             </span>
                                             <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest leading-none">
                                                 {t("Account")}
@@ -218,12 +206,13 @@ export function Header() {
                                     <AnimatePresence>
                                         {isProfileOpen && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                                variants={dropdownAnimation}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
                                                 className="absolute right-0 top-full w-56 pt-3 z-[110]"
                                             >
+
                                                 <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
                                                     <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 

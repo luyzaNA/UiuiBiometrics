@@ -41,10 +41,6 @@ export default function RootLayout() {
                 duration={5000}
                 position="top-center"
                 className="pointer-events-auto"
-                toastOptions={{
-                    closeButton: true,
-                    classNames: { toast: "lg:!w-max" },
-                }}
             />
         </>
     );
