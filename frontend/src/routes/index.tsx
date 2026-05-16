@@ -21,5 +21,13 @@ export const router = createBrowserRouter([
                     }
                 },
             },
+            {
+                path: "profile",
+                lazy: async () => {
+                    return {
+                        Component: (await import('@/pages/Profile/profile-page.tsx')).ProfilePage,
+                    }
+                },
+            },
         ]
     }]);

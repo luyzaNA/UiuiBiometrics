@@ -1,0 +1,8 @@
+boto3==1.42.49
+pydantic==2.12.5
+mypy-boto3-dynamodb==1.38.4
+email-validator==2.1.2
+requests==2.32.5
+tzdata==2025.2
+python-ulid[pydantic]==3.1.0
+cognito-jwt-verifier
