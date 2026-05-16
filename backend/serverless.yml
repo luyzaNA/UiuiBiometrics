@@ -1,0 +1,109 @@
+org: luyza
+app: uiuibiometrics
+service: backend
+provider:
+  name: aws
+  runtime: python3.13
+  region: eu-north-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    DYNAMODB_TABLE: uiui-biometrics-${self:provider.stage}
+    STAGE: ${self:provider.stage}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:DeleteItem
+        - dynamodb:UpdateItem
+        - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:BatchWriteItem
+      Resource:
+        - !GetAtt UiuibiometricsTable.Arn
+  httpApi:
+    authorizers:
+      serviceAuthorizer:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${aws:region}.amazonaws.com/eu-north-1_aBOOx7l1A
+        audience:
+          - 3a7gjc7aq8v5auneeuqtfvcb1a
+custom:
+  serverless-offline:
+    ignoreJWTSignature: true
+  plugins:
+    local:
+      list: [
+        serverless-s3-local,
+        serverless-dynamodb,
+        serverless-offline
+      ]
+    dev:
+      list: [ ]
+    acc:
+      list: [ ]
+    prod:
+      list: [ ]
+  s3:
+    cors: ./s3-cors.xml
+  serverless-dynamodb:
+    stages:
+      - local
+    start:
+      port: 8011
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      local:
+        sources:
+          - table: uiui-biometrics-${self:provider.stage}
+            sources: [ ./offline/migrations/uiui.json ]
+functions:
+  profileRouter:
+    handler: src/http_handlers/profile/routes.handler
+    events:
+      - httpApi:
+          path: /api/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+plugins:
+  ${self:custom.plugins.${self:provider.stage}.list}
+
+resources:
+  Resources:
+    UiuibiometricsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: uiui-biometrics-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: GSI1_PK
+            AttributeType: S
+          - AttributeName: GSI1_SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: GSI1_PK
+                KeyType: HASH
+              - AttributeName: GSI1_SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
