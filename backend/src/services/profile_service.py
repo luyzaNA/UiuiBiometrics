@@ -81,11 +81,13 @@ class ProfileService:
     ) -> ProfileModel:
         """Handles business logic for updating a user profile."""
 
+        current_date: int = current_millis()
+
         update_model = ProfileUpdateModel(
             pk=f"USER#{profile_id}",
             age=request.age,
             gender=request.gender,
-            updated_at=current_millis(),
+            updated_at=current_date,
         )
 
         return self.profile_repository.update(update_model)
