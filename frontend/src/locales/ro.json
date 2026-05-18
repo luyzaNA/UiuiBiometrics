@@ -207,6 +207,26 @@
     "Don’t be afraid to give up the good to go for the great." : "Nu-ți fie frică să renunți la bine pentru a merge spre măreț.",
     "Do what you have always done and you’ll get what you have always got." : "Fă ceea ce ai făcut întotdeauna și vei obține ceea ce ai obținut întotdeauna.",
     "Don’t blow off another’s candle for it won’t make yours shine brighter." : "Nu stinge lumânarea altcuiva pentru că nu va face ca a ta să strălucească mai tare.",
-    "See your graphics" : "Vezi graficele tale"
+    "See your graphics" : "Vezi graficele tale",
+    "How old are you?" : "Câți ani ai?",
+    "Age helps us correctly calibrate the algorithms for deficiencies." : "Vârsta ne ajută să calibrăm corect algoritmii pentru deficiențe.",
+    "years" : "ani",
+    "1 YEAR" : "1 AN",
+    "50 YEARS" : "50 ANI",
+    "100 YEARS" : "100 ANI",
+    "CONTINUE" : "CONTINUĂ",
+    "NEXT STEP" : "PASUL URMĂTOR",
+    "The 2D model is calibrated based on the selected" : "Modelul 2D este calibrat pe baza genului select",
+    "Select your gender": "Selectează genul tău",
+    "MALE" : "BĂRBAT",
+    "FEMALE" : "FEMEIE",
+    "GENERATE DEFICIENCY REPORT" : "GENEREAZĂ RAPORTUL DE DEFICIENȚĂ",
+    "BACK" : "ÎNAPOI",
+    "STEP" : "PASUL",
+    "Your data summary" : "Rezumatul datelor tale : ",
+    "Collected data:" : "Datele colectate:",
+    "Selected symptoms & intensity" : "Simptomele selectate & intensitatea",
+    "No symptoms selected" : "Niciun simptom selectat",
+    "Send for analysis" : "Trimite pentru analiză"
 
 }
