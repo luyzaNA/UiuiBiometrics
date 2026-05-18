@@ -228,5 +228,10 @@
   "Collected data:":"Collected data:",
   "Selected symptoms & intensity":"Selected symptoms & intensity",
   "No symptoms selected" : "No symptoms selected",
-  "Send for analysis" : "Send for analysis"
+  "Send for analysis" : "Send for analysis",
+  "Update profile details?" : "Update profile details?",
+  "Would you like to sync your profile with the data introduced in the quiz?": "Would you like to sync your profile with the data introduced in the quiz?",
+  "Only Analyze": "Only analyze",
+  "Sync & Analyze" : "Sync & Analyze",
+  "Data sent successfully for analysis!" : "Data sent successfully for analysis!"
 }

@@ -227,6 +227,11 @@
     "Collected data:" : "Datele colectate:",
     "Selected symptoms & intensity" : "Simptomele selectate & intensitatea",
     "No symptoms selected" : "Niciun simptom selectat",
-    "Send for analysis" : "Trimite pentru analiză"
+    "Send for analysis" : "Trimite pentru analiză",
+    "Update profile details?" : "Vrei să actualizezi detaliile profilului?",
+    "Would you like to sync your profile with the data introduced in the quiz?" : "Doriți să sincronizați profilul dvs. cu datele introduse în quiz?",
+    "Only Analyze": "Doar analizează",
+    "Sync & Analyze" : "Sync & Analizează",
+    "Data sent successfully for analysis!" : "Datele au fost trimise cu succes pentru a fi analizate!"
 
 }
