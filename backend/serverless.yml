@@ -9,6 +9,7 @@ provider:
   environment:
     DYNAMODB_TABLE: uiui-biometrics-${self:provider.stage}
     STAGE: ${self:provider.stage}
+    AVATAR_BUCKET: uiui-avatars-${self:provider.stage}
 
   iamRoleStatements:
     - Effect: Allow
@@ -21,6 +22,14 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - !GetAtt UiuibiometricsTable.Arn
+
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+      Resource:
+        - "arn:aws:s3:::uiui-avatars-${self:provider.stage}/*"
+
   httpApi:
     authorizers:
       serviceAuthorizer:
@@ -32,6 +41,7 @@ provider:
 custom:
   serverless-offline:
     ignoreJWTSignature: true
+    httpTimeout: 60000
   plugins:
     local:
       list: [
@@ -45,8 +55,14 @@ custom:
       list: [ ]
     prod:
       list: [ ]
+
   s3:
-    cors: ./s3-cors.xml
+    host: localhost
+    port: 4569
+    directory: ./offline/s3
+    cors: false
+    buckets:
+      - uiui-avatars-${self:provider.stage}
   serverless-dynamodb:
     stages:
       - local
@@ -107,3 +123,16 @@ resources:
             Projection:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
+    AvatarBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: uiui-avatars-${self:provider.stage}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+              AllowedOrigins:
+                - "*"

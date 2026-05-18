@@ -24,6 +24,10 @@ class CreateProfileRequest(BaseModel):
         ...,
         description="The gender of the user (feminine or masculine)."
     )
+    avatar: Optional[str] = Field(
+        None,
+        description="Optional URL for the user's avatar image."
+    )
 
 
 class UpdateProfileRequest(BaseModel):
@@ -43,4 +47,8 @@ class UpdateProfileRequest(BaseModel):
     gender: Optional[Gender] = Field(
         None,
         description="Updated gender of the user."
+    )
+    avatar: Optional[str] = Field(
+        None,
+        description="Updated URL for the user's avatar image."
     )

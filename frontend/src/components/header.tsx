@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container } from "@/components/container";
 import { Link } from "react-router-dom";
 import {
@@ -24,12 +24,42 @@ import {
     itemVariants,
 } from "@/utils/animations.tsx";
 import { useUser } from "@/hooks/use-user.ts";
+import { profileService } from "@/services/profile-service.ts";
 
 export function Header() {
     const { t, i18n } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const { user, isAuthenticated, login, logout } = useUser();
+
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadHeaderProfile = async () => {
+            if (isAuthenticated) {
+                try {
+                    const profileData = await profileService.getMe();
+                    setAvatarUrl(profileData?.avatarUrl || null);
+                } catch (error) {
+                    console.error("Profile load failed", error);
+                }
+            } else {
+                setAvatarUrl(null);
+            }
+        };
+
+        loadHeaderProfile();
+
+        const handleProfileUpdate = (e: Event) => {
+            const customEvent = e as CustomEvent<string | null>;
+            setAvatarUrl(customEvent.detail);
+        };
+
+        window.addEventListener("profile-updated", handleProfileUpdate);
+        return () => {
+            window.removeEventListener("profile-updated", handleProfileUpdate);
+        };
+    }, [isAuthenticated]);
 
     const navItems = [
         { label: t("Home"), href: "/#home" },
@@ -72,7 +102,7 @@ export function Header() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="active:scale-90 rounded-full transition-transform"
+                                        className="active:scale-90 rounded-1/2 transition-transform"
                                     >
                                         <Menu className="h-6 w-6 text-primary" />
                                     </Button>
@@ -189,8 +219,13 @@ export function Header() {
                                     onMouseLeave={() => setIsProfileOpen(false)}
                                 >
                                     <button className="group relative flex items-center gap-3 py-1 px-3 cursor-pointer outline-none z-[120]">
-                                        <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary text-secondary flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-500 group-hover:scale-105">
-                                            {user.nameInitial}
+                                        {/* 5. Am adăugat `overflow-hidden` și logica de afișare a pozei de profil */}
+                                        <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary text-secondary flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-500 group-hover:scale-105 overflow-hidden">
+                                            {avatarUrl ? (
+                                                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                user.nameInitial
+                                            )}
                                         </div>
                                         <div className="flex flex-col items-start">
                                             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">
@@ -261,7 +296,7 @@ export function Header() {
                                     <span className="relative text-[12px] font-medium uppercase tracking-[0.4em] text-primary transition-all duration-500 group-hover:tracking-[0.5em]">
                                         {t("Login")}
                                         <span className="absolute -bottom-1 left-1/2 w-0 h-[1px] bg-primary/40 -translate-x-1/2 transition-all duration-500 group-hover:w-full shadow-[0_0_8px_rgba(232,157,245,0.3)]" />
-    </span>
+                                    </span>
                                 </button>
                             )}
                         </div>

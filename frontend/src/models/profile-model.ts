@@ -12,4 +12,5 @@ export interface ProfileI {
     gender: Gender;
     createdAt: number;
     updatedAt: number;
+    avatarUrl?: string
 }

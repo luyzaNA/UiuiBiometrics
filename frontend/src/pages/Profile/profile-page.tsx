@@ -1,27 +1,25 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { ImageCropperModal } from "@/components/image-cropper-modal.tsx";
 import {
     Mail,
     Calendar,
     Camera,
     Save,
-    User as UserIcon,
     History,
     RefreshCw,
-    UserPlus,
     ArrowRight
 } from 'lucide-react';
 import { useUser } from "@/hooks/use-user.ts";
 import { Container } from "@/components/container";
-import {Gender, type ProfileI} from "@/models/profile-model.ts";
-import {profileService} from "@/services/profile-service.ts";
-import {useTranslation} from "react-i18next";
-import {t} from "i18next";
+import { Gender, type ProfileI } from "@/models/profile-model.ts";
+import { profileService } from "@/services/profile-service.ts";
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {useNavigate} from "react-router-dom";
-import {formatDateMs, formatDateUnix} from "@/utils/form-data.ts";
+import { useNavigate } from "react-router-dom";
+import { formatDateMs, formatDateUnix } from "@/utils/form-data.ts";
 import { toast } from "sonner";
 
 const ProfileSchema = z.object({
@@ -42,7 +40,7 @@ type ProfileFormValues = z.infer<typeof ProfileSchema>;
 
 export function ProfilePage() {
     const navigate = useNavigate();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const { user } = useUser();
 
     const lastLogin = formatDateUnix(user?.auth_time);
@@ -50,6 +48,12 @@ export function ProfilePage() {
     const [profile, setProfile] = useState<ProfileI>(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
     const {
         register,
@@ -63,6 +67,24 @@ export function ProfilePage() {
             gender: '',
         }
     });
+
+    const handleCameraClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const localUrl = URL.createObjectURL(file);
+            setImageToCrop(localUrl);
+        }
+    };
+
+    const handleCropSuccess = (base64Result: string) => {
+        setAvatarPreview(base64Result);
+        setAvatarBase64(base64Result);
+        setImageToCrop(null);
+    };
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -89,12 +111,12 @@ export function ProfilePage() {
                 setProfile(null);
                 setValue('age', '');
                 setValue('gender', '');
-            } {
+            } finally {
                 setLoadingProfile(false);
             }
         };
         loadProfile();
-    }, [user?.id, user?.accessToken, setValue]);
+    }, [user?.id, setValue]);
 
     const onSubmit = async (data: ProfileFormValues) => {
         try {
@@ -103,15 +125,13 @@ export function ProfilePage() {
             const payload = {
                 age: Number(data.age),
                 gender: data.gender as typeof Gender[keyof typeof Gender],
+                avatar: avatarBase64 || undefined,
             };
 
             let savedProfile;
 
             if (profile?.profileId) {
-                savedProfile = await profileService.update(
-                    profile.profileId,
-                    payload
-                );
+                savedProfile = await profileService.update(profile.profileId, payload);
             } else {
                 savedProfile = await profileService.create(payload);
             }
@@ -119,6 +139,8 @@ export function ProfilePage() {
             setProfile(savedProfile);
             setValue('age', savedProfile.age.toString());
             setValue('gender', savedProfile.gender);
+
+            window.dispatchEvent(new CustomEvent("profile-updated", { detail: savedProfile.avatarUrl }));
 
             toast.success(profile?.profileId
                 ? t("Profile updated successfully!")
@@ -148,27 +170,45 @@ export function ProfilePage() {
         <div className="min-h-screen bg-secondary/90 pt-32 pb-20 text-[#1a1a1a]">
             <Container>
                 <div className="max-w-5xl mx-auto">
+                    {imageToCrop && (
+                        <ImageCropperModal
+                            image={imageToCrop}
+                            onClose={() => setImageToCrop(null)}
+                            onConfirm={handleCropSuccess}
+                        />
+                    )}
+
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
                         <div className="flex items-center gap-6">
                             <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+
                                 <div className="w-24 h-24 rounded-2xl bg-secondary border border-secondary-foreground/5 shadow-sm flex items-center justify-center overflow-hidden">
-                                    {user?.picture ? (
-                                        <img
-                                            src={user.picture}
-                                            alt="Profile"
-                                            className="w-full h-full object-cover"
-                                        />
+                                    {avatarPreview ? (
+                                        <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : profile?.avatarUrl ? (
+                                        <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-3xl font-light tracking-tighter text-secondary-foreground/40 uppercase">
-                                            {user.nameInitial}
+                                            {user?.nameInitial}
                                         </span>
                                     )}
                                 </div>
-                                <button className="absolute -bottom-2 -right-2 p-2 bg-secondary-foreground text-secondary rounded-xl shadow-xl hover:bg-primary transition-colors">
+
+                                <button
+                                    type="button"
+                                    onClick={handleCameraClick}
+                                    className="absolute -bottom-2 -right-2 p-2 bg-secondary-foreground text-secondary rounded-xl shadow-xl hover:bg-primary transition-colors cursor-pointer"
+                                >
                                     <Camera size={14} />
                                 </button>
                             </div>
-
                             <div>
                                 <h1 className="text-4xl font-medium tracking-tight mb-1 capitalize">
                                     {user.givenName}
@@ -180,7 +220,7 @@ export function ProfilePage() {
                         </div>
 
                         <button
-                            onClick={() => navigate("/")}
+                            onClick={() => navigate("/dashboard")}
                             className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-secondary-foreground/10 text-xs tracking-widest hover:bg-secondary-foreground hover:text-secondary transition-all cursor-pointer"
                         >
                             {t("Go to dashboard")}
@@ -197,149 +237,110 @@ export function ProfilePage() {
 
                                 <div className="space-y-3">
                                     <div className="p-4 rounded-2xl bg-secondary border border-secondary-foreground/5 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center text-info">
-                                            <History size={18} />
+                                        <div className="p-2.5 bg-secondary-foreground/5 rounded-xl text-secondary-foreground/60">
+                                            <History size={16} />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-secondary-foreground40">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-secondary-foreground/40 uppercase tracking-wider">
                                                 {t("Last Login")}
-                                            </span>
-                                            <span className="text-xs font-semibold text-secondary-foreground/70">
-                                                {lastLogin}
-                                            </span>
+                                            </p>
+                                            <p className="text-xs font-semibold text-secondary-foreground/80">
+                                                {lastLogin || t("Unknown")}
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-secondary border border-secondary-foreground/5 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning">
-                                            <RefreshCw size={18} />
+                                    {profile?.createdAt && (
+                                        <div className="p-4 rounded-2xl bg-secondary border border-secondary-foreground/5 flex items-center gap-4">
+                                            <div className="p-2.5 bg-secondary-foreground/5 rounded-xl text-secondary-foreground/60">
+                                                <Calendar size={16} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-secondary-foreground/40 uppercase tracking-wider">
+                                                    {t("Member Since")}
+                                                </p>
+                                                <p className="text-xs font-semibold text-secondary-foreground/80">
+                                                    {formatDateMs(profile.createdAt)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-secondary-foreground/40">
-                                                {t("Profile Sync")}
-                                            </span>
-                                            <span className="text-xs font-semibold text-secondary-foreground/70">
-                                                {profile?.updatedAt
-                                                    ? formatDateMs(profile.updatedAt)
-                                                    : "N/A"}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </section>
                         </div>
 
                         <div className="lg:col-span-8">
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-secondary rounded-[32px] p-10 border border-secondary-foreground/5 shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
+                            <form
+                                onSubmit={handleSubmit(onSubmit)}
+                                className="space-y-8 bg-secondary p-8 rounded-3xl border border-secondary-foreground/5 shadow-sm"
                             >
-                                <div className="mb-8">
-                                    <h3 className="text-xl font-semibold tracking-tight">
-                                        {isCreateMode
-                                            ? t("Complete Your Profile")
-                                            : t("Personal Profile")
-                                        }
+                                <div className="border-b border-secondary-foreground/5 pb-4">
+                                    <h3 className="text-xl font-medium tracking-tight text-secondary-foreground">
+                                        {isCreateMode ? t("Set Up Your Profile") : t("Edit Profile Details")}
                                     </h3>
-
-                                    {isCreateMode && (
-                                        <p className="text-sm text-secondary-foreground/40 mt-1">
-                                            {t("Please provide a few details to personalize your experience.")}
-                                        </p>
-                                    )}
+                                    <p className="text-xs text-secondary-foreground/50 mt-1">
+                                        {t("Please provide your details to personalize your experience.")}
+                                    </p>
                                 </div>
 
-                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-foreground/40 ml-1 flex items-center gap-2">
-                                                <Calendar size={12} />
-                                                {t("Age")}
-                                            </label>
-
-                                            <input
-                                                type="number"
-                                                placeholder={t("e.g. 25")}
-                                                className="w-full bg-transparent border-b border-secondary-foreground/10 pb-3 text-lg font-medium focus:outline-none focus:border-secondary-foreground transition-colors outline-none placeholder:text-secondary-foreground/10"
-                                                {...register("age")}
-                                            />
-                                            {errors.age && (
-                                                <p className="text-xs font-medium text-destructive mt-1 ml-1">
-                                                    {t(errors.age.message as string)}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-foreground/40 ml-1 flex items-center gap-2">
-                                                <UserIcon size={12} />
-                                                {t("Gender")}
-                                            </label>
-
-                                            <select
-                                                className="w-full bg-transparent border-b border-secondary-foreground/10 pb-3 text-lg font-medium focus:outline-none focus:border-secondary-foreground transition-colors cursor-pointer appearance-none outline-none"
-                                                {...register("gender")}
-                                            >
-                                                <option value="" disabled>
-                                                    {t("Select Identity")}
-                                                </option>
-                                                <option value={Gender.FEMININE}>
-                                                    {t("Female")}
-                                                </option>
-                                                <option value={Gender.MASCULINE}>
-                                                    {t("Male")}
-                                                </option>
-                                            </select>
-                                            {errors.gender && (
-                                                <p className="text-xs font-medium text-destructive mt-1 ml-1">
-                                                    {t(errors.gender.message as string)}
-                                                </p>
-                                            )}
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-secondary-foreground/60">
+                                            {t("Age")}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            {...register("age")}
+                                            className="px-4 py-3 rounded-xl border border-secondary-foreground/10 bg-transparent text-sm focus:outline-none focus:border-primary transition-colors text-secondary-foreground w-full"
+                                            placeholder={t("e.g. 25")}
+                                        />
+                                        {errors.age && (
+                                            <p className="text-xs text-destructive font-medium mt-0.5">
+                                                {errors.age.message}
+                                            </p>
+                                        )}
                                     </div>
 
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-secondary-foreground/60">
+                                            {t("Gender")}
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                {...register("gender")}
+                                                className="px-4 py-3 rounded-xl border border-secondary-foreground/10 bg-transparent text-sm focus:outline-none focus:border-primary transition-colors text-secondary-foreground w-full appearance-none bg-secondary"
+                                            >
+                                                <option value="" className="text-secondary-foreground/40">{t("Select gender")}</option>
+                                                <option value={Gender.FEMININE}>{t("Feminine")}</option>
+                                                <option value={Gender.MASCULINE}>{t("Masculine")}</option>
+                                            </select>
+                                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-secondary-foreground/40">
+                                                <span className="text-xs">▼</span>
+                                            </div>
+                                        </div>
+                                        {errors.gender && (
+                                            <p className="text-xs text-destructive font-medium mt-0.5">
+                                                {errors.gender.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-4 border-t border-secondary-foreground/5">
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className="group flex items-center gap-3
-                                                bg-primary text-secondary
-                                                px-8 py-4
-                                                rounded-full
-                                                font-semibold
-                                                shadow-xl shadow-primary/25
-                                                hover:bg-primary/90
-                                                hover:shadow-2xl hover:shadow-primary/30
-                                                hover:-translate-y-0.5
-                                                active:scale-95
-                                                transition-all duration-300
-                                                cursor-pointer
-                                                disabled:opacity-50 disabled:cursor-not-allowed
-                                                "
+                                        className="flex items-center gap-2 px-6 py-3 bg-secondary-foreground text-secondary rounded-xl font-bold uppercase tracking-widest text-xs shadow-md hover:bg-primary hover:text-secondary transition-all disabled:opacity-50 cursor-pointer"
                                     >
-                                        {isCreateMode ? (
-                                            <UserPlus
-                                                size={18}
-                                                className="transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110"
-                                            />
+                                        {saving ? (
+                                            <RefreshCw size={14} className="animate-spin" />
                                         ) : (
-                                            <Save
-                                                size={18}
-                                                className="transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110"
-                                            />
+                                            <Save size={14} />
                                         )}
-
-                                        <span className="text-sm font-bold uppercase tracking-[0.15em]">
-                                            {saving
-                                                ? t("Saving...")
-                                                : isCreateMode
-                                                    ? t("Create Profile")
-                                                    : t("Save Changes")
-                                            }
-                                        </span>
+                                        {saving ? t("Saving...") : isCreateMode ? t("Create Profile") : t("Save Changes")}
                                     </button>
-                                </form>
-                            </motion.div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

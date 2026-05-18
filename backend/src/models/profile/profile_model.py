@@ -1,5 +1,5 @@
 """Profile model definition and schema."""
-
+from typing import Optional
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
@@ -55,6 +55,19 @@ class ProfileModel(BaseModel):
     gender: Gender = Field(
         description=(
             "User's gender. Required for the Random Forest model's feature vector. "
+        )
+    )
+    avatar_url: Optional[str]= Field(
+        default="",
+        description=(
+            "URL to the user's avatar image."
+        )
+    )
+
+    avatar_key: Optional[str] = Field(
+        default=None,
+        description=(
+            "The S3 key for the user's avatar image."
         )
     )
 
