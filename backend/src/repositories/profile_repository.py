@@ -44,6 +44,8 @@ class ProfileRepository(BaseRepository):
                 "cognito_sub": profile.cognito_sub,
                 "age": profile.age,
                 "gender": profile.gender.value,
+                "avatar_url": profile.avatar_url,
+                "avatar_key": profile.avatar_key,
                 "created_at": profile.created_at,
                 "updated_at": profile.updated_at,
             }
@@ -96,6 +98,8 @@ class ProfileRepository(BaseRepository):
             cognito_sub=item.get("cognito_sub"),
             age=int(item.get("age")),
             gender=Gender(item.get("gender")),
+            avatar_url=item.get("avatar_url", ""),
+            avatar_key=item.get("avatar_key"),
             created_at=int(item.get("created_at", 0)),
             updated_at=int(item.get("updated_at", 0)),
         )
@@ -108,6 +112,8 @@ class ProfileRepository(BaseRepository):
             update_parts.append("age = :age")
         if profile_update.gender is not None:
             update_parts.append("gender = :gender")
+        if profile_update.avatar_key is not None:
+            update_parts.append("avatar_key = :avatar_key")
 
         response = self.table.update_item(
             Key={

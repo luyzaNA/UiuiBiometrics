@@ -3,6 +3,7 @@
 from json import JSONDecodeError, dumps, loads
 
 from pydantic import ValidationError
+from pygments.lexer import ProfilingRegexLexer
 
 from src.auth.auth import inject_user, require_roles, require_role_categories
 from src.http_handlers.common import bad_request, internal_server_error
@@ -36,8 +37,6 @@ def handler(event, context, user: User):
 
         data_dict = loads(event.get("body") or "{}")
 
-        logger.info("[CREATE_PROFILE] Received body: %s", dumps(data_dict))
-
         profile_request: CreateProfileRequest = CreateProfileRequest(**data_dict)
 
         profile: ProfileModel = get_profile_service().create_profile(
@@ -46,6 +45,8 @@ def handler(event, context, user: User):
         )
 
         logger.info("[CREATE_PROFILE] Profile created. Id: %s", profile.profile_id)
+
+        profile.avatar_url = get_profile_service().get_signed_url_from_s3(profile.avatar_key)
 
         return ok(data=profile.model_dump(exclude=MODEL_EXCLUDED_KEYS))
 

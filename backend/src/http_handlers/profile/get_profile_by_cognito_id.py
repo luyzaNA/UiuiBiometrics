@@ -28,6 +28,7 @@ def handler(event, context, user: User):
         profile: ProfileModel = get_profile_service().get_profile_by_sub(
             cognito_sub=user.sub
         )
+        profile.avatar_url = get_profile_service().get_signed_url_from_s3(profile.avatar_key)
 
         logger.info("[PROFILE_ME] Successfully retrieved Profile ID: %s", profile.profile_id)
 

@@ -1,6 +1,6 @@
 import json
 
-from services.user_service import UserService
+from src.services.user_service import UserService
 
 user_service = UserService()
 

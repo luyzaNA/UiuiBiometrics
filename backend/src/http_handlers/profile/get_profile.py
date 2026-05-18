@@ -34,6 +34,7 @@ def handler(event, context, user: User):
             profile: ProfileModel = get_profile_service().get_profile_by_id(
                 profile_id=UUID(profile_id)
             )
+            profile.avatar_url = get_profile_service().get_signed_url_from_s3(profile.avatar_key)
         else:
             logger.info("[PROFILE_FETCH] Fetching current user's profile via Sub")
             profile: ProfileModel = get_profile_service().get_profile_by_sub(

@@ -12,6 +12,8 @@ class ProfileUpdateModel(BaseModel):
     age: Optional[int] = Field(default=None, ge=0, le=120)
     gender: Optional[Gender] = Field(default=None)
     updated_at: int = timestamp_field()
+    avatar_url: Optional[str] = Field(default=None)
+    avatar_key: Optional[str] = Field(default=None, description="S3 key for the avatar image")
 
     def to_expression_values(self) -> dict:
         """Converts model to ExpressionAttributeValues, filtering out None values."""
@@ -20,4 +22,8 @@ class ProfileUpdateModel(BaseModel):
             values[":age"] = self.age
         if self.gender is not None:
             values[":gender"] = self.gender.value
+        if self.avatar_url is not None:
+            values[":avatar_url"] = self.avatar_url
+        if self.avatar_key is not None:
+            values[":avatar_key"] = self.avatar_key
         return values

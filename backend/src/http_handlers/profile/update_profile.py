@@ -24,14 +24,19 @@ def handler(event, context, user: User):
         data = loads(event.get("body") or "{}")
         update_req = UpdateProfileRequest(**data)
 
+        logger.info(f"Updating profile {profile_id} for user {user.sub} with data: {update_req}")
+
         updated_profile = get_profile_service().update_profile(
             profile_id=UUID(profile_id),
-            request=update_req
+            request=update_req,
+            cognito_sub = user.sub
         )
+        updated_profile.avatar_url = get_profile_service().get_signed_url_from_s3(updated_profile.avatar_key)
 
         return ok(data=updated_profile.model_dump(exclude={"pk", "sk", "gsi1_pk", "gsi1_sk"}))
 
     except NotFoundException:
         return not_found("Profile not found.")
     except Exception as e:
+        logger.error(e)
         return internal_server_error()
