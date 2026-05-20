@@ -42,6 +42,14 @@ export const router = createBrowserRouter([
                             }
                         },
                     },
+                    {
+                        path: "quiz",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Quiz/symptom-quiz.tsx')).default,
+                            }
+                        },
+                    },
                 ]
             }
         ]

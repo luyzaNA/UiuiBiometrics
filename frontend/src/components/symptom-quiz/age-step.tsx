@@ -5,11 +5,19 @@ import { useTranslation } from "react-i18next";
 interface AgeStepProps {
     age: number;
     setAge: (age: number) => void;
+    recipientType: "me" | "other" | null;
+    personName: string;
     onNext: () => void;
 }
 
-export function AgeStep({ age, setAge, onNext }: AgeStepProps) {
+export function AgeStep({ age, setAge, recipientType, personName, onNext }: AgeStepProps) {
     const { t } = useTranslation();
+
+    const getTitle = () => {
+        if (recipientType === "me") return t("How old are you?");
+        if (personName) return `${t("How old is")} ${personName}?`;
+        return t("How old is this person?");
+    };
 
     return (
         <motion.div
@@ -23,9 +31,9 @@ export function AgeStep({ age, setAge, onNext }: AgeStepProps) {
                     <User className="w-8 h-8 text-primary" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                     <h3 className="text-3xl font-black text-secondary uppercase tracking-tight">
-                        {t("How old are you?")}
+                        {getTitle()}
                     </h3>
                     <p className="text-secondary/60 text-xs font-mono">
                         {t("Age helps us correctly calibrate the algorithms for deficiencies.")}
@@ -33,7 +41,7 @@ export function AgeStep({ age, setAge, onNext }: AgeStepProps) {
                 </div>
 
                 <div className="w-full space-y-4 bg-secondary/[0.02] border border-secondary/10 p-6 rounded-3xl backdrop-blur-sm">
-                    <div className="text-5xl font-black text-primary font-mono tracking-tighter">
+                    <div className="text-5xl font-black text-primary font-mono tracking-tighter text-center">
                         {age} <span className="text-xs uppercase text-secondary/40 font-sans tracking-widest">{t("years")}</span>
                     </div>
 

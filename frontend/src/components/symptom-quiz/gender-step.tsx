@@ -5,11 +5,19 @@ import { useTranslation } from "react-i18next";
 interface GenderStepProps {
     gender: "male" | "female" | null;
     setGender: (gender: "male" | "female") => void;
+    recipientType: "me" | "other" | null;
+    personName: string;
     onNext: () => void;
 }
 
-export function GenderStep({ gender, setGender, onNext }: GenderStepProps) {
+export function GenderStep({ gender, setGender, recipientType, personName, onNext }: GenderStepProps) {
     const { t } = useTranslation();
+
+    const getTitle = () => {
+        if (recipientType === "me") return t("Select your gender");
+        if (personName) return `${t("Select the gender for")} ${personName}`;
+        return t("Select their gender");
+    };
 
     return (
         <motion.div
@@ -20,10 +28,10 @@ export function GenderStep({ gender, setGender, onNext }: GenderStepProps) {
         >
             <div className="text-center space-y-2">
                 <h3 className="text-3xl font-black text-secondary uppercase tracking-tight">
-                    {t("Select your gender")}
+                    {getTitle()}
                 </h3>
                 <p className="text-secondary/60 text-xs font-mono">
-                    {t("The 2D model is calibrated based on the selected")}
+                    {t("The 2D model is calibrated based on the selected gender.")}
                 </p>
             </div>
 
