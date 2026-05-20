@@ -6,7 +6,7 @@ from src.utils.enums import Gender
 class ProfileUpdateModel(BaseModel):
     """Internal model for updating a Profile in DynamoDB."""
 
-    pk: str = Field(description="Format: USER#<profile_id>")
+    pk: str = Field(description="Format: USER#<cognito_sub>")
     sk: str = Field(default="PROFILE#METADATA")
 
     age: Optional[int] = Field(default=None, ge=0, le=120)

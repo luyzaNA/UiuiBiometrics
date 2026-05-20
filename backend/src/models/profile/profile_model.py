@@ -15,35 +15,25 @@ class ProfileModel(BaseModel):
 
     pk: str = Field(
         description=(
-            "Primary partition key. Format: USER#<profile_id>. "
-            "Used as the unique identifier for the user across the system."
+            "Primary partition key. Format: USER#<cognito_sub>. "
+            "Uses the AWS Cognito unique identity (sub) directly to locate the user's partition."
         )
     )
     sk: str = Field(
+        default="PROFILE#METADATA",
         description=(
             "Primary sort key. Format: PROFILE#METADATA. "
             "Fixed string to identify the base profile record within the user partition."
         )
     )
 
-    gsi1_pk: str = Field(
-        description=(
-            "GSI1 partition key. Format: COGNITO#<sub>. "
-            "Used to look up the profile_id immediately after AWS authentication."
-        )
-    )
-    gsi1_sk: str = Field(
-        default="PROFILE",
-        description="GSI1 sort key. Fixed value for profile indexing."
-    )
-
     profile_id: UUID = Field(
         default_factory=uuid4,
-        description="The internal unique identifier generated automatically for the user."
+        description="The internal unique identifier generated automatically for business logic references."
     )
 
     cognito_sub: str = label_field(
-        description="The 'sub' (Subject) claim from the Cognito JWT, linking Auth to Data."
+        description="The 'sub' (Subject) claim from the Cognito JWT, matching the raw ID inside the PK."
     )
 
     age: int = Field(
