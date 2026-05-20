@@ -2,9 +2,14 @@ import { BrainCircuit, Utensils, Search, Microscope, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { barAnimation, rotateAnimation } from "@/utils/animations";
 import { useTranslation } from "react-i18next";
+import {useUser} from "@/hooks/use-user.ts";
+import {useNavigate} from "react-router-dom";
 
 export default function ProcessSection() {
     const { t } = useTranslation();
+    const {isAuthenticated, login} = useUser();
+    const navigate = useNavigate();
+
 
     return (
         <section className="relative min-h-screen w-full bg-secondary-foreground py-24 px-6 overflow-hidden font-sans">
@@ -106,7 +111,15 @@ export default function ProcessSection() {
                             </span>.
                         </p>
 
-                        <button className="relative z-10 bg-secondary-foreground text-primary px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:cursor-pointer">
+                        <button onClick={() => {
+                            if (isAuthenticated) {
+                                navigate('/quiz');
+                                window.scrollTo(0, 0);
+                            } else {
+                                login();
+                            }
+                        }}
+                                className="relative z-10 bg-secondary-foreground text-primary px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:cursor-pointer">
                             {t("GENERATE YOUR PERSONALIZED PLAN")}
                         </button>
                     </div>

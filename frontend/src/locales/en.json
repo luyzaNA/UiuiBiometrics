@@ -233,5 +233,16 @@
   "Would you like to sync your profile with the data introduced in the quiz?": "Would you like to sync your profile with the data introduced in the quiz?",
   "Only Analyze": "Only analyze",
   "Sync & Analyze" : "Sync & Analyze",
-  "Data sent successfully for analysis!" : "Data sent successfully for analysis!"
+  "Data sent successfully for analysis!" : "Data sent successfully for analysis!",
+  "How old is" : "How old is",
+  "How old is this person?" : "How old is this person?",
+  "Select the gender for" : "Select the gender for",
+  "Select their gender" : "Select their gender",
+  "Subject": "Subject",
+  "For me" : "For me",
+  "For someone else" : "For someone else",
+  "Data summary for": "Data summary for",
+  "Who are you taking the test for?" : "Who are you taking the test for?",
+  "Name / Pseudonym" : "Name / Pseudonym",
+  "*required":"*required"
 }

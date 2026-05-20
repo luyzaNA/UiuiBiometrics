@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, CheckCircle2, RefreshCw, Sparkles, UserCheck } from "lucide-react";
 
+import { RecipientStep, type RecipientType } from "@/components/symptom-quiz/recipient-step.tsx";
 import { AgeStep } from "@/components/symptom-quiz/age-step.tsx";
 import { GenderStep } from "@/components/symptom-quiz/gender-step.tsx";
 import BodySymptomSelector from "@/components/mannequin.tsx";
@@ -13,7 +14,11 @@ import { toast } from "sonner";
 
 export default function SymptomQuizWizard() {
     const { t } = useTranslation();
-    const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+    const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+
+    const [recipientType, setRecipientType] = useState<RecipientType>(null);
+    const [personName, setPersonName] = useState<string>("");
+
     const [age, setAge] = useState<number>(25);
     const [gender, setGender] = useState<"male" | "female" | null>(null);
     const [finalSymptoms, setFinalSymptoms] = useState<Record<string, string | number>>({});
@@ -43,19 +48,29 @@ export default function SymptomQuizWizard() {
 
     const handleCompleteQuiz = (symptoms: Record<string, string | number>) => {
         setFinalSymptoms(symptoms);
-        setStep(4);
+        setStep(5);
         console.log(symptoms);
     };
 
     const triggerAiAnalysis = () => {
-        const payload = { age, gender, symptoms: finalSymptoms };
+        const payload = {
+            recipientType,
+            personName: personName || null,
+            age,
+            gender,
+            symptoms: finalSymptoms
+        };
         console.log("Payload sent to AI algorithm:", payload);
         toast.success(t("Data sent successfully for analysis!"));
     };
 
     const handleSendForAnalysisClick = () => {
-        const currentDbGender = gender === "male" ? Gender.MASCULINE : Gender.FEMININE;
+        if (recipientType === "other") {
+            triggerAiAnalysis();
+            return;
+        }
 
+        const currentDbGender = gender === "male" ? Gender.MASCULINE : Gender.FEMININE;
         const isDataIdentical = profile && profile.age === age && profile.gender === currentDbGender;
 
         if (isDataIdentical) {
@@ -84,18 +99,15 @@ export default function SymptomQuizWizard() {
 
             setProfile(savedProfile);
             toast.success(t("Profile updated successfully!"));
-
             setShowUpdateModal(false);
 
             await new Promise((resolve) => setTimeout(resolve, 1500));
-
             triggerAiAnalysis();
         } catch (error) {
             toast.error(t("Failed to update profile. Your data will still be analyzed."));
             setShowUpdateModal(false);
 
             await new Promise((resolve) => setTimeout(resolve, 1500));
-
             triggerAiAnalysis();
         } finally {
             setIsSavingProfile(false);
@@ -136,20 +148,44 @@ export default function SymptomQuizWizard() {
                         </button>
                     )}
                     <div className="ml-auto text-[10px] font-mono tracking-widest text-primary/60 uppercase">
-                        {t("STEP")} {step} / {step === 4 ? "4" : "3"}
+                        {t("STEP")} {step} / 5
                     </div>
                 </div>
 
                 <AnimatePresence mode="wait">
                     {step === 1 && (
-                        <AgeStep key="age" age={age} setAge={setAge} onNext={() => setStep(2)} />
+                        <RecipientStep
+                            key="recipient"
+                            recipientType={recipientType}
+                            setRecipientType={setRecipientType}
+                            personName={personName}
+                            setPersonName={setPersonName}
+                            onNext={() => setStep(2)}
+                        />
                     )}
 
                     {step === 2 && (
-                        <GenderStep key="gender" gender={gender} setGender={setGender} onNext={() => setStep(3)} />
+                        <AgeStep
+                            key="age"
+                            age={age}
+                            setAge={setAge}
+                            recipientType={recipientType}
+                            personName={personName}
+                            onNext={() => setStep(3)}
+                        />
                     )}
 
-                    {step === 3 && gender && (
+                    {step === 3 && (
+                        <GenderStep
+                            key="gender"
+                            gender={gender}
+                            setGender={setGender}
+                            recipientType={recipientType}
+                            personName={personName}
+                            onNext={() => setStep(4)}
+                        />
+                    )}
+                    {step === 4 && gender && (
                         <BodySymptomSelector
                             key="selector"
                             age={age}
@@ -158,7 +194,7 @@ export default function SymptomQuizWizard() {
                         />
                     )}
 
-                    {step === 4 && (
+                    {step === 5 && (
                         <motion.div
                             key="summary"
                             initial={{ opacity: 0, x: 20 }}
@@ -169,7 +205,10 @@ export default function SymptomQuizWizard() {
                             <div className="space-y-2 text-center md:text-left">
                                 <h3 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3 justify-center md:justify-start">
                                     <CheckCircle2 className="text-primary w-8 h-8" />
-                                    {t("Your data summary")}
+                                    {recipientType === "me"
+                                        ? t("Your data summary")
+                                        : `${t("Data summary for")} ${personName}`
+                                    }
                                 </h3>
                                 <p className="text-secondary/60 text-xs font-mono">
                                     {t("Collected data:")}
@@ -177,6 +216,14 @@ export default function SymptomQuizWizard() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 bg-secondary/5 p-4 rounded-xl border border-secondary/10 font-mono text-xs">
+                                <div>
+                                    <span className="text-secondary/50">{t("Subject")}:</span>{" "}
+                                    {recipientType === "me"
+                                        ? t("For me")
+                                        : `${t("For someone else")} (${personName})`
+                                    }
+                                </div>
+                                <div />
                                 <div><span className="text-secondary/50">{t("Age")}:</span> {age} {t("years")}</div>
                                 <div><span className="text-secondary/50">{t("Gender")}:</span> {gender === 'male' ? t("Male") : t("Female")}</div>
                             </div>
@@ -194,12 +241,12 @@ export default function SymptomQuizWizard() {
                                             const config = INTENSITY_MAP[intensity] || INTENSITY_MAP.default;
                                             return (
                                                 <div key={symptom} className="flex justify-between items-center p-4 hover:bg-secondary/[0.04] transition-colors">
-                                                <span className="font-medium text-sm capitalize">
-                                                    {t(symptom)}
-                                                </span>
+                                                    <span className="font-medium text-sm capitalize">
+                                                        {t(symptom)}
+                                                    </span>
                                                     <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${config.styles}`}>
-                                                    {t(config.label)}
-                                                </span>
+                                                        {t(config.label)}
+                                                    </span>
                                                 </div>
                                             );
                                         })}
@@ -235,7 +282,7 @@ export default function SymptomQuizWizard() {
                                     {t("Update profile details?")}
                                 </h3>
                                 <p className="text-secondary/60 text-xs font-mono">
-                                    {t(("Would you like to sync your profile with the data introduced in the quiz?"))}
+                                    {t("Would you like to sync your profile with the data introduced in the quiz?")}
                                 </p>
                             </div>
 

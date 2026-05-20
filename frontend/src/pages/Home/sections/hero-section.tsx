@@ -2,9 +2,13 @@ import { Activity, Fingerprint, ShieldCheck, Target, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { rotateAnimation } from "@/utils/animations";
+import {useUser} from "@/hooks/use-user.ts";
+import {useNavigate} from "react-router-dom";
 
 export default function HeroSection() {
     const { t } = useTranslation();
+    const { isAuthenticated, login } = useUser();
+    const navigate = useNavigate();
 
     const floatPoints = [
         { icon: Activity, label: t("Live"), top: "5%", left: "95%" },
@@ -59,7 +63,7 @@ export default function HeroSection() {
                         </p>
 
                         <div className="pt-4">
-                            <button className="group relative px-8 py-4 bg-primary text-secondary rounded-full font-black text-[10px] tracking-[0.3em] overflow-hidden transition-all hover:cursor-pointer">
+                            <button onClick={() => {isAuthenticated ? navigate('/quiz') : login()}} className="group relative px-8 py-4 bg-primary text-secondary rounded-full font-black text-[10px] tracking-[0.3em] overflow-hidden transition-all hover:cursor-pointer">
                                 <span className="relative z-10 uppercase">{t("initiate scan")}</span>
                                 <div className="absolute inset-0 bg-secondary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                             </button>
