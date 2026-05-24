@@ -27,5 +27,15 @@ class Permission(str, Enum):
 ALLOWED_PERMISSIONS = {p.value for p in Permission}
 
 class Gender(str, Enum):
+    """Gender options for assessments."""
     FEMININE = "feminine"
     MASCULINE = "masculine"
+
+
+class AssessmentStatus(str, Enum):
+    """Represents the operational status of an assessment flow."""
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    RED_FLAG_TRIGGERED = "RED_FLAG_TRIGGERED"
+    PENDING_DOCTOR = "PENDING_DOCTOR"
+    DOCTOR_REVIEWED = "DOCTOR_REVIEWED"
