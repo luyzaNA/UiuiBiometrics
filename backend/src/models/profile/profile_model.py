@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
-from src.models.fields import label_field, timestamp_field
+from src.models.fields import label_field, timestamp_field, age_field
 from src.utils.enums import Gender
 
 
@@ -36,11 +36,7 @@ class ProfileModel(BaseModel):
         description="The 'sub' (Subject) claim from the Cognito JWT, matching the raw ID inside the PK."
     )
 
-    age: int = Field(
-        ge=0,
-        le=120,
-        description="User's age, required for the Random Forest model's feature vector."
-    )
+    age: int = age_field()
 
     gender: Gender = Field(
         description=(

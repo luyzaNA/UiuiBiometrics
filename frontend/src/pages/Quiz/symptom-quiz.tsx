@@ -8,9 +8,13 @@ import { AgeStep } from "@/components/symptom-quiz/age-step.tsx";
 import { GenderStep } from "@/components/symptom-quiz/gender-step.tsx";
 import BodySymptomSelector from "@/components/mannequin.tsx";
 
+// 🔥 IMPORTĂ COMPONENTA DE REZULTATE PE CARE AM CREAT-O
+
 import { profileService } from "@/services/profile-service.ts";
 import { Gender, type ProfileI } from "@/models/profile-model.ts";
 import { toast } from "sonner";
+import { assessmentService, type CreateAssessmentRequest } from "@/services/assessment-service.ts";
+import AssessmentResultsPage from "@/pages/Assessment/assessment-results-page.tsx";
 
 export default function SymptomQuizWizard() {
     const { t } = useTranslation();
@@ -26,6 +30,11 @@ export default function SymptomQuizWizard() {
     const [profile, setProfile] = useState<ProfileI | null>(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    // 🔥 STARE NOUĂ: Aici stocăm răspunsul primit de la serverul de ML
+    const [analysisResult, setAnalysisResult] = useState<any | null>(null);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -52,16 +61,39 @@ export default function SymptomQuizWizard() {
         console.log(symptoms);
     };
 
-    const triggerAiAnalysis = () => {
-        const payload = {
-            recipientType,
-            personName: personName || null,
-            age,
-            gender,
-            symptoms: finalSymptoms
-        };
-        console.log("Payload sent to AI algorithm:", payload);
-        toast.success(t("Data sent successfully for analysis!"));
+    const triggerAiAnalysis = async () => {
+        setIsAnalyzing(true);
+        try {
+            const formattedSymptoms: Record<string, number> = {};
+            Object.entries(finalSymptoms).forEach(([key, value]) => {
+                formattedSymptoms[key] = Number(value);
+            });
+
+            const targetPerson = recipientType === "me" ? "Principal" : (personName || "Unknown");
+
+            const payload: CreateAssessmentRequest = {
+                target_person: targetPerson,
+                age: Number(age),
+                gender: gender === "female" ? "feminine" : "masculine",
+                symptoms: formattedSymptoms
+            };
+
+            console.log("🚀 Payload trimis către Backend:", payload);
+
+            const result = await assessmentService.create(payload);
+
+            console.log("✅ === REZULTAT ANALIZĂ ML ===", result);
+            toast.success(t("Analysis complete!"));
+
+            // 🔥 SALVĂM REZULTATUL ÎN STATE. Asta va declanșa automat afișarea paginii noi
+            setAnalysisResult(result);
+
+        } catch (error) {
+            console.error("❌ Eroare la trimiterea către ML:", error);
+            toast.error(t("Failed to analyze symptoms. Please try again."));
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const handleSendForAnalysisClick = () => {
@@ -128,6 +160,12 @@ export default function SymptomQuizWizard() {
             styles: "bg-info/10 text-info border border-info/20"
         }
     };
+
+    // 🔥 SCURTCIRCUITARE: Dacă backend-ul ne-a trimis rezultatele,
+    // oprim randarea formularului și trimitem utilizatorul direct pe pagina de rezultate.
+    if (analysisResult) {
+        return <AssessmentResultsPage data={analysisResult} />;
+    }
 
     return (
         <section className="relative w-full min-h-screen bg-secondary-foreground py-12 px-6 font-sans rounded-3xl border border-secondary/10 cursor-default">
@@ -256,9 +294,17 @@ export default function SymptomQuizWizard() {
 
                             <button
                                 onClick={handleSendForAnalysisClick}
-                                className="w-full bg-primary text-secondary font-bold uppercase tracking-wider py-4 rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-sm"
+                                disabled={isAnalyzing}
+                                className="w-full bg-primary text-secondary font-bold uppercase tracking-wider py-4 rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-sm disabled:opacity-50 flex justify-center items-center gap-2"
                             >
-                                {t("Send for analysis")}
+                                {isAnalyzing ? (
+                                    <>
+                                        <RefreshCw className="animate-spin w-4 h-4" />
+                                        {t("Analyzing...")}
+                                    </>
+                                ) : (
+                                    t("Send for analysis")
+                                )}
                             </button>
                         </motion.div>
                     )}

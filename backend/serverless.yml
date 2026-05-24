@@ -1,11 +1,13 @@
 org: luyza
 app: uiuibiometrics
 service: backend
+
 provider:
   name: aws
-  runtime: python3.13
+  runtime: python3.11
   region: eu-north-1
   stage: ${opt:stage, 'dev'}
+  memorySize: 1024
   environment:
     DYNAMODB_TABLE: uiui-biometrics-${self:provider.stage}
     STAGE: ${self:provider.stage}
@@ -22,7 +24,6 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - !GetAtt UiuibiometricsTable.Arn
-
     - Effect: Allow
       Action:
         - s3:PutObject
@@ -38,23 +39,31 @@ provider:
         issuerUrl: https://cognito-idp.${aws:region}.amazonaws.com/eu-north-1_aBOOx7l1A
         audience:
           - 3a7gjc7aq8v5auneeuqtfvcb1a
+
 custom:
   serverless-offline:
     ignoreJWTSignature: true
     httpTimeout: 60000
+
+  pythonRequirements:
+    dockerizePip: true
+    zip: true
+    slim: true
+
   plugins:
     local:
       list: [
         serverless-s3-local,
         serverless-dynamodb,
-        serverless-offline
+        serverless-offline,
+        serverless-python-requirements
       ]
     dev:
-      list: [ ]
+      list: [ serverless-python-requirements ]
     acc:
-      list: [ ]
+      list: [ serverless-python-requirements ]
     prod:
-      list: [ ]
+      list: [ serverless-python-requirements ]
 
   s3:
     host: localhost
@@ -63,6 +72,7 @@ custom:
     cors: false
     buckets:
       - uiui-avatars-${self:provider.stage}
+
   serverless-dynamodb:
     stages:
       - local
@@ -76,20 +86,37 @@ custom:
         sources:
           - table: uiui-biometrics-${self:provider.stage}
             sources: [ ./offline/migrations/uiui.json ]
+
 functions:
   profileRouter:
     handler: src/http_handlers/profile/routes.handler
     events:
       - httpApi:
-          path: /api/{proxy+}
+          path: /api/profile
           method: ANY
           authorizer:
             name: serviceAuthorizer
       - httpApi:
-          path: /api
+          path: /api/profile/{proxy+}
           method: ANY
           authorizer:
             name: serviceAuthorizer
+
+  assessmentRouter:
+    handler: src/http_handlers/assessment/routes.handler
+    timeout: 25
+    events:
+      - httpApi:
+          path: /api/assessments
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
 

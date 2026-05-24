@@ -1,10 +1,11 @@
 export const SYSTEMIC_SYMPTOMS = [
-    { id: "fatigue", label: "Fatigue" },
-    { id: "difficulty_concentrating", label: "Concentration" },
-    { id: "memory_loss", label: "Memory" },
-    { id: "irritability", label: "Irritability" },
-    { id: "bone_pain", label: "Bone_pain" },
-    { id: "depression_anxiety_mood_changes", label: "Depression_anxiety_mood_changes" },
-    { id: "insomnia", label: "Insomnia" },
-    { id: "slow_wound_healing", label: "Wound_healing" },
+    { id: "Fatigue", label: "Fatigue" },
+    { id: "Difficulty_Concentrating", label: "Difficulty_Concentrating" },
+    { id: "Memory_Loss", label: "Memory_Loss" },
+    { id: "Irritability", label: "Irritability" },
+    { id: "Bone_Pain", label: "Bone_Pain" },
+    { id: "Depression_Anxiety_Mood_Changes", label: "Depression_Anxiety_Mood_Changes" },
+    { id: "Insomnia", label: "Insomnia" },
+    { id: "Slow_Wound_Healing", label: "Slow_Wound_Healing" },
+    {id: "Coordination_Problems", label: "Coordination_Problems" }
 ];
