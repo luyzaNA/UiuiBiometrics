@@ -109,6 +109,16 @@ class AssessmentModel(BaseModel):
         description="The reference ID from the payment processor (e.g., Stripe charge or payment intent ID)."
     )
 
+    image_keys: List[str] = Field(
+        default_factory=list,
+        description="List of S3 keys for the uploaded assessment images."
+    )
+
+    image_urls: List[str] = Field(
+        default_factory=list,
+        description="List of presigned URLs for the uploaded assessment images."
+    )
+
     created_at: int = timestamp_field(
         description="Unix timestamp when the assessment session was completed."
     )

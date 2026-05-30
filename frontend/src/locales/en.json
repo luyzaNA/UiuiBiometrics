@@ -334,7 +334,20 @@
   "Symptoms Severity" : "Symptoms Severity",
   "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention." : "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention.",
   "Select..." : "Select...",
-  "e.g., Andrew, Jane, etc." : "e.g., Andrew, Jane, etc."
+  "e.g., Andrew, Jane, etc." : "e.g., Andrew, Jane, etc.",
+  "Upload photos of the affected areas to automatically detect symptoms. You can add multiple photos. This step is optional." : "Upload photos of the affected areas to automatically detect symptoms. You can add multiple photos. This step is optional.",
+  "Analyzing..." : "Analyzing...",
+  "Analyze This Photo" : "Analyze this photo",
+  "Skip this step" : "Skip this step",
+  "Discard All & Skip" : "Discard all & skip",
+  "Skip" : "Skip",
+  "Apply Symptoms & Continue" : "Apply symptoms & continue",
+  "Upload another photo" : "Upload another photo",
+  "Upload a photo" : "Upload a photo",
+  "Completed Analyses" : "Completed analyses",
+  "No visible symptoms detected in this photo." : "No visible symptoms detected in this photo.",
+  "Continue without detected symptoms" : "Continue without detected symptoms"
+
 
 
 

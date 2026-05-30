@@ -116,6 +116,20 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
+  visionRouter:
+    handler: src/http_handlers/vision/routes.handler
+    timeout: 29
+    events:
+      - httpApi:
+          path: /api/analyze
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}

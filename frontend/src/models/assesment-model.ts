@@ -20,4 +20,6 @@ export interface AssessmentI {
     createdAt: number;
     updatedAt: number;
     wellnessScore: number;
+    imageUrls?: string[];
+    imageKeys?: string[];
 }

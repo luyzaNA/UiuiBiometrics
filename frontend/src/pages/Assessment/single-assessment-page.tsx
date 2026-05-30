@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Radar as RadarArea } from "recharts";
-import { User, Activity } from "lucide-react";
+import { User, Activity, ImageIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SYMPTOM_MAPPER } from "@/utils/symptoms_wrap.ts";
 import type { AssessmentI } from "@/models/assesment-model.ts";
@@ -24,6 +24,8 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
     ).sort(
         (a, b) => Number(b[1]) - Number(a[1])
     );
+
+    const images = data.imageUrls || (data as any).image_urls || [];
 
     return (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 animate-in fade-in duration-700">
@@ -156,6 +158,33 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                     })}
                 </CardContent>
             </Card>
+
+            {images.length > 0 && (
+                <Card className="xl:col-span-4 shadow-lg border-secondary-foreground/10">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-secondary-foreground/60">
+                            <ImageIcon size={16} />
+                            {t("Visual Evidence")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {images.map((url: string, index: number) => (
+                                <div
+                                    key={index}
+                                    className="aspect-square rounded-2xl overflow-hidden border border-secondary/10 bg-secondary/5 relative group"
+                                >
+                                    <img
+                                        src={url}
+                                        alt={`Symptom visual ${index + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {!data.hasRedFlags && (
                 <Card className="xl:col-span-4 shadow-lg border-secondary-foreground/10">

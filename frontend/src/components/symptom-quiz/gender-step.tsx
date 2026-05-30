@@ -1,17 +1,32 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface GenderStepProps {
-    gender: "male" | "female" | null;
-    setGender: (gender: "male" | "female") => void;
+    gender: "feminine" | "masculine" | null;
+    setGender: (gender: "masculine" | "feminine") => void;
     recipientType: "me" | "other" | null;
     personName: string;
     onNext: () => void;
+    profileGender?: "masculine" | "feminine" | null;
 }
 
-export function GenderStep({ gender, setGender, recipientType, personName, onNext }: GenderStepProps) {
+export function GenderStep({
+                               gender,
+                               setGender,
+                               recipientType,
+                               personName,
+                               onNext,
+                               profileGender
+                           }: GenderStepProps) {
     const { t } = useTranslation();
+
+    useEffect(() => {
+        if (recipientType === "me" && profileGender && !gender) {
+            setGender(profileGender);
+        }
+    }, [recipientType, profileGender, gender, setGender]);
 
     const getTitle = () => {
         if (recipientType === "me") return t("Select your gender");
@@ -37,32 +52,32 @@ export function GenderStep({ gender, setGender, recipientType, personName, onNex
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
                 <div
-                    onClick={() => setGender("male")}
+                    onClick={() => setGender("masculine")}
                     className={`relative cursor-pointer group p-8 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-4 ${
-                        gender === "male"
+                        gender === "masculine"
                             ? "bg-primary/15 border-primary shadow-[0_0_30px_rgba(168,85,247,0.2)]"
                             : "bg-secondary/[0.02] border-secondary/10 hover:border-primary/40"
                     }`}
                 >
                     <div className="text-4xl">🚹</div>
                     <span className="font-black tracking-widest text-sm text-secondary uppercase">{t("MALE")}</span>
-                    {gender === "male" && (
+                    {gender === "masculine" && (
                         <div className="absolute top-4 right-4 bg-primary p-1 rounded-full text-secondary-foreground">
                             <Check className="w-3 h-3" />
                         </div>
                     )}
                 </div>
                 <div
-                    onClick={() => setGender("female")}
+                    onClick={() => setGender("feminine")}
                     className={`relative cursor-pointer group p-8 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-4 ${
-                        gender === "female"
+                        gender === "feminine"
                             ? "bg-primary/15 border-primary shadow-[0_0_30px_rgba(168,85,247,0.2)]"
                             : "bg-secondary/[0.02] border-secondary/10 hover:border-primary/40"
                     }`}
                 >
                     <div className="text-4xl">🚺</div>
                     <span className="font-black tracking-widest text-sm text-secondary uppercase">{t("FEMALE")}</span>
-                    {gender === "female" && (
+                    {gender === "feminine" && (
                         <div className="absolute top-4 right-4 bg-primary p-1 rounded-full text-secondary-foreground">
                             <Check className="w-3 h-3" />
                         </div>

@@ -1,5 +1,5 @@
 """Assessment request validation schemas."""
-from typing import Dict
+from typing import Dict, Optional, List
 from pydantic import BaseModel, Field
 
 from src.models.fields import age_field
@@ -20,4 +20,8 @@ class CreateAssessmentRequest(BaseModel):
     symptoms: Dict[str, float] = Field(
         min_length=1,
         description="Dictionary of active symptoms and their intensities (e.g., {'Fatigue': 0.6})."
+    )
+    images: Optional[List[str]] = Field(
+        default_factory=list,
+        description="List of base64 encoded images."
     )
