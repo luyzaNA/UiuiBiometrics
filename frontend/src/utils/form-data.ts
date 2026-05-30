@@ -26,3 +26,24 @@ export const formatDateMs = (timestamp: number | undefined) => {
         minute: '2-digit'
     });
 };
+
+export const formatChartShortDate = (timestamp: number | undefined) => {
+    if (!timestamp) return '';
+    const currentLanguage = i18n.language || 'en-US';
+    return new Date(timestamp).toLocaleDateString(currentLanguage, {
+        day: 'numeric',
+        month: 'short',
+    });
+};
+
+export const formatChartFullDate = (timestamp: number | undefined) => {
+    if (!timestamp) return '';
+    const currentLanguage = i18n.language || 'en-US';
+    return new Date(timestamp).toLocaleDateString(currentLanguage, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
