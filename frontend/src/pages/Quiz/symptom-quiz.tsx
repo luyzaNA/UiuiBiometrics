@@ -13,26 +13,29 @@ import { Gender, type ProfileI } from "@/models/profile-model.ts";
 import { toast } from "sonner";
 import { assessmentService, type CreateAssessmentRequest } from "@/services/assessment-service.ts";
 import AssessmentResultsPage from "@/pages/Assessment/assessment-results-page.tsx";
+import { VisionStep, type AnalysisEntry } from "@/components/symptom-quiz/image-step.tsx";
 
 export default function SymptomQuizWizard() {
     const { t } = useTranslation();
-    const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+    const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
     const [recipientType, setRecipientType] = useState<RecipientType>(null);
     const [personName, setPersonName] = useState<string>("");
 
     const [age, setAge] = useState<number>(25);
     const [gender, setGender] = useState<"male" | "female" | null>(null);
-    const [finalSymptoms, setFinalSymptoms] = useState<Record<string, string | number>>({});
+
+    const [visionAnalyses, setVisionAnalyses] = useState<AnalysisEntry[]>([]);
+    const [selectedSymptoms, setSelectedSymptoms] = useState<Record<string, number>>({});
 
     const [profile, setProfile] = useState<ProfileI | null>(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-    // 🔥 STARE NOUĂ: Aici stocăm răspunsul primit de la serverul de ML
     const [analysisResult, setAnalysisResult] = useState<any | null>(null);
+
+    const [includeVisionData, setIncludeVisionData] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -53,32 +56,47 @@ export default function SymptomQuizWizard() {
         fetchUserProfile();
     }, []);
 
-    const handleCompleteQuiz = (symptoms: Record<string, string | number>) => {
-        setFinalSymptoms(symptoms);
+    const handleVisionNext = (detectedSymptoms?: Record<string, number>) => {
+        if (detectedSymptoms) {
+            setSelectedSymptoms(prev => ({ ...prev, ...detectedSymptoms }));
+        }
+        setIncludeVisionData(true);
         setStep(5);
-        console.log(symptoms);
+    };
+
+    const handleVisionSkip = () => {
+        setIncludeVisionData(false);
+        setStep(5);
+    };
+
+    const handleCompleteQuiz = () => {
+        setStep(6);
     };
 
     const triggerAiAnalysis = async () => {
         setIsAnalyzing(true);
         try {
             const formattedSymptoms: Record<string, number> = {};
-            Object.entries(finalSymptoms).forEach(([key, value]) => {
+            Object.entries(selectedSymptoms).forEach(([key, value]) => {
                 formattedSymptoms[key] = Number(value);
             });
 
             const targetPerson = recipientType === "me" ? "Principal" : (personName || "Unknown");
 
+            const base64Images = includeVisionData
+                ? visionAnalyses.map(analysis => analysis.imageSrc)
+                : [];
+
             const payload: CreateAssessmentRequest = {
                 target_person: targetPerson,
                 age: Number(age),
                 gender: gender === "female" ? "feminine" : "masculine",
-                symptoms: formattedSymptoms
+                symptoms: formattedSymptoms,
+                images: base64Images
             };
 
             const result = await assessmentService.create(payload);
             toast.success(t("Analysis complete!"));
-
             setAnalysisResult(result);
 
         } catch (error) {
@@ -86,9 +104,7 @@ export default function SymptomQuizWizard() {
         } finally {
             setIsAnalyzing(false);
         }
-    };
-
-    const handleSendForAnalysisClick = () => {
+    };    const handleSendForAnalysisClick = () => {
         if (recipientType === "other") {
             triggerAiAnalysis();
             return;
@@ -139,18 +155,10 @@ export default function SymptomQuizWizard() {
     };
 
     const INTENSITY_MAP: Record<string | number, { label: string; styles: string }> = {
-        1: {
-            label: t("HIGH"),
-            styles: "bg-destructive/10 text-destructive border border-destructive/20"
-        },
-        0.6: {
-            label: t("MID"),
-            styles: "bg-warning/10 text-warning border border-warning/20"
-        },
-        default: {
-            label: t("LOW"),
-            styles: "bg-info/10 text-info border border-info/20"
-        }
+        1: { label: t("HIGH"), styles: "bg-destructive/10 text-destructive border border-destructive/20" },
+        0.6: { label: t("MID"), styles: "bg-warning/10 text-warning border border-warning/20" },
+        0.3: { label: t("LOW"), styles: "bg-info/10 text-info border border-info/20" },
+        default: { label: t("LOW"), styles: "bg-info/10 text-info border border-info/20" }
     };
 
     if (analysisResult) {
@@ -176,53 +184,53 @@ export default function SymptomQuizWizard() {
                         </button>
                     )}
                     <div className="ml-auto text-[10px] font-mono tracking-widest text-primary/60 uppercase">
-                        {t("STEP")} {step} / 5
+                        {t("STEP")} {step} / 6
                     </div>
                 </div>
 
                 <AnimatePresence mode="wait">
                     {step === 1 && (
-                        <RecipientStep
-                            key="recipient"
-                            recipientType={recipientType}
-                            setRecipientType={setRecipientType}
-                            personName={personName}
-                            setPersonName={setPersonName}
-                            onNext={() => setStep(2)}
-                        />
+                        <RecipientStep key="recipient" recipientType={recipientType} setRecipientType={setRecipientType} personName={personName} setPersonName={setPersonName} onNext={() => setStep(2)} />
                     )}
 
                     {step === 2 && (
-                        <AgeStep
-                            key="age"
-                            age={age}
-                            setAge={setAge}
-                            recipientType={recipientType}
-                            personName={personName}
-                            onNext={() => setStep(3)}
-                        />
+                        <AgeStep key="age" age={age} setAge={setAge} recipientType={recipientType} personName={personName} onNext={() => setStep(3)} />
                     )}
 
                     {step === 3 && (
                         <GenderStep
                             key="gender"
-                            gender={gender}
-                            setGender={setGender}
+                            gender={gender === "male" ? "masculine" : gender === "female" ? "feminine" : null}
+                            setGender={(v) => setGender(v === "masculine" ? "male" : "female")}
                             recipientType={recipientType}
+                            profileGender={profile?.gender as "masculine" | "feminine" | null}
                             personName={personName}
                             onNext={() => setStep(4)}
                         />
                     )}
-                    {step === 4 && gender && (
+
+                    {step === 4 && (
+                        <VisionStep
+                            key="vision"
+                            analyses={visionAnalyses}
+                            setAnalyses={setVisionAnalyses}
+                            onNext={handleVisionNext}
+                            onSkip={handleVisionSkip}
+                        />
+                    )}
+
+                    {step === 5 && gender && (
                         <BodySymptomSelector
                             key="selector"
                             age={age}
                             gender={gender}
+                            selectedSymptoms={selectedSymptoms}
+                            onChange={setSelectedSymptoms}
                             onComplete={handleCompleteQuiz}
                         />
                     )}
 
-                    {step === 5 && (
+                    {step === 6 && (
                         <motion.div
                             key="summary"
                             initial={{ opacity: 0, x: 20 }}
@@ -261,11 +269,11 @@ export default function SymptomQuizWizard() {
                                     {t("Selected symptoms & intensity")}
                                 </h4>
 
-                                {Object.keys(finalSymptoms).length === 0 ? (
+                                {Object.keys(selectedSymptoms).length === 0 ? (
                                     <p className="text-sm text-secondary/40 italic">{t("No symptoms selected")}</p>
                                 ) : (
                                     <div className="divide-y divide-secondary/10 border border-secondary/10 rounded-xl overflow-hidden bg-secondary/[0.02]">
-                                        {Object.entries(finalSymptoms).map(([symptom, intensity]) => {
+                                        {Object.entries(selectedSymptoms).map(([symptom, intensity]) => {
                                             const config = INTENSITY_MAP[intensity] || INTENSITY_MAP.default;
                                             return (
                                                 <div key={symptom} className="flex justify-between items-center p-4 hover:bg-secondary/[0.04] transition-colors">

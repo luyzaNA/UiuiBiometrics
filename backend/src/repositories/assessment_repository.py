@@ -76,6 +76,9 @@ class AssessmentRepository(BaseRepository):
             symptoms=symptoms,
             predicted_deficiencies=predictions,
 
+            image_keys=item.get("image_keys", []),
+            image_urls=item.get("image_urls", []),
+
             wellness_score=float(item.get("wellness_score", 100.0)),
 
             status=item.get("status", AssessmentStatus.PENDING),

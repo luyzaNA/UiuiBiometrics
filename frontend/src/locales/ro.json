@@ -334,7 +334,20 @@
   "Symptoms Severity" : "Severitatea simptomelor",
   "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention." : "Notă: Prezența semnalelor de alarmă indică posibile condiții acute care necesită atenție medicală imediată.",
   "Select..." : "Selectează...",
-  "e.g., Andrew, Jane, etc." : "ex: Andrei, Ioana etc."
+  "e.g., Andrew, Jane, etc." : "ex: Andrei, Ioana etc.",
+  "Upload photos of the affected areas to automatically detect symptoms. You can add multiple photos. This step is optional." : "Încarcă fotografii ale zonelor afectate pentru a detecta automat simptomele. Poți adăuga mai multe fotografii. Acest pas este opțional.",
+  "Analyzing...": "Se analizează...",
+  "Analyze This Photo": "Analizează această fotografie",
+  "Skip this step" : "Sari peste acest pas",
+  "Discard All & Skip" : "Renunță",
+  "Skip" : "Renunță",
+  "Apply Symptoms & Continue" : "Aplică simptomele și continuă",
+  "Upload another photo" : "Incărcați o altă fotografie",
+  "Upload a photo" : "Incărcați o fotografie",
+  "Completed Analyses" : "Analize finalizate",
+  "No visible symptoms detected in this photo." : "Nu au fost detectate simptome vizibile în această fotografie.",
+  "Continue without detected symptoms" : "Continuă fără simptomele detectate"
+
 
 
   }

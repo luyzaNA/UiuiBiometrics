@@ -14,16 +14,23 @@ import { ActiveLog } from "@/components/symptom-selector/active-log.tsx";
 interface BodySymptomSelectorProps {
     age: number;
     gender: "male" | "female";
-    onComplete: (symptoms: Record<string, Intensity>) => void;
+    onComplete: () => void;
+    selectedSymptoms: Record<string, number>;
+    onChange: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
-export default function BodySymptomSelector({ age, gender, onComplete }: BodySymptomSelectorProps) {
+export default function BodySymptomSelector({
+                                                age,
+                                                gender,
+                                                selectedSymptoms,
+                                                onChange,
+                                                onComplete
+                                            }: BodySymptomSelectorProps) {
     const { t } = useTranslation();
     const [view, setView] = useState<"physical" | "systemic">("physical");
     const [selectedPart, setSelectedPart] = useState<string | null>(null);
     const [hoveredPart, setHoveredPart] = useState<string | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [values, setValues] = useState<Record<string, Intensity>>({});
     const [searchQuery, setSearchQuery] = useState("");
 
     const resetToDefault = () => {
@@ -54,18 +61,18 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
     }, [searchQuery, t]);
 
     const handleSelect = (symptom: string, value: Intensity) => {
-        setValues((prev) => ({ ...prev, [symptom]: value }));
+        onChange((prev) => ({ ...prev, [symptom]: value }));
     };
 
     const handleRemove = (symptom: string) => {
-        setValues((prev) => {
+        onChange((prev) => {
             const newValues = { ...prev };
             delete newValues[symptom];
             return newValues;
         });
     };
 
-    const activeSymptomsCount = Object.keys(values).length;
+    const activeSymptomsCount = Object.keys(selectedSymptoms).length;
     const BodyModelSvg = gender === "female" ? FemaleBodySvg : MaleBodySvg;
 
     return (
@@ -176,7 +183,7 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
                                                 </div>
                                             ) : (
                                                 filteredResults?.map((res) => (
-                                                    <SymptomRow key={res.id} label={res.label} value={values[res.id]} onSelect={(v) => handleSelect(res.id, v)} onRemove={() => handleRemove(res.id)} />
+                                                    <SymptomRow key={res.id} label={res.label} value={selectedSymptoms[res.id] as Intensity} onSelect={(v) => handleSelect(res.id, v)} onRemove={() => handleRemove(res.id)} />
                                                 ))
                                             )}
                                         </div>
@@ -196,7 +203,7 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
                                                 </div>
                                                 <div className="space-y-3 overflow-y-auto pr-3 custom-scrollbar max-h-[340px]">
                                                     {SYMPTOMS_BY_PART[selectedPart]?.map((s) => (
-                                                        <SymptomRow key={s} label={t(s)} value={values[s]} onSelect={(v) => handleSelect(s, v)} onRemove={() => handleRemove(s)} />
+                                                        <SymptomRow key={s} label={t(s)} value={selectedSymptoms[s] as Intensity} onSelect={(v) => handleSelect(s, v)} onRemove={() => handleRemove(s)} />
                                                     ))}
                                                 </div>
                                             </>
@@ -213,7 +220,7 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
                                                 <SymptomRow
                                                     key={s.label}
                                                     label={t(s.label)}
-                                                    value={values[s.label]}
+                                                    value={selectedSymptoms[s.label] as Intensity}
                                                     onSelect={(v) => handleSelect(s.label, v)}
                                                     onRemove={() => handleRemove(s.label)}
                                                 />
@@ -224,10 +231,10 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
                             </AnimatePresence>
                         </div>
 
-                        <ActiveLog values={values} activeSymptomsCount={activeSymptomsCount} handleRemove={handleRemove} />
+                        <ActiveLog values={selectedSymptoms as unknown as Record<string, Intensity>} activeSymptomsCount={activeSymptomsCount} handleRemove={handleRemove} />
 
                         <button
-                            onClick={() => onComplete(values)}
+                            onClick={onComplete}
                             disabled={activeSymptomsCount === 0}
                             className={`w-full py-4 rounded-2xl font-black tracking-widest text-xs flex items-center justify-center gap-2 transition-all duration-300 ${
                                 activeSymptomsCount > 0
@@ -254,12 +261,7 @@ export default function BodySymptomSelector({ age, gender, onComplete }: BodySym
             </AnimatePresence>
 
             <style>{`
-                .biometric-scanner svg [id] { cursor: crosshair !important; transition: fill 0.3s ease; }
-                .biometric-scanner svg [id]:hover { fill: rgba(173,123,189,0.4) !important; }
-                @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-                .animate-spin-slow { animation: spin 4s linear infinite; }
-                .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(173, 123, 189, 0.2); border-radius: 10px; }
+                .biometric-scanner svg [id] { cursor: crosshair; }
             `}</style>
         </section>
     );
