@@ -58,6 +58,14 @@ export const router = createBrowserRouter([
                             }
                         },
                     },
+                    {
+                        path: "assessments",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Assessment/assessments-history-page.tsx')).default,
+                            }
+                        }
+                    }
                 ]
             }
         ]

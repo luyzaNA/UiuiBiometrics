@@ -64,6 +64,11 @@ class AssessmentModel(BaseModel):
         )
     )
 
+    wellness_score: float = Field(
+        default=100.0,
+        description="Overall health score calculated as 100 - sum(intensity * weight). Lower means higher risk."
+    )
+
     predicted_deficiencies: Dict[str, float] = Field(
         default_factory=dict,
         description="A map of micro-nutrients (vitamins/minerals) and their predicted deficiency probabilities."

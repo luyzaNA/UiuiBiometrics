@@ -5,6 +5,7 @@ from uuid import uuid4
 from src.http_handlers.assessment_request import CreateAssessmentRequest
 from src.models.assessment.assessment_model import AssessmentModel
 from src.repositories.assessment_repository import AssessmentRepository
+from src.utils.calculate_wellness_score import calculate_wellness_score
 from src.utils.deficiencies_detection import detect_deficiencies
 from src.utils.enums import AssessmentStatus
 from src.utils.time import current_millis
@@ -26,10 +27,12 @@ class AssessmentService:
     def create_assessment(self, request: CreateAssessmentRequest, cognito_sub: str) -> AssessmentModel:
         current_date: int = current_millis()
 
+        computed_wellness_score = calculate_wellness_score(request.symptoms)
+
         symptom_red_flags = evaluate_medical_red_flags(request.symptoms)
 
         if symptom_red_flags:
-            logger.warning(f"[TRIAGE] Red Flag detectat la nivel de simptome brute. Se oprește rularea ML.")
+            logger.warning(f"[TRIAGE] Detected red flag.")
 
             early_assessment = AssessmentModel(
                 pk=f"USER#{cognito_sub}",
@@ -41,6 +44,7 @@ class AssessmentService:
                 gender=request.gender,
                 symptoms=request.symptoms,
                 predicted_deficiencies={},
+                wellness_score=0,
                 status=AssessmentStatus.RED_FLAG_TRIGGERED,
                 has_red_flags=True,
                 red_flag_details=symptom_red_flags,
@@ -57,7 +61,6 @@ class AssessmentService:
         )
 
         systemic_red_flags = evaluate_multi_deficiency_alerts(predictions)
-
         has_alerts = len(systemic_red_flags) > 0
         status_flux = AssessmentStatus.RED_FLAG_TRIGGERED if has_alerts else AssessmentStatus.PENDING
 
@@ -71,6 +74,7 @@ class AssessmentService:
             gender=request.gender,
             symptoms=request.symptoms,
             predicted_deficiencies=predictions,
+            wellness_score=computed_wellness_score,
             status=status_flux,
             has_red_flags=has_alerts,
             red_flag_details=systemic_red_flags,
@@ -79,8 +83,13 @@ class AssessmentService:
         )
 
         new_assessment.sk = f"ASSESS#{new_assessment.assessment_id}"
-
         return self.assessment_repository.create_assessment(new_assessment)
 
     def get_assessment_by_id(self, assessment_id: str, cognito_sub: str) -> AssessmentModel:
         return self.assessment_repository.get_by_id(cognito_sub=cognito_sub, assessment_id=assessment_id)
+
+    def get_user_assessments(self, cognito_sub: str) -> list[AssessmentModel]:
+        """
+        Retrieve the complete history of assessments for a given user.
+        """
+        return self.assessment_repository.get_all_by_user(cognito_sub=cognito_sub)

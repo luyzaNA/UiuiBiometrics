@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import type {AssessmentI} from "@/models/assesment-model.ts";
 
 export interface CreateAssessmentRequest {
     target_person: string;
@@ -21,6 +22,14 @@ export const assessmentService = {
      */
     async getById(assessmentId: string): Promise<any> {
         const response = await apiClient.get<any>(`/assessments/${assessmentId}`);
+        return response.data;
+    },
+
+    /**
+     * GET /api/assessments
+     */
+    async getAll(): Promise<{ data: AssessmentI[] }> {
+        const response = await apiClient.get<{ data: AssessmentI[] }>("/assessments");
         return response.data;
     }
 };

@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Users, Check, ArrowRight } from "lucide-react";
+import { User, Users, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { assessmentService } from "@/services/assessment-service.ts";
 
 export type RecipientType = "me" | "other" | null;
 
@@ -20,6 +22,35 @@ export function RecipientStep({
                                   onNext
                               }: RecipientStepProps) {
     const { t } = useTranslation();
+
+    const [existingPersons, setExistingPersons] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchExistingPersons = async () => {
+            try {
+                setIsLoading(true);
+                const response = await assessmentService.getAll();
+
+                const assessmentsArray = Array.isArray(response) ? response : (response?.data || []);
+
+                const names = Array.from(new Set(assessmentsArray.map((a: any) => a.targetPerson)))
+                    .filter((name: string) =>
+                        name &&
+                        name.toLowerCase() !== "principal" &&
+                        name.toLowerCase() !== "me"
+                    );
+
+                setExistingPersons(names);
+            } catch (error) {
+                console.error("Failed to fetch assessment history:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchExistingPersons();
+    }, []);
 
     const isNextDisabled =
         !recipientType ||
@@ -87,19 +118,55 @@ export function RecipientStep({
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="w-full max-w-md flex flex-col gap-2 bg-secondary/[0.02] border border-secondary/10 p-6 rounded-3xl backdrop-blur-sm overflow-hidden"
+                        className="w-full max-w-md flex flex-col gap-4 bg-secondary/[0.02] border border-secondary/10 p-6 rounded-3xl backdrop-blur-sm overflow-hidden"
                     >
-                        <label className="text-[10px] font-mono font-black tracking-widest text-secondary/40 uppercase flex justify-between">
-                            <span>{t("Name / Pseudonym")}</span>
-                            <span className="text-primary text-[9px] lowercase font-normal italic">{t("*required")}</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={personName}
-                            onChange={(e) => setPersonName(e.target.value)}
-                            placeholder={t("e.g., Andrew, Jane, etc.")}
-                            className="w-full px-4 py-3 bg-secondary-foreground/20 border border-secondary/10 rounded-xl font-mono text-xs text-secondary focus:outline-none focus:border-primary transition-colors"
-                        />
+                        {isLoading ? (
+                            <div className="text-center text-xs font-mono text-secondary/40 py-2">
+                                {t("Loading...")}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2 w-full">
+
+                                    <span className="text-primary text-[8px] lowercase font-normal italic">
+                                        {t("*required")}
+                                    </span>
+
+                                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                                    {existingPersons.length > 0 && (
+                                        <div className="flex-1 flex flex-col gap-2">
+                                            <label className="text-[10px] font-mono font-black tracking-widest text-secondary/40 uppercase min-h-[16px] flex items-center">
+                                                {t("Existing Profile")}
+                                            </label>
+                                            <div className="relative">
+                                                <select
+                                                    value={existingPersons.includes(personName) ? personName : ""}
+                                                    onChange={(e) => setPersonName(e.target.value)}
+                                                    className="w-full appearance-none px-4 py-3 pr-10 bg-secondary-foreground/20 border border-secondary/10 rounded-xl font-mono text-xs text-secondary focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                                                >
+                                                    <option value="">{t("Select...")}</option>
+                                                    {existingPersons.map((name) => (
+                                                        <option key={name} value={name}>{name}</option>
+                                                    ))}
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/50 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <label className="text-[10px] font-mono font-black tracking-widest text-secondary/40 uppercase min-h-[16px] flex items-center w-full">
+                                            {t("Name / Pseudonym")}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={personName}
+                                            onChange={(e) => setPersonName(e.target.value)}
+                                            placeholder={t("e.g., Andrew, Jane, etc.")}
+                                            className="w-full px-4 py-3 bg-secondary-foreground/20 border border-secondary/10 rounded-xl font-mono text-xs text-secondary focus:outline-none focus:border-primary transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                            </div>                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

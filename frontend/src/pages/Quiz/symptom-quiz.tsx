@@ -8,8 +8,6 @@ import { AgeStep } from "@/components/symptom-quiz/age-step.tsx";
 import { GenderStep } from "@/components/symptom-quiz/gender-step.tsx";
 import BodySymptomSelector from "@/components/mannequin.tsx";
 
-// 🔥 IMPORTĂ COMPONENTA DE REZULTATE PE CARE AM CREAT-O
-
 import { profileService } from "@/services/profile-service.ts";
 import { Gender, type ProfileI } from "@/models/profile-model.ts";
 import { toast } from "sonner";
@@ -78,18 +76,12 @@ export default function SymptomQuizWizard() {
                 symptoms: formattedSymptoms
             };
 
-            console.log("🚀 Payload trimis către Backend:", payload);
-
             const result = await assessmentService.create(payload);
-
-            console.log("✅ === REZULTAT ANALIZĂ ML ===", result);
             toast.success(t("Analysis complete!"));
 
-            // 🔥 SALVĂM REZULTATUL ÎN STATE. Asta va declanșa automat afișarea paginii noi
             setAnalysisResult(result);
 
         } catch (error) {
-            console.error("❌ Eroare la trimiterea către ML:", error);
             toast.error(t("Failed to analyze symptoms. Please try again."));
         } finally {
             setIsAnalyzing(false);
@@ -161,8 +153,6 @@ export default function SymptomQuizWizard() {
         }
     };
 
-    // 🔥 SCURTCIRCUITARE: Dacă backend-ul ne-a trimis rezultatele,
-    // oprim randarea formularului și trimitem utilizatorul direct pe pagina de rezultate.
     if (analysisResult) {
         return <AssessmentResultsPage data={analysisResult} />;
     }

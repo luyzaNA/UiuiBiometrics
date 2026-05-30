@@ -309,7 +309,32 @@
   "Medical Disclaimer:": "Medical Disclaimer:",
   "This analysis is for informational guidance only and based on AI pattern matching of your symptoms. It does not replace a formal medical diagnosis. Any clinical decisions, laboratory testing, or treatment plans should strictly be evaluated and approved by a qualified physician.": "This analysis is for informational guidance only and based on AI pattern matching of your symptoms. It does not replace a formal medical diagnosis. Any clinical decisions, laboratory testing, or treatment plans should strictly be evaluated and approved by a qualified physician.",
   "Systemic alert: Multiple critical nutrient vulnerabilities detected, indicating a deeply compromised general health condition." : "Systemic alert: Multiple critical nutrient vulnerabilities detected, indicating a deeply compromised general health condition.",
-"The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient."  : "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient."
+  "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient."  : "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient.",
+  "WELLNESS SCORE (%)" : "WELLNESS SCORE (%)",
+  "EVOLUTION IN TIME" :  "EVOLUTION IN TIME",
+  "Wellness score evolution in time" : "Wellness score evolution in time",
+  "Select profile and the desired assessment" : "Select profile and the desired assessment",
+  "My Profile" : "My Profile",
+  "All history" : "All history",
+  "Latest" : "NEW",
+  "No data available for this profile." : "No data available for this profile.",
+  "You haven't completed any health assessments yet." : "You haven't completed any health assessments yet.",
+  "No assessments found" : "No assessments found",
+  "Oops! Something went wrong" : "Oops! Something went wrong",
+  "We couldn't load the assessments. Please check your connection or try again." : "We couldn't load the assessments. Please check your connection or try again.",
+  "Loading your health profiles..." : "Loading your health profiles...",
+  "Health Profile" : "Health profile",
+  "Nutritional Deficiencies" : "Nutritional deficiencies",
+  "⚠ Attention Required" : "⚠ Attention required",
+  "✓ Stable General State" : "✓ Stable general state",
+  "feminine" : "feminine",
+  "masculine" : "masculine",
+  "Red flags" : "Red flags",
+  "Detailed Deficiencies" : "Deficiencies detailed report",
+  "Symptoms Severity" : "Symptoms Severity",
+  "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention." : "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention.",
+  "Select..." : "Select...",
+  "e.g., Andrew, Jane, etc." : "e.g., Andrew, Jane, etc."
 
 
 

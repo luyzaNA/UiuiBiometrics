@@ -309,8 +309,32 @@
   "Medical Disclaimer:" : "Notă medicală importantă:",
   "This analysis is for informational guidance only and based on AI pattern matching of your symptoms. It does not replace a formal medical diagnosis. Any clinical decisions, laboratory testing, or treatment plans should strictly be evaluated and approved by a qualified physician." : "Această analiză este doar orientativă și se bazează pe potrivirea tiparelor AI a simptomelor tale. Nu înlocuiește un diagnostic medical formal. Orice decizie clinică, testare de laborator sau plan de tratament trebuie strict evaluat și aprobat de un medic calificat.",
   "Systemic alert: Multiple critical nutrient vulnerabilities detected, indicating a deeply compromised general health condition." : "Alertă sistemică: Multiple vulnerabilități nutriționale critice detectate, indicând o condiție de sănătate generală profund compromisă.",
-    "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient." : "Procentul reprezintă riscul estimat de carență pentru fiecare micronutrient."
-
+  "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient." : "Procentul reprezintă riscul estimat de carență pentru fiecare micronutrient.",
+  "WELLNESS SCORE (%)" : "SCOR DE BUNĂSTARE (%)",
+  "EVOLUTION IN TIME" : "EVOLUȚIA ÎN TIMP",
+  "Wellness score evolution in time" : "Evoluția scorului de bunăstare în funcție de timp",
+  "Select profile and the desired assessment" : "Selectează profilul și evaluarea dorită",
+  "My Profile" : "Profilul meu",
+  "All history": "Tot istoricul",
+  "Latest" : "NOU",
+  "No data available for this profile." : "Nu există date disponibile pentru acest profil.",
+  "You haven't completed any health assessments yet." : "Nu ai completat încă nicio evaluare.",
+  "No assessments found" : "Nu s-au găsit evaluări",
+  "Oops! Something went wrong" : "Ups! Ceva nu a mers bine",
+  "We couldn't load the assessments. Please check your connection or try again." : "Nu am putut încărca evaluările. Verifică-ți conexiunea sau încearcă din nou.",
+  "Loading your health profiles..." : "Se încarcă profilurile tale de sănătate...",
+  "Health Profile": "Profil de sănătate",
+  "Nutritional Deficiencies" : "Deficiențe nutriționale",
+  "⚠ Attention Required" : "⚠ Atenție necesară",
+  "✓ Stable General State" : "✓ Stare generală stabilă",
+  "feminine" : "feminin",
+  "masculine" : "masculin",
+  "Red flags" : "Semnale de alarmă",
+  "Detailed Deficiencies" : "Raport detaliat al deficiențelor",
+  "Symptoms Severity" : "Severitatea simptomelor",
+  "Note: The presence of red flags indicates possible acute conditions that require immediate medical attention." : "Notă: Prezența semnalelor de alarmă indică posibile condiții acute care necesită atenție medicală imediată.",
+  "Select..." : "Selectează...",
+  "e.g., Andrew, Jane, etc." : "ex: Andrei, Ioana etc."
 
 
   }

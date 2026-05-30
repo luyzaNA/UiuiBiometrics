@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import {Activity, Heart} from "lucide-react";
 import { MedicalAlert } from "@/components/medical-alert.tsx";
-import PlanSelectionSection from "@/pages/Assessment/sections/plan-selectiion.section.tsx";
+import PlanSelectionSection from "@/pages/Assessment/sections/plan-selection-section.tsx";
 import {SYMPTOM_MAPPER} from "@/utils/symptoms_wrap.ts";
 import {useUser} from "@/hooks/use-user.ts";
 

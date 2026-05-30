@@ -4,6 +4,8 @@ import json
 from decimal import Decimal
 from uuid import UUID
 
+from boto3.dynamodb.conditions import Key
+
 from src.http_handlers.exceptions import NotFoundException
 from src.models.assessment.assessment_model import AssessmentModel
 from src.repositories.base_repository import BaseRepository
@@ -53,6 +55,7 @@ class AssessmentRepository(BaseRepository):
 
         return self.convert_to_assessment_model(item)
 
+
     def convert_to_assessment_model(self, item: dict) -> AssessmentModel:
         """Convert DynamoDB dict back to AssessmentModel Pydantic object."""
 
@@ -72,9 +75,26 @@ class AssessmentRepository(BaseRepository):
             gender=Gender(item.get("gender")),
             symptoms=symptoms,
             predicted_deficiencies=predictions,
+
+            wellness_score=float(item.get("wellness_score", 100.0)),
+
             status=item.get("status", AssessmentStatus.PENDING),
             has_red_flags=bool(item.get("has_red_flags", False)),
             red_flag_details=item.get("red_flag_details", []),
             created_at=int(item.get("created_at", 0)),
             updated_at=int(item.get("updated_at", 0)),
         )
+
+    def get_all_by_user(self, cognito_sub: str) -> list[AssessmentModel]:
+        """
+        Fetch ALL assessments for a specific user.
+        """
+        pk = f"USER#{cognito_sub}"
+
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(pk) & Key(self.sk_key).begins_with("ASSESS#")
+        )
+
+        items = response.get("Items", [])
+
+        return [self.convert_to_assessment_model(item) for item in items]

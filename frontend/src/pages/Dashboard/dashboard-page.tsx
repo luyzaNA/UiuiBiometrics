@@ -6,11 +6,13 @@ import { useUser } from "@/hooks/use-user.ts";
 import { profileService } from "@/services/profile-service.ts";
 import { Greeting } from "@/components/greeting";
 import { Daily_quote } from "@/components/daily_quote";
+import {useNavigate} from "react-router-dom";
 
 export default function DashboardPage() {
     const { t } = useTranslation();
     const { user, isAuthenticated } = useUser();
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadDashboardProfile = async () => {
@@ -88,7 +90,7 @@ export default function DashboardPage() {
                     <motion.button
                         whileHover={{ scale: 1.01, y: -1 }}
                         whileTap={{ scale: 0.99 }}
-                        onClick={() => window.location.href = "/analytics"}
+                        onClick={() => navigate('/assessments')}
                         className="group flex items-center gap-3 bg-primary/90 hover:bg-primary/96 text-secondary px-10 py-3.5 rounded-full font-medium text-xs uppercase tracking-[0.15em] shadow-[0_10px_30px_rgba(147,51,234,0.15)]  transition-all duration-300 cursor-pointer"
                     >
                         <BarChart3 className="w-3.5 h-3.5 opacity-80" />
