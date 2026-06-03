@@ -130,6 +130,20 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
+  foodMenuRouter:
+    handler: src/http_handlers/food_menu/routes.handler
+    timeout: 29
+    events:
+      - httpApi:
+          path: /api/menu/food
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu/food/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}

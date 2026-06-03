@@ -15,6 +15,7 @@ interface AssessmentResultsProps {
         redFlagDetails?: string[];
         predictedDeficiencies?: Record<string, number>;
         status?: string;
+        assessmentId?: string;
     };
 }
 
@@ -235,7 +236,12 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
                 </div>
             </div>
 
-            <PlanSelectionSection></PlanSelectionSection>
+            {deficiencies?.some(d => d.riskScore >= 50) && (
+                <PlanSelectionSection
+                    assessmentId={data?.assessmentId || "placeholder-id"}
+                    deficiencies={deficiencies}
+                />
+            )}
         </div>
     );
 }

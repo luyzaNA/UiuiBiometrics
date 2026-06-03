@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class Role(str, Enum):
     """Roles matching Cognito Groups."""
     ADMIN = "admin"
@@ -39,3 +38,13 @@ class AssessmentStatus(str, Enum):
     RED_FLAG_TRIGGERED = "RED_FLAG_TRIGGERED"
     PENDING_DOCTOR = "PENDING_DOCTOR"
     DOCTOR_REVIEWED = "DOCTOR_REVIEWED"
+
+class MenuType(str, Enum):
+    FOOD_ITEMS = "FOOD_ITEMS"
+    MEALS = "MEALS"
+
+class MenuStatus(str, Enum):
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    ARCHIVED = "ARCHIVED"
+    COMPLETED = "COMPLETED"

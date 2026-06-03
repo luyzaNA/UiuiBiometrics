@@ -1,4 +1,4 @@
-import { Activity } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import type { AssessmentI } from "@/models/assesment-model.ts";
@@ -22,7 +22,7 @@ export default function HistoryCharts({ assessments }: { assessments: Assessment
             <Card className="shadow-sm border-secondary-foreground/10 overflow-hidden bg-secondary">
                 <CardHeader className="pb-4 bg-transparent border-b border-secondary-foreground/5">
                     <CardTitle className="text-sm font-bold uppercase tracking-wider text-secondary-foreground flex items-center gap-2">
-                        <Activity className="text-primary" size={18} />
+                        <TrendingUp className="text-primary" size={18} />
                         {t("Wellness score evolution in time")}
                     </CardTitle>
                 </CardHeader>

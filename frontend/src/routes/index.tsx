@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import {authLoader} from "@/loaders/auth-loader.ts";
+import { authLoader } from "@/loaders/auth-loader.ts";
 
 export const router = createBrowserRouter([
     {
@@ -22,7 +22,6 @@ export const router = createBrowserRouter([
                     }
                 },
             },
-
             {
                 loader: authLoader,
                 children: [
@@ -51,10 +50,18 @@ export const router = createBrowserRouter([
                         },
                     },
                     {
-                        path: "quiz",
+                        path: "assessment/:assessmentId",
                         lazy: async () => {
                             return {
                                 Component: (await import('@/pages/Assessment/assessment-results-page.tsx')).default,
+                            }
+                        },
+                    },
+                    {
+                        path: "assessment/:assessmentId/targeted-foods",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Menu/targeted-food-page.tsx')).default,
                             }
                         },
                     },
