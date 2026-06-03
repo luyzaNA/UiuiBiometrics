@@ -13,7 +13,7 @@ export const ActionCard = ({
     return (
         <button
             onClick={onClick}
-            className={`group flex flex-col text-left p-4 rounded-xl transition-all hover:scale-[1.02] ${
+            className={`group flex flex-col text-left p-4 rounded-xl transition-all hover:scale-[1.02] hover:cursor-pointer ${
                 isPrimary
                     ? "bg-primary hover:bg-primary/90 text-secondary shadow-md shadow-primary/20"
                     : "bg-secondary/5 hover:bg-secondary/10 border border-secondary/10"

@@ -1,46 +1,39 @@
 from src.auth.auth import inject_user, require_roles, require_role_categories
 from src.http_handlers.common import bad_request, internal_server_error, ok
 from src.models.user import User
-from src.services.assessment_service import AssessmentService
+from src.services.food_menu_service import FoodMenuService
 from src.utils.constants.models import MODEL_EXCLUDED_KEYS
 from src.utils.enums import Role, RoleCategory
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-assessment_service = AssessmentService()
+food_menu_service = FoodMenuService()
 
 @inject_user()
 @require_role_categories({RoleCategory.USER})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
-    """
-    Handler for GET /assessments endpoint.
-    Supports optional query parameter: ?target_person=Principal
-    """
     try:
-        logger.info("[GET_ASSESSMENTS] Started for Cognito Sub: %s", user.sub)
-
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
 
-        assessments = assessment_service.get_user_assessments(
+        if not target_person:
+            return bad_request("Missing 'target_person' query parameter.")
+
+        logger.info("[GET_MENU_HISTORY] Fetching for Sub: %s, Target: %s", user.sub, target_person)
+
+        menus = food_menu_service.get_history_by_person(
             cognito_sub=user.sub,
             target_person=target_person
         )
 
-        logger.info(
-            "[GET_ASSESSMENTS] Found %d assessments for Sub: %s (Filter: %s)",
-            len(assessments), user.sub, target_person or "None"
-        )
-
         serialized_data = [
-            assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
-            for assessment in assessments
+            menu.model_dump(exclude=MODEL_EXCLUDED_KEYS)
+            for menu in menus
         ]
 
         return ok(data=serialized_data)
 
-    except Exception:  # pylint: disable=broad-except
-        logger.exception("[GET_ASSESSMENTS] Failed. Internal server error.")
+    except Exception:
+        logger.exception("[GET_MENU_HISTORY] Failed to fetch menu history.")
         return internal_server_error()

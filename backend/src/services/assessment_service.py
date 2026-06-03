@@ -158,8 +158,18 @@ class AssessmentService:
         assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
         return assessment
 
-    def get_user_assessments(self, cognito_sub: str) -> list[AssessmentModel]:
-        assessments = self.assessment_repository.get_all_by_user(cognito_sub=cognito_sub)
+    def get_user_assessments(self, cognito_sub: str, target_person: str = None) -> list[AssessmentModel]:
+        """
+        Fetch assessments for a user, optionally filtered by target_person.
+        """
+        if target_person:
+            logger.info(f"[ASSESSMENT_SERVICE] Fetching assessments for {cognito_sub} filtered by {target_person}")
+            assessments = self.assessment_repository.get_by_target_person(cognito_sub=cognito_sub, target_person=target_person)
+        else:
+            logger.info(f"[ASSESSMENT_SERVICE] Fetching ALL assessments for {cognito_sub}")
+            assessments = self.assessment_repository.get_all_by_user(cognito_sub=cognito_sub)
+
         for assessment in assessments:
             assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
+
         return assessments

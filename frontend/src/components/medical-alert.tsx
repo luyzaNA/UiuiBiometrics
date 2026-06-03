@@ -45,13 +45,10 @@ export const MedicalAlert = ({ redFlags }: MedicalAlertProps) => {
                     <p className="text-sm font-semibold text-secondary-foreground/70 mb-4">
                         {t("What should you do now?")}
                     </p>
-                    <a
-                        href="tel:112"
-                        className="inline-flex items-center justify-center gap-2 bg-destructive text-secondary font-bold uppercase tracking-wider px-6 py-4 rounded-xl shadow-md hover:bg-destructive/90 transition-all text-sm w-full sm:w-auto"
-                    >
+                    <button className="inline-flex items-center justify-center gap-2 bg-destructive text-secondary font-bold uppercase tracking-wider px-6 py-4 rounded-xl shadow-md hover:bg-destructive/90 transition-all text-sm w-full sm:w-auto hover:cursor-pointer">
                         <FileUp size={18} />
                         {t("Send report to a doctor")}
-                    </a>
+                    </button>
                 </div>
 
             </div>

@@ -1,9 +1,23 @@
 import { ActionCard } from "@/components/action-card.tsx";
-import { Apple, Calendar, Target } from "lucide-react";
-import {useTranslation} from "react-i18next";
+import { Apple, Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-export default function PlanSelectionSection(){
+interface PlanSelectionProps {
+    assessmentId: string;
+    deficiencies: Array<{ nutrient: string; riskScore: number; status: string }>;
+}
+
+export default function PlanSelectionSection({ assessmentId, deficiencies }: PlanSelectionProps) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    const handleTargetedFoodsClick = () => {
+        navigate(`/assessment/${assessmentId}/targeted-foods`, {
+            state: { deficiencies, assessmentId }
+        });
+    };
+
     return (
         <div className="bg-secondary-foreground text-secondary rounded-2xl p-6 shadow-lg relative overflow-hidden">
             <div className="max-w-xl space-y-1.5 relative z-10">
@@ -22,7 +36,7 @@ export default function PlanSelectionSection(){
                     description={t("See the exact ingredients you need.")}
                     actionText={t("View foods")}
                     variant="outline"
-                    onClick={() => {console.log("Hei")}}
+                    onClick={handleTargetedFoodsClick}
                 />
 
                 <ActionCard
@@ -34,15 +48,7 @@ export default function PlanSelectionSection(){
                     onClick={() => {console.log("Hei")}}
                 />
 
-                <ActionCard
-                    icon={Target}
-                    title={t("Menu + goals")}
-                    description={t("Calculate calories based on your goal.")}
-                    actionText={t("Calculate")}
-                    variant="outline"
-                    onClick={() => {console.log("Hei")}}
-                />
             </div>
         </div>
     );
-};
+}

@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 from uuid import UUID
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 from src.http_handlers.exceptions import NotFoundException
 from src.models.assessment.assessment_model import AssessmentModel
@@ -101,3 +101,13 @@ class AssessmentRepository(BaseRepository):
         items = response.get("Items", [])
 
         return [self.convert_to_assessment_model(item) for item in items]
+
+    def get_by_target_person(self, cognito_sub: str, target_person: str) -> list[AssessmentModel]:
+        pk = f"USER#{cognito_sub}"
+
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(pk) & Key(self.sk_key).begins_with("ASSESS#"),
+            FilterExpression=Attr("target_person").eq(target_person)
+        )
+
+        return [self.convert_to_assessment_model(item) for item in response.get("Items", [])]

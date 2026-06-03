@@ -196,7 +196,9 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {deficiencyData.map((deficiency, index) => {
-                                const isSuccess = deficiency.value < 50;
+                                const isSuccess = deficiency.value < 30;
+                                const isWarning = deficiency.value >= 30 && deficiency.value <= 70;
+
                                 return (
                                     <div
                                         key={index}
@@ -206,14 +208,13 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                                                 : "bg-destructive/5 border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30"
                                         }`}
                                     >
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isSuccess ? "bg-success/60" : "bg-destructive/60"}`} />
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isSuccess ? "bg-success/60" : isWarning? "bg-warning/60" : "bg-destructive/60"}`} />
                                         <span className="font-semibold text-xs text-secondary-foreground pl-2">
                                         {deficiency.subject}
                                     </span>
 
                                         <div className={`px-2.5 py-1 rounded-md text-secondary-foreground border shadow-sm font-bold text-xs ${
-                                            isSuccess
-                                                ? "bg-success/40 border-secondary/20"
+                                            isSuccess ? "bg-success/40 border-secondary/20" : isWarning ? "bg-warning/40 border-secondary/20"
                                                 : "bg-destructive/40 border-secondary/20"
                                         }`}>
                                             {deficiency.value.toFixed(0)}%
