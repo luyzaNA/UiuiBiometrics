@@ -30,7 +30,6 @@ export default function HeroSection() {
                             animate="animate"
                             className="absolute top-1/2 left-1/2 w-1/2 h-[80px] bg-gradient-to-r from-primary/20 to-transparent origin-left blur-xl"
                         />
-                        {/* Solid Line */}
                         <motion.div
                             variants={rotateAnimation}
                             animate="animate"

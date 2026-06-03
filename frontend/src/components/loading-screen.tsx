@@ -13,7 +13,6 @@ export function LoadingScreen({ isLoading }: { isLoading: boolean }) {
                     }}
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505]"
                 >
-                    {/* Central Animated Aura */}
                     <motion.div
                         animate={{
                             scale: [1, 1.2, 1],
@@ -24,7 +23,6 @@ export function LoadingScreen({ isLoading }: { isLoading: boolean }) {
                     />
 
                     <div className="relative flex flex-col items-center">
-                        {/* The SVG Frequency Path */}
                         <svg width="200" height="60" viewBox="0 0 200 60" fill="none">
                             <motion.path
                                 d="M0 30H40L50 10L70 50L80 30H120L130 20L145 40L155 30H200"
@@ -45,7 +43,6 @@ export function LoadingScreen({ isLoading }: { isLoading: boolean }) {
                             />
                         </svg>
 
-                        {/* Ultra-Minimalist Text */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: [0, 1, 0] }}
@@ -56,7 +53,6 @@ export function LoadingScreen({ isLoading }: { isLoading: boolean }) {
                         </motion.div>
                     </div>
 
-                    {/* Vignette Effect */}
                     <div className="absolute inset-0 bg-radial-gradient from-transparent to-black/80 pointer-events-none" />
                 </motion.div>
             )}

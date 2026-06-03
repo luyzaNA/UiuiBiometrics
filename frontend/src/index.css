@@ -61,7 +61,6 @@
   --popover: oklch(1 0 0);
   --popover-foreground:oklch(0 0 0);
 
-  /* UPDATED */
   --primary: oklch(0.657 0.11 317.758);
   --primary-foreground: oklch(0.799 0.144 321.479);
 
@@ -72,20 +71,16 @@
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
 
-  /* UPDATED (was an orange-red destructive) */
   --destructive: oklch(0.57 0.25 27);
 
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
 
-  /* UPDATED (your ring is orange-tinted) */
   --ring: oklch(0.6928 0.1478 43.6);
 
-  /* CHART COLORS — updated the ones that matched your old orange */
   --chart-1: oklch(0.788 0.134 48.228);
   --chart-2: oklch(0.733 0.158 44.996);
 
-  /* UPDATED */
   --chart-3: oklch(0.682 0.167 45.157);
   --chart-4: oklch(0.642 0.174 43.747);
   --chart-5: oklch(0.47 0.157 37.304);
@@ -93,7 +88,6 @@
   --sidebar: oklch(1 0 0);
   --sidebar-foreground:oklch(0 0 0);
 
-  /* UPDATED */
   --sidebar-primary: oklch(0.6928 0.1478 43.6);
   --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
 
@@ -101,7 +95,6 @@
   --sidebar-accent-foreground: oklch(0 0 0 );
   --sidebar-border: oklch(0.92 0.004 286.32);
 
-  /* UPDATED */
   --sidebar-ring: oklch(0.6928 0.1478 43.6);
 
   --navbar: oklch(1 0 0);
@@ -109,11 +102,11 @@
 
   --success: oklch(0.55 0.22 130);
   --success-foreground: oklch(0.95 0 130);
-  --error: oklch(0.57 0.25 27); /* similar to destructive */
+  --error: oklch(0.57 0.25 27);
   --error-foreground: oklch(0.98 0 27);
   --warning: oklch(0.713 0.157 64.888);
   --warning-foreground: oklch(0.98 0.02 75);
-  --info: oklch(0.60 0.18 230); /* blue-ish */
+  --info: oklch(0.60 0.18 230);
   --info-foreground: oklch(0.98 0 230);
   --caution: oklch(0.864 0.118 93.734);
   --caution-foreground: oklch(0.98 0.01 95);
@@ -136,7 +129,6 @@
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
-/* WebKit (Chrome, Edge, Safari) scrollbar styling */
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -157,17 +149,14 @@
   background-color: rgba(156, 163, 175, 0.7);
 }
 
-/* Additional styling for better visual consistency */
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* Ensure smooth scrolling behavior */
 html {
   scroll-behavior: smooth;
 }
 
-/* Override any conflicting styles that might reset scrollbar appearance */
 body {
   scrollbar-width: thin !important;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent !important;

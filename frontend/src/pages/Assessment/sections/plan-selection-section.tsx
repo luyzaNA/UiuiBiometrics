@@ -13,7 +13,13 @@ export default function PlanSelectionSection({ assessmentId, deficiencies }: Pla
     const navigate = useNavigate();
 
     const handleTargetedFoodsClick = () => {
-        navigate(`/assessment/${assessmentId}/targeted-foods`, {
+        navigate(`/assessment/${assessmentId}/food-base-menu`, {
+            state: { deficiencies, assessmentId }
+        });
+    };
+
+    const handleMealBankClick = () => {
+        navigate(`/assessment/${assessmentId}/meal-base-menu`, {
             state: { deficiencies, assessmentId }
         });
     };
@@ -45,9 +51,8 @@ export default function PlanSelectionSection({ assessmentId, deficiencies }: Pla
                     description={t("Unify all needs in a daily menu.")}
                     actionText={t("Generate menu")}
                     variant="primary"
-                    onClick={() => {console.log("Hei")}}
+                    onClick={handleMealBankClick}
                 />
-
             </div>
         </div>
     );

@@ -9,17 +9,14 @@ export default function RootLayout() {
     const navigation = useNavigation();
     const auth = useAuth();
 
-    // Logic: We show the loader if the router is fetching a page OR auth is checking the session
     const isActuallyLoading = navigation.state === "loading" || auth.isLoading;
 
-    // This state controls the mounting/unmounting for the exit animation
     const [visible, setVisible] = useState(isActuallyLoading);
 
     useEffect(() => {
         if (isActuallyLoading) {
             setVisible(true);
         } else {
-            // Small delay to ensure the exit animation from LoadingScreen feels "Wow"
             const timeout = setTimeout(() => setVisible(false), 800);
             return () => clearTimeout(timeout);
         }
@@ -29,7 +26,6 @@ export default function RootLayout() {
         <>
             <LoadingScreen isLoading={visible} />
 
-            {/* Render the app only when auth is initialized to avoid UI flickering */}
             {!auth.isLoading && (
                 <Layout>
                     <Outlet />

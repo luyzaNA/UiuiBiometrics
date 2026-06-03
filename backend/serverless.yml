@@ -130,17 +130,17 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
-  foodMenuRouter:
-    handler: src/http_handlers/food_menu/routes.handler
+  menuRouter:
+    handler: src/http_handlers/menu/routes.handler
     timeout: 29
     events:
       - httpApi:
-          path: /api/menu/food
+          path: /api/menu
           method: ANY
           authorizer:
             name: serviceAuthorizer
       - httpApi:
-          path: /api/menu/food/{proxy+}
+          path: /api/menu/{proxy+}
           method: ANY
           authorizer:
             name: serviceAuthorizer
