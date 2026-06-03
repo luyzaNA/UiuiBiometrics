@@ -50,6 +50,14 @@ export const router = createBrowserRouter([
                         },
                     },
                     {
+                        path: "assessments",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Assessment/assessments-history-page.tsx')).default,
+                            }
+                        }
+                    },
+                    {
                         path: "assessment/:assessmentId",
                         lazy: async () => {
                             return {
@@ -58,18 +66,18 @@ export const router = createBrowserRouter([
                         },
                     },
                     {
-                        path: "assessment/:assessmentId/targeted-foods",
+                        path: "assessment/:assessmentId/food-base-menu",
                         lazy: async () => {
                             return {
-                                Component: (await import('@/pages/Menu/targeted-food-page.tsx')).default,
+                                Component: (await import('@/pages/Menu/food-base/food-base-page.tsx')).default,
                             }
                         },
                     },
                     {
-                        path: "assessments",
+                        path: "assessment/:assessmentId/meal-base-menu",
                         lazy: async () => {
                             return {
-                                Component: (await import('@/pages/Assessment/assessments-history-page.tsx')).default,
+                                Component: (await import('@/pages/Menu/meal-base/meal-base-page.tsx')).default,
                             }
                         }
                     }

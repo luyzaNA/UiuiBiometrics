@@ -219,7 +219,6 @@ export function Header() {
                                     onMouseLeave={() => setIsProfileOpen(false)}
                                 >
                                     <button className="group relative flex items-center gap-3 py-1 px-3 cursor-pointer outline-none z-[120]">
-                                        {/* 5. Am adăugat `overflow-hidden` și logica de afișare a pozei de profil */}
                                         <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary text-secondary flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-500 group-hover:scale-105 overflow-hidden">
                                             {avatarUrl ? (
                                                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />

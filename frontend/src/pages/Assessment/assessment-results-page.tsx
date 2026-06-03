@@ -152,7 +152,7 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
                                         <div className="flex justify-between items-end gap-1.5">
                                             <div className="flex flex-col items-start gap-1 min-w-0">
                                           <span
-                                              className="font-bold text-secondary-foreground text-[13px] sm:text-sm capitalize leading-none truncate w-full"
+                                              className="font-bold text-secondary-foreground text-[13px] sm:text-sm leading-none truncate w-full"
                                               title={t(item.nutrient)}
                                           >
                                             {t(item.nutrient)}

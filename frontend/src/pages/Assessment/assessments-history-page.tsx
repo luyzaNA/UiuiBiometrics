@@ -3,11 +3,12 @@ import type { AssessmentI } from "@/models/assesment-model.ts";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { assessmentService } from "@/services/assessment-service";
-import { foodBasedMenuService } from "@/services/food-based-menu-service";
+import { menuService } from "@/services/menu-service.ts";
 import AssessmentPage from "@/pages/Assessment/single-assessment-page.tsx";
 import HistoryCharts from "@/pages/Assessment/sections/history-section.tsx";
 import { formatDateMs } from "@/utils/form-data.ts";
-import TargetedFoodsProtocol from "@/pages/Menu/section/targeted-food-section.tsx";
+import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-section.tsx";
+import MealBankProtocol from "@/pages/Menu/meal-base/section/meal-base-section.tsx";
 
 export default function AssessmentsHistoryPage() {
     const { t } = useTranslation();
@@ -45,7 +46,7 @@ export default function AssessmentsHistoryPage() {
             const fetchActiveMenu = async () => {
                 try {
                     setIsLoadingMenu(true);
-                    const response = await foodBasedMenuService.getActiveByPerson(selectedPerson);
+                    const response = await menuService.getActiveMenu(selectedPerson);
                     setActiveMenu(response);
                 } catch (err) {
                     console.error("Failed to fetch protocol");
@@ -58,7 +59,7 @@ export default function AssessmentsHistoryPage() {
             const fetchHistory = async () => {
                 try {
                     setIsLoadingMenu(true);
-                    const response = await foodBasedMenuService.getHistoryByPerson(selectedPerson);
+                    const response = await menuService.getMenuHistory(selectedPerson);
                     setMenuHistory(response || []);
                 } catch (err) {
                     console.error("Failed to fetch menu history");
@@ -87,7 +88,7 @@ export default function AssessmentsHistoryPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
                 <Loader2 className="animate-spin text-primary" size={32} />
-                <p className="text-sm font-medium text-muted-foreground">{t("Curating your health data...")}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("Loading your health data...")}</p>
             </div>
         );
     }
@@ -165,7 +166,11 @@ export default function AssessmentsHistoryPage() {
                         {isLoadingMenu ? (
                             <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>
                         ) : activeMenu ? (
-                            <TargetedFoodsProtocol menuData={activeMenu} showBack={false} />
+                            activeMenu.menuType === "MEALS" || activeMenu.menu_type === "MEALS" || activeMenu.breakfasts ? (
+                                <MealBankProtocol menuData={activeMenu} showBack={false} />
+                            ) : (
+                                <TargetedFoodsProtocol menuData={activeMenu} showBack={false} />
+                            )
                         ) : (
                             <div className="text-center py-20 bg-secondary/30 rounded-3xl border border-dashed border-foreground/10">
                                 <Apple size={40} className="mx-auto mb-4 text-muted-foreground opacity-20" />
@@ -194,11 +199,16 @@ export default function AssessmentsHistoryPage() {
                                                     {t("Menu from")} {formatDateMs(menu.createdAt)}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    {menu.deficiencyTargets?.length || 0} {t("targets addressed")}
+                                                    {menu.deficiencies?.length || 0} {t("targets addressed")}
                                                 </p>
                                             </div>
                                             <span className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full ${menu.status === 'ACTIVE' ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-secondary'}`}>
-                                                {menu.status === "ACTIVE" ? t("Active") : t("Archived")}
+                                                {menu.status === "ACTIVE"
+                                                    ? t("Active")
+                                                    : menu.status === "COMPLETE"
+                                                        ? t("Complete")
+                                                        : t("Archived")
+                                                }
                                             </span>
                                         </div>
                                     ))}
@@ -217,7 +227,11 @@ export default function AssessmentsHistoryPage() {
                                     ← {t("Back to list")}
                                 </button>
                                 <div className="opacity-80">
-                                    <TargetedFoodsProtocol menuData={selectedHistoricMenu} showBack={false} />
+                                    {selectedHistoricMenu.menuType === "MEALS" || selectedHistoricMenu.menu_type === "MEALS" || selectedHistoricMenu.breakfasts ? (
+                                        <MealBankProtocol menuData={selectedHistoricMenu} showBack={false} />
+                                    ) : (
+                                        <TargetedFoodsProtocol menuData={selectedHistoricMenu} showBack={false} />
+                                    )}
                                 </div>
                             </div>
                         )}

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { type CreateFoodMenuRequest, foodBasedMenuService } from "@/services/food-based-menu-service";
-import TargetedFoodsProtocol from "@/pages/Menu/section/targeted-food-section.tsx";
+import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-section.tsx";
 import { toast } from "sonner";
+import { type CreateMenuRequest, menuService } from "@/services/menu-service.ts";
 
 export default function TargetedFoodsPage() {
     const { t, i18n } = useTranslation();
@@ -53,13 +53,13 @@ export default function TargetedFoodsPage() {
                     return;
                 }
 
-                const requestPayload: CreateFoodMenuRequest & { language?: string } = {
+                const requestPayload: CreateMenuRequest & { language?: string } = {
                     assessment_id: state.assessmentId,
                     deficiencies: formattedDeficiencies,
                     language: i18n.language || "en"
                 };
 
-                const response = await foodBasedMenuService.createFoodMenu(requestPayload);
+                const response = await menuService.createFoodMenu(requestPayload);
                 setMenuData(response);
             } catch (err) {
                 console.error("Failed to generate food");
@@ -74,16 +74,22 @@ export default function TargetedFoodsPage() {
     }, [state, t, i18n.language]);
 
     const handleAcceptChallenge = async () => {
-        if (!menuData?.menuId) return;
+        const id = menuData?.menuId || menuData?.menu_id;
+        const target = menuData?.targetPerson || menuData?.target_person;
+
+        if (!id || !target) {
+            toast.error("Missing menu data to activate.");
+            return;
+        }
 
         setIsActivating(true);
         try {
-            await foodBasedMenuService.activateMenu(menuData.menuId);
+            await menuService.activateMenu(id, target);
+
             setIsAccepted(true);
             setMenuData((prev: any) => ({ ...prev, status: "ACTIVE" }));
 
-            toast.success(t("Challenge accepted! Your new protocol is active and previous ones were moved to history."));
-
+            toast.success(t("Challenge accepted! Your new plan is active and previous ones were moved to history."));
         } catch (err) {
             toast.error(t("Something went wrong. Please try again."));
         } finally {
