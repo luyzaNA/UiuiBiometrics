@@ -48,8 +48,21 @@ class User(BaseModel):
             claims = authorizer.get("claims", {})
 
         if not claims:
-            logger.warning(f"[AUTH] No claims found in event authorizer. Authorizer payload: {authorizer}")
+            logger.warning(f"[AUTH] No claims found. Authorizer payload: {authorizer}")
             return None
+
+        groups = claims.get("cognito:groups", [])
+
+        if "custom:role" not in claims:
+            if "doctor" in groups:
+                claims["custom:role"] = Role.DOCTOR.value
+                claims["custom:roleCategory"] = RoleCategory.DOCTOR.value
+            elif "admin" in groups:
+                claims["custom:role"] = Role.ADMIN.value
+                claims["custom:roleCategory"] = RoleCategory.ADMIN.value
+            else:
+                claims["custom:role"] = Role.USER.value
+                claims["custom:roleCategory"] = RoleCategory.USER.value
 
         permissions_raw = claims.get("custom:permissions", "[]")
         try:
@@ -68,5 +81,4 @@ class User(BaseModel):
             return cls.model_validate(validated_data)
         except ValidationError as e:
             logger.error(f"[AUTH] User claims validation failed. Errors: {e.errors()}")
-            logger.debug(f"[AUTH] Raw data that failed validation: {validated_data}")
             return None

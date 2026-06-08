@@ -25,6 +25,7 @@ import {
 } from "@/utils/animations.tsx";
 import { useUser } from "@/hooks/use-user.ts";
 import { profileService } from "@/services/profile-service.ts";
+import {doctorService} from "@/services/doctor-service.ts";
 
 export function Header() {
     const { t, i18n } = useTranslation();
@@ -34,11 +35,24 @@ export function Header() {
 
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+    const isDoctor = user?.["groups"]?.includes("doctor");
+
+    const profileRoute = isDoctor ? "/doctor/profile" : "/profile";
+
     useEffect(() => {
         const loadHeaderProfile = async () => {
             if (isAuthenticated) {
                 try {
-                    const profileData = await profileService.getMe();
+                    let profileData;
+                    console.log("User în Header:", user);
+
+                    if (isDoctor) {
+                      profileData = await doctorService.getMe();
+                        console.log("Doctor profile loaded", profileData);
+                    } else {
+                        profileData = await profileService.getMe();
+                    }
+
                     setAvatarUrl(profileData?.avatarUrl || null);
                 } catch (error) {
                     console.error("Profile load failed", error);
@@ -59,7 +73,7 @@ export function Header() {
         return () => {
             window.removeEventListener("profile-updated", handleProfileUpdate);
         };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, isDoctor]);
 
     const navItems = [
         { label: t("Home"), href: "/#home" },
@@ -163,7 +177,7 @@ export function Header() {
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 <SheetClose asChild>
                                                                     <Link
-                                                                        to="/profile"
+                                                                        to={profileRoute}
                                                                         className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-secondary/[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-colors"
                                                                     >
                                                                         <User strokeWidth={1.5} className="w-5 h-5 text-secondary-foreground/70" />
@@ -255,9 +269,8 @@ export function Header() {
                                                             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">{t("Signed in as")}</p>
                                                             <p className="text-xs font-bold text-secondary-foreground truncate">{user?.email}</p>
                                                         </div>
-
                                                         <Link
-                                                            to="/profile"
+                                                            to={profileRoute}
                                                             className="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-all hover:bg-secondary/5"
                                                         >
                                                             <User className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" strokeWidth={1.5} />

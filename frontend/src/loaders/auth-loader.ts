@@ -94,7 +94,7 @@ export function checkTokenAndRedirect(): JwtPayload {
     }
 }
 
-export async function authLoader() {
+export async function baseAuthLoader() {
     if (isHostedUiPage()) {
         return null;
     }
@@ -104,4 +104,42 @@ export async function authLoader() {
     }
 
     return checkTokenAndRedirect();
+}
+
+export async function userAuthLoader() {
+    const payload = await baseAuthLoader();
+
+    if (!payload) return null;
+
+    const groups = (payload["cognito:groups"] as string[]) || [];
+
+    if (groups.includes("doctor")) {
+        console.warn("Doctors are restricted from patient routes.");
+        window.location.href = "/doctor/dashboard";
+        throw new Error("Redirecting doctor to their dashboard.");
+    }
+
+    // if (groups.includes("admin")) {
+    //     console.warn("Admins are restricted from patient routes.");
+    //     window.location.href = "/admin/dashboard";
+    //     throw new Error("Redirecting admin to admin panel.");
+    // }
+
+    return payload;
+}
+
+export async function doctorAuthLoader() {
+    const payload = await baseAuthLoader();
+
+    if (!payload) return null;
+
+    const groups = (payload["cognito:groups"] as string[]) || [];
+
+    if (!groups.includes("doctor")) {
+        console.warn("User access denied. Requires 'doctor' role.");
+        window.location.href = PUBLIC_HOME_PATH;
+        throw new Error("Redirecting non-doctor user.");
+    }
+
+    return payload;
 }

@@ -4,18 +4,27 @@ class Role(str, Enum):
     """Roles matching Cognito Groups."""
     ADMIN = "admin"
     USER = "user"
+    DOCTOR = "doctor"
 
 
 class RoleCategory(str, Enum):
     """Categories for broad permission grouping."""
     ADMIN = "admin"
     USER = "user"
+    DOCTOR = "doctor"
 
 
 class Permission(str, Enum):
     """Specific feature permissions."""
     PROFILE_CREATE = "profile:create"
     PROFILE_VIEW = "profile:view"
+
+    DOCTOR_PROFILE_CREATE = "doctor_profile:create"
+    DOCTOR_PROFILE_UPDATE = "doctor_profile:update"
+    DOCTOR_LIST_VIEW = "doctor:list"
+    PATIENT_LIST_VIEW = "patients:list"
+
+    DOCTOR_REVIEW_CREATE = "doctor_review:create"
 
     HEALTH_LOG_CREATE = "health_log:create"
     HEALTH_LOG_VIEW = "health_log:view"
