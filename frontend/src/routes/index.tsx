@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { authLoader } from "@/loaders/auth-loader.ts";
+import {userAuthLoader, doctorAuthLoader} from "@/loaders/auth-loader.ts";
 
 export const router = createBrowserRouter([
     {
@@ -23,7 +23,7 @@ export const router = createBrowserRouter([
                 },
             },
             {
-                loader: authLoader,
+                loader: userAuthLoader,
                 children: [
                     {
                         path: "profile",
@@ -80,6 +80,35 @@ export const router = createBrowserRouter([
                                 Component: (await import('@/pages/Menu/meal-base/meal-base-page.tsx')).default,
                             }
                         }
+                    },
+                    {
+                        path: "doctors",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-list-page.tsx')).default,
+                            }
+                        }
+                    }
+                ]
+             },
+            {
+                loader: doctorAuthLoader,
+                children: [
+                    {
+                        path: "doctor/profile",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-profile-page.tsx')).default,
+                            }
+                        },
+                    },
+                    {
+                        path: "doctor/dashboard",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-dashboard-page.tsx')).default,
+                            }
+                        },
                     }
                 ]
             }

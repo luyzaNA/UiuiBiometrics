@@ -4,21 +4,25 @@ import type { UserI } from "@/models/user-model.ts";
 
 export const useUser = () => {
     const auth = useAuth();
-
     const user = useMemo((): UserI | null => {
-        if (!auth.user) return null;
+        if (!auth.user || !auth.user.profile) return null;
 
         const { profile, access_token } = auth.user;
+
+        const email = (profile.email as string) || "";
+
         const groups = (profile["cognito:groups"] as string[]) || [];
-        const givenName = (profile.given_name as string) ||
-            user?.email?.split("@")[0].match(/^[a-zA-Z]+/)?.[0] ||
+        const name = (profile.given_name as string) ||
+            email.split("@")[0].match(/^[a-zA-Z]+/)?.[0] ||
             "User";
+
+        const givenName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 
         return {
             id: profile.sub || "",
-            email: (profile.email as string) || "",
+            email: email,
             familyName: (profile.family_name as string) || "",
-            givenName: givenName,
+            givenName:  givenName,
             groups,
             isAdmin: groups.includes("admin"),
             accessToken: access_token,

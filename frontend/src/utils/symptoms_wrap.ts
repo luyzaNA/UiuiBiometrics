@@ -34,5 +34,8 @@ export const SYMPTOM_MAPPER = {
     constipation: "Constipation",
     nausea: "Nausea",
     insomnia: "Insomnia",
-    lightSensitivity: "Light_Sensitivity"
+    lightSensitivity: "Light_Sensitivity",
+    pelvicPain: "Pelvic_Pain",
+    acidReflux : "Acid_Reflux",
+    stomachPain : "Stomach_Pain"
 };

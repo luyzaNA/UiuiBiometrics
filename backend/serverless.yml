@@ -24,12 +24,14 @@ provider:
         - dynamodb:BatchWriteItem
       Resource:
         - !GetAtt UiuibiometricsTable.Arn
+        - !Join [ '/', [ !GetAtt UiuibiometricsTable.Arn, 'index', '*' ] ]
     - Effect: Allow
       Action:
         - s3:PutObject
         - s3:GetObject
       Resource:
         - "arn:aws:s3:::uiui-avatars-${self:provider.stage}/*"
+
 
   httpApi:
     authorizers:
@@ -144,6 +146,20 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
+  doctorRouter:
+    handler: src/http_handlers/doctor/routes.handler
+    timeout: 29
+    events:
+      - httpApi:
+          path: /api/doctor
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
@@ -163,6 +179,10 @@ resources:
             AttributeType: S
           - AttributeName: GSI1_SK
             AttributeType: S
+          - AttributeName: GSI2_PK
+            AttributeType: S
+          - AttributeName: GSI2_SK
+            AttributeType: S
         KeySchema:
           - AttributeName: PK
             KeyType: HASH
@@ -174,6 +194,14 @@ resources:
               - AttributeName: GSI1_PK
                 KeyType: HASH
               - AttributeName: GSI1_SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: GSI2
+            KeySchema:
+              - AttributeName: GSI2_PK
+                KeyType: HASH
+              - AttributeName: GSI2_SK
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
