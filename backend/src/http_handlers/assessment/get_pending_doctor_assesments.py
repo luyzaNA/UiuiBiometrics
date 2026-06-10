@@ -11,19 +11,11 @@ logger = get_logger(__name__)
 
 assessment_service = AssessmentService()
 doctor_service = DoctorService()
-
 @inject_user()
 @require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
-    """
-    Handler for GET /assessments endpoint.
-    Supports optional query parameter: ?target_person=Principal
-    Returns assessments with populated doctorDetails.
-    """
     try:
-        logger.info("[GET_ASSESSMENTS] Started for Cognito Sub: %s", user.sub)
-
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
 
@@ -32,21 +24,14 @@ def handler(event, context, user: User):
             target_person=target_person
         )
 
-        logger.info(
-            "[GET_ASSESSMENTS] Found %d assessments for Sub: %s (Filter: %s)",
-            len(assessments), user.sub, target_person or "None"
-        )
-
         serialized_data = []
 
         for assessment in assessments:
             assessment_dict = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
 
-            doctor_id = getattr(assessment, 'doctor_id', None)
-
-            if doctor_id and doctor_id != "UNASSIGNED":
+            if assessment.doctor_id and assessment.doctor_id != "UNASSIGNED":
                 try:
-                    doctor = doctor_service.get_doctor_by_sub(doctor_id)
+                    doctor = doctor_service.get_doctor_by_sub(assessment.doctor_id)
                     if doctor:
                         assessment_dict["doctorDetails"] = {
                             "name": doctor.name,
@@ -56,19 +41,15 @@ def handler(event, context, user: User):
                         }
                     else:
                         assessment_dict["doctorDetails"] = None
-                except Exception as e:
-                    logger.warning(f"[GET_ASSESSMENTS] Failed to retrieve the doctor {doctor_id}: {e}")
+                except Exception:
                     assessment_dict["doctorDetails"] = None
             else:
                 assessment_dict["doctorDetails"] = None
 
             serialized_data.append(assessment_dict)
 
-        if serialized_data:
-            logger.info(f"[DEBUG_PAYLOAD] First item doctorDetails: {serialized_data[0].get('doctorDetails')}")
-
         return ok(data=serialized_data)
 
-    except Exception:  # pylint: disable=broad-except
-        logger.exception("[GET_ASSESSMENTS] Failed. Internal server error.")
+    except Exception:
+        logger.exception("[GET_ALL_ASSESSMENTS] Failed.")
         return internal_server_error()

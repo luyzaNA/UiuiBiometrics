@@ -173,3 +173,17 @@ class AssessmentService:
             assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
 
         return assessments
+
+    def send_to_doctor(self, cognito_sub: str, assessment_id: str, doctor_id: str = "UNASSIGNED") -> AssessmentModel:
+        """
+        Transitions the assessment to IN_REVIEW state and assigns it to a doctor (or pool).
+        """
+        current_date = current_millis()
+
+        return self.assessment_repository.assign_to_doctor(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            doctor_id=doctor_id,
+            new_status=AssessmentStatus.PENDING_DOCTOR,
+            updated_at=current_date
+        )

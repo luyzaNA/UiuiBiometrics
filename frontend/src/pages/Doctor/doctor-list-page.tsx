@@ -1,16 +1,23 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from "react-i18next";
-import { Search, Star, User, SlidersHorizontal } from 'lucide-react';
+import { Search, Star, User, SlidersHorizontal, Loader2, Check } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 import { doctorService } from "@/services/doctor-service.ts";
+import { assessmentService } from "@/services/assessment-service.ts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import type { DoctorProfileI } from "@/models/doctor-model.ts";
+import {toast} from "sonner";
 
 type SortOption = 'none' | 'price-asc' | 'price-desc' | 'rating-desc';
 
 export default function DoctorsPage() {
     const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+
+    const assessmentId = searchParams.get('assessmentId');
+
     const [doctors, setDoctors] = useState<DoctorProfileI[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -54,6 +61,12 @@ export default function DoctorsPage() {
 
     return (
         <div className="min-h-screen max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12 bg-secondary-foreground text-foreground">
+
+            {assessmentId && (
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-sm text-secondary font-medium animate-fadeIn">
+                    {t("Select a specialist below to share your report and get an expert review.")}
+                </div>
+            )}
 
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -117,7 +130,12 @@ export default function DoctorsPage() {
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                     {filteredAndSortedDoctors.map((doctor) => (
-                        <DoctorCard key={doctor.profileId} doctor={doctor} t={t} />
+                        <DoctorCard
+                            key={doctor.profileId}
+                            doctor={doctor}
+                            t={t}
+                            assessmentId={assessmentId}
+                        />
                     ))}
                 </motion.div>
             )}
@@ -125,9 +143,38 @@ export default function DoctorsPage() {
     );
 }
 
-function DoctorCard({ doctor, t }: { doctor: DoctorProfileI; t: any }) {
+interface DoctorCardProps {
+    doctor: DoctorProfileI;
+    t: any;
+    assessmentId: string | null;
+}
+
+function DoctorCard({ doctor, t, assessmentId }: DoctorCardProps) {
     const cleanName = doctor.name.replace(/^Dr\.\s*/i, "");
     const displayName = `Dr. ${cleanName}`;
+
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [isSent, setIsSent] = useState<boolean>(false);
+
+    const handleSendReport = async () => {
+        if (!assessmentId) return;
+
+        try {
+            setIsSubmitting(true);
+
+            const doctorId = doctor.cognitoSub;
+
+            await assessmentService.sendToDoctor(assessmentId, doctorId);
+
+            setIsSent(true);
+            toast.success(t("Report successfully sent to the doctor! They will review it and get back to you soon."));
+
+        } catch (error) {
+            toast.error(t("Could not assign assessment to doctor:"));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <Card className="bg-secondary/5 border-secondary/10 hover:border-primary/30 transition-all duration-300 flex flex-col justify-between group h-full">
@@ -178,9 +225,26 @@ function DoctorCard({ doctor, t }: { doctor: DoctorProfileI; t: any }) {
                         </div>
                     </div>
 
-                    <button className="px-4 py-2 bg-secondary text-secondary-foreground font-bold text-xs rounded-lg hover:bg-primary hover:text-secondary-foreground transition-colors uppercase tracking-wider hover:cursor-pointer">
-                        {t("Send the report")}
-                    </button>
+                    {isSent ? (
+                        <div className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-500/10 text-emerald-500 font-bold text-xs rounded-lg border border-emerald-500/20 uppercase tracking-wider">
+                            <Check size={14} />
+                            {t("Sent")}
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleSendReport}
+                            disabled={isSubmitting || !assessmentId}
+                            className={`px-4 py-2 font-bold text-xs rounded-lg uppercase tracking-wider transition-colors flex items-center gap-2
+                                ${assessmentId
+                                ? 'bg-secondary text-secondary-foreground hover:bg-primary hover:text-secondary-foreground hover:cursor-pointer'
+                                : 'bg-secondary/20 text-muted-foreground cursor-not-allowed opacity-50'
+                            }`}
+                            title={!assessmentId ? t("No active assessment report to send.") : ""}
+                        >
+                            {isSubmitting && <Loader2 size={14} className="animate-spin" />}
+                            {assessmentId ? t("Send the report") : t("View Profile")}
+                        </button>
+                    )}
                 </div>
             </CardContent>
         </Card>

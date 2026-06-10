@@ -32,5 +32,24 @@ export const assessmentService = {
     async getAll(): Promise<{ data: AssessmentI[] }> {
         const response = await apiClient.get<{ data: AssessmentI[] }>("/assessments");
         return response.data;
+    },
+    /**
+     * PUT /api/assessments/{id}/send-to-doctor
+     */
+    async sendToDoctor(assessmentId: string, doctorId: string = "UNASSIGNED"): Promise<any> {
+        const response = await apiClient.put<any>(`/assessments/${assessmentId}/send-to-doctor`, {
+            doctor_id: doctorId
+        });
+        return response.data;
+    },
+    /**
+     * GET /api/assessments/doctor-reviews?target_person={targetPerson}
+     */
+    async getDoctorReviews(targetPerson?: string): Promise<{ data: AssessmentI[] }> {
+        const params = targetPerson ? { target_person: targetPerson } : {};
+        const response = await apiClient.get<{ data: AssessmentI[] }>("/assessments/doctor-reviews", {
+            params
+        });
+        return response.data;
     }
 };

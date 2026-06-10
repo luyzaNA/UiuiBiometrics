@@ -488,7 +488,30 @@
   "reviews" : "reviews",
   "No biography available.": "No biography available.",
   "Consultation Fee" : "Consultation fee",
-  "Send the report" : "Send the report"
+  "Send the report" : "Send the report",
+  "Sent" : "Sent",
+  "Could not send the report to the doctor." :  "Could not send the report to the doctor.",
+  "Report successfully sent to the doctor! They will review it and get back to you soon." : "Report successfully sent to the doctor! They will review it and get back to you soon.",
+  "Select a specialist below to share your report and get an expert review.":  "Select a specialist below to share your report and get an expert review.",
+  "No major vulnerabilities detected." : "No major vulnerabilities detected.",
+  "Doctor Review" : "Doctor review",
+  "Medical Options" : "Medical options",
+  "Loading the reports sent to doctors..." : "Loading the reports sent to doctors...",
+  "You haven't sent any reports to doctors yet. Once you do, they'll appear here for easy access and tracking." : "You haven't sent any reports to doctors yet. Once you do, they'll appear here for easy access and tracking.",
+  "Medical Reports" : "Medical Reports",
+  "Assigned Doctor" : "Assigned Doctor",
+  "Loading doctor info..." : "Loading doctor info...",
+  "Finished": "Finished",
+  "In Review": "In review",
+  "No medical reports found": "No medical reports found",
+  "In the event that major health risks are detected upon completing the deficiencies questionnaire, you have the option to forward your report to a physician for verification. This page tracks the status of all medical assessments submitted for review.": "In the event that major health risks are detected upon completing the deficiencies questionnaire, you have the option to forward your report to a physician for verification. This page tracks the status of all medical assessments submitted for review.",
+  "report": "report",
+  "reports": "reports",
+  "Medical review" : "Medical review",
+  "Verified Specialist" : "Verified specialist",
+  "Consultation fee": "Consultation fee"
+
+
 
 
 

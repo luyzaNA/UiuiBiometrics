@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Radar as RadarArea } from "recharts";
-import { User, Activity, ImageIcon } from "lucide-react";
+import {User, Activity, ImageIcon, Stethoscope, CheckCircle, Clock} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SYMPTOM_MAPPER } from "@/utils/symptoms_wrap.ts";
-import type { AssessmentI } from "@/models/assesment-model.ts";
+import {type AssessmentI, AssessmentStatus} from "@/models/assesment-model.ts";
 
 type AssessmentPageProps = {
     data: AssessmentI;
@@ -223,6 +223,68 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                                 );
                             })}
                         </div>
+                    </CardContent>
+                </Card>
+            )}
+            {data.doctorDetails && (
+                <Card className="xl:col-span-4 shadow-lg border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
+                            <Stethoscope size={16} />
+                            {t("Medical Review")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col md:flex-row gap-6">
+                        <div className="flex items-start justify-between w-full gap-4">
+                            <div className="flex items-start gap-4">
+                                <div className="w-16 h-16 rounded-2xl overflow-hidden border border-primary/20 shadow-lg shrink-0">
+                                    <img
+                                        src={data.doctorDetails.avatarUrl || "/placeholder-avatar.png"}
+                                        alt={data.doctorDetails.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+
+                                <div>
+                                    <h3 className="font-bold text-lg text-secondary">
+                                        {data.doctorDetails.name}
+                                    </h3>
+                                    <p className="text-xs text-secondary/60 leading-relaxed mt-1">
+                                        {data.doctorDetails.bio}
+                                    </p>
+                                    <div className="mt-3 flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary px-2 py-1 rounded-md">
+                    {t("Verified Specialist")}
+                </span>
+                                        <span className="text-[10px] text-secondary/40">
+                    {t("Consultation fee")}: {data.doctorDetails.price} RON
+                </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="shrink-0">
+                                {data.status === AssessmentStatus.DOCTOR_REVIEWED ? (
+                                    <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md">
+                                        <CheckCircle size={10} />{t("Reviewed")}
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md">
+                                        <Clock size={10} /> {t("In Review")}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        {data.doctorNotes && (
+                            <div className="flex-1 border-t md:border-t-0 md:border-l border-secondary-foreground/10 pt-4 md:pt-0 md:pl-6">
+                                <h4 className="text-xs font-bold uppercase text-secondary-foreground/60 mb-2">
+                                    {t("Doctor's Notes")}
+                                </h4>
+                                <p className="text-sm text-secondary-foreground/80 italic leading-relaxed">
+                                    "{data.doctorNotes}"
+                                </p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}

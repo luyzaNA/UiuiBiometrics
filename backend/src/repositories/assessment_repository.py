@@ -86,6 +86,13 @@ class AssessmentRepository(BaseRepository):
             red_flag_details=item.get("red_flag_details", []),
             created_at=int(item.get("created_at", 0)),
             updated_at=int(item.get("updated_at", 0)),
+
+            doctor_id=item.get("doctor_id"),
+            doctor_notes=item.get("doctor_notes"),
+            payment_reference=item.get("payment_reference"),
+            next_review_days=int(item.get("next_review_days")) if item.get("next_review_days") is not None else None,
+            gsi2_pk=item.get("gsi2_pk"),
+            gsi2_sk=item.get("gsi2_sk")
         )
 
     def get_all_by_user(self, cognito_sub: str) -> list[AssessmentModel]:
@@ -111,3 +118,42 @@ class AssessmentRepository(BaseRepository):
         )
 
         return [self.convert_to_assessment_model(item) for item in response.get("Items", [])]
+
+    def assign_to_doctor(
+            self,
+            cognito_sub: str,
+            assessment_id: str,
+            doctor_id: str,
+            new_status: str,
+            updated_at: int
+    ) -> AssessmentModel:
+
+
+        if not cognito_sub or not assessment_id:
+            raise ValueError("Both cognito_sub and assessment_id are required to update an item.")
+
+        response = self.table.update_item(
+            Key={
+                "PK": f"USER#{cognito_sub}",
+                "SK": f"ASSESS#{assessment_id}"
+            },
+            UpdateExpression="SET #status = :status, updated_at = :updated_at, doctor_id = :doctor_id",
+            ExpressionAttributeNames={
+                "#status": "status"
+            },
+            ExpressionAttributeValues={
+                ":status": new_status,
+                ":updated_at": updated_at,
+                ":doctor_id": doctor_id
+            },
+            ReturnValues="ALL_NEW"
+        )
+
+        attributes = response.get("Attributes", {})
+
+        if "PK" in attributes:
+            attributes["pk"] = attributes.pop("PK")
+        if "SK" in attributes:
+            attributes["sk"] = attributes.pop("SK")
+
+        return AssessmentModel(**attributes)

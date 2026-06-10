@@ -1,4 +1,11 @@
-import { Loader2, AlertCircle, Users, Calendar, Apple, Activity } from "lucide-react";
+import {
+    Loader2,
+    AlertCircle,
+    Users,
+    Calendar,
+    Apple,
+    Activity
+} from "lucide-react";
 import type { AssessmentI } from "@/models/assesment-model.ts";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
@@ -9,6 +16,7 @@ import HistoryCharts from "@/pages/Assessment/sections/history-section.tsx";
 import { formatDateMs } from "@/utils/form-data.ts";
 import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-section.tsx";
 import MealBankProtocol from "@/pages/Menu/meal-base/section/meal-base-section.tsx";
+import { DoctorAssessmentsList } from "@/pages/Assessment/doctor-assessments-list-page.tsx";
 
 export default function AssessmentsHistoryPage() {
     const { t } = useTranslation();
@@ -17,6 +25,8 @@ export default function AssessmentsHistoryPage() {
     const [activeMenu, setActiveMenu] = useState<any>(null);
     const [menuHistory, setMenuHistory] = useState<any[]>([]);
     const [selectedHistoricMenu, setSelectedHistoricMenu] = useState<any>(null);
+
+    const [selectedDoctorAssessment, setSelectedDoctorAssessment] = useState<AssessmentI | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMenu, setIsLoadingMenu] = useState(false);
@@ -81,8 +91,8 @@ export default function AssessmentsHistoryPage() {
     }, [assessments, selectedPerson]);
 
     const currentAssessment = useMemo(() => {
-        return personAssessments.find((a) => a.assessmentId === selectedView);
-    }, [personAssessments, selectedView]);
+        return personAssessments.find((a) => a.assessmentId === selectedView) || selectedDoctorAssessment;
+    }, [personAssessments, selectedView, selectedDoctorAssessment]);
 
     if (isLoading) {
         return (
@@ -135,6 +145,9 @@ export default function AssessmentsHistoryPage() {
                             <optgroup label={t("Overview")}>
                                 <option value="ALL" className="hover:cursor-pointer"> {t("Health Trends")}</option>
                             </optgroup>
+                            <optgroup label={t("Medical Options")}>
+                                <option value="DOCTOR_REVIEWS" className="hover:cursor-pointer"> {t("Doctor Review")}</option>
+                            </optgroup>
                             <optgroup label={t("Menus")}>
                                 <option value="ACTIVE_MENU" className="hover:cursor-pointer" > {t("Active menu")}</option>
                                 <option value="HISTORY_MENU" className="hover:cursor-pointer"> {t("History of menus")}</option>
@@ -156,8 +169,20 @@ export default function AssessmentsHistoryPage() {
 
                 {selectedView === "ALL" && (
                     <div className="space-y-6">
-                            <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                         <HistoryCharts assessments={[...personAssessments].reverse()} />
+                    </div>
+                )}
+
+                {selectedView === "DOCTOR_REVIEWS" && (
+                    <div className="animate-fadeIn">
+                        <DoctorAssessmentsList
+                            targetPerson={selectedPerson}
+                            onSelectAssessment={(assessment) => {
+                                setSelectedDoctorAssessment(assessment);
+                                setSelectedView(assessment.assessmentId);
+                            }}
+                        />
                     </div>
                 )}
 
@@ -238,7 +263,7 @@ export default function AssessmentsHistoryPage() {
                     </div>
                 )}
 
-                {selectedView !== "ALL" && selectedView !== "HISTORY_MENU" && selectedView !== "ACTIVE_MENU" && currentAssessment && (
+                {selectedView !== "ALL" && selectedView !== "HISTORY_MENU" && selectedView !== "ACTIVE_MENU" && selectedView !== "DOCTOR_REVIEWS" && currentAssessment && (
                     <div className="animate-fadeIn">
                         <AssessmentPage data={currentAssessment} />
                     </div>

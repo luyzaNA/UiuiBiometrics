@@ -190,3 +190,16 @@ class DoctorRepository(BaseRepository):
             average_rating=float(item.get("average_rating", 0.0)),
             total_reviews=int(item.get("total_reviews", 0))
         )
+
+    def get_doctor_by_id(self, doctor_id: str):
+        """Fetch a doctor profile directly by their unique ID."""
+        pk = f"DOCTOR#{doctor_id}"
+        sk = "PROFILE#METADATA"
+
+        response = self.table.get_item(Key={"PK": pk, "SK": sk})
+        item = response.get("Item")
+
+        if not item:
+            raise Exception(f"Doctor with ID {doctor_id} not found")
+
+        return DoctorProfileModel(**item)
