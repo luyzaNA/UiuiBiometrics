@@ -1,8 +1,8 @@
 from src.auth.auth import inject_user, require_roles, require_role_categories
-from src.http_handlers.common import bad_request, internal_server_error, ok
+from src.http_handlers.common import internal_server_error, ok
 from src.models.user import User
 from src.services.assessment_service import AssessmentService
-from src.services.doctor_service import DoctorService
+from src.services.profile_service import get_signed_url_from_s3
 from src.utils.constants.models import MODEL_EXCLUDED_KEYS
 from src.utils.enums import Role, RoleCategory
 from src.utils.logger import get_logger
@@ -10,12 +10,15 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 assessment_service = AssessmentService()
-doctor_service = DoctorService()
+
+
 @inject_user()
 @require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
     try:
+        logger.info("[GET_ASSESSMENTS] Started for user %s", user.sub)
+
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
 
@@ -27,29 +30,20 @@ def handler(event, context, user: User):
         serialized_data = []
 
         for assessment in assessments:
-            assessment_dict = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
+            data = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
 
-            if assessment.doctor_id and assessment.doctor_id != "UNASSIGNED":
-                try:
-                    doctor = doctor_service.get_doctor_by_sub(assessment.doctor_id)
-                    if doctor:
-                        assessment_dict["doctorDetails"] = {
-                            "name": doctor.name,
-                            "avatarUrl": doctor.avatar_url,
-                            "bio": doctor.bio,
-                            "price": doctor.price
-                        }
-                    else:
-                        assessment_dict["doctorDetails"] = None
-                except Exception:
-                    assessment_dict["doctorDetails"] = None
-            else:
-                assessment_dict["doctorDetails"] = None
+            doctor = data.pop("doctor_details", None)
 
-            serialized_data.append(assessment_dict)
+            if doctor:
+                if doctor.get("avatar_key"):
+                    doctor["avatar_url"] = get_signed_url_from_s3(doctor["avatar_key"])
+
+            data["doctorDetails"] = doctor
+
+            serialized_data.append(data)
 
         return ok(data=serialized_data)
 
     except Exception:
-        logger.exception("[GET_ALL_ASSESSMENTS] Failed.")
+        logger.exception("[GET_ALL_ASSESSMENTS] Failed")
         return internal_server_error()

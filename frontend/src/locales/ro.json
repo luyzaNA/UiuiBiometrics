@@ -511,5 +511,11 @@
   "reports" : "rapoarte",
   "Medical Review" : "Evaluare medicală",
   "Verified Specialist" : "Specialist verificat",
-  "Consultation fee": "Prețul consultației"
+  "Consultation fee": "Prețul consultației",
+  "Unable to sync data" : "Nu s-au putut incarca datele",
+  "Professional Biography" : "Biografie profesională",
+  "This doctor has not provided a professional biography yet." : "Acest medic nu a adăugat încă o biografie profesională.",
+  "Platform Activity" : "Activitatea în platformă",
+  "In our team since" : "Membru al echipei din:",
+  "Last updated" : "Profil actualizat:"
 }

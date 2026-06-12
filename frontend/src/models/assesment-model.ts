@@ -10,9 +10,10 @@ export type AssessmentStatusType = typeof AssessmentStatus[keyof typeof Assessme
 
 export interface DoctorDetailsI {
     name: string;
-    avatarUrl: string;
+    avatarUrl?: string;
     bio: string;
     price: number;
+    doctorId: string;
 }
 
 export interface AssessmentI {
@@ -32,7 +33,6 @@ export interface AssessmentI {
     imageUrls?: string[];
     imageKeys?: string[];
 
-    doctorId?: string;
     doctorDetails?: DoctorDetailsI | null;
     doctorNotes?: string;
 }

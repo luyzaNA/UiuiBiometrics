@@ -509,7 +509,13 @@
   "reports": "reports",
   "Medical review" : "Medical review",
   "Verified Specialist" : "Verified specialist",
-  "Consultation fee": "Consultation fee"
+  "Consultation fee": "Consultation fee",
+  "Unable to sync data" : "Unable to sync data",
+  "Professional Biography" : "Professional Biography",
+  "This doctor has not provided a professional biography yet." : "This doctor has not provided a professional biography yet.",
+  "Platform Activity" : "Platform Activity",
+  "In our team since" : "In our team since:",
+  "Last updated" : "Last updated"
 
 
 

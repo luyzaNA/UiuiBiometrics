@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Clock, CheckCircle, UserRound, ChevronRight, Stethoscope } from "lucide-react";
 import type { AssessmentI } from "@/models/assesment-model";
 import { assessmentService } from "@/services/assessment-service.ts";
-import {formatChartFullDate} from "@/utils/form-data.ts";
+import { formatChartFullDate } from "@/utils/form-data.ts";
 
 interface DoctorAssessmentsListProps {
     targetPerson?: string;
@@ -21,7 +21,11 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                 setIsLoading(true);
                 const response = await assessmentService.getDoctorReviews(targetPerson);
                 const dataArray = Array.isArray(response) ? response : (response?.data || []);
-                setAssessments(dataArray);
+
+                const sortedArray = [...dataArray].sort((a, b) => b.createdAt - a.createdAt);
+
+                setAssessments(sortedArray);
+                console.log(sortedArray);
             } catch (error) {
                 console.error("Failed to fetch doctor reviews:", error);
             } finally {
@@ -32,7 +36,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
         fetchReviews();
     }, [targetPerson]);
 
-   if (isLoading) {
+    if (isLoading) {
         return (
             <div className="space-y-3 p-2 animate-pulse">
                 <div className="h-3 w-32 bg-secondary/10 rounded" />
@@ -65,7 +69,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                 <h4 className="text-xs text-secondary/40 flex items-center gap-2">
                     {t("In the event that major health risks are detected upon completing the deficiencies questionnaire, you have the option to forward your report to a physician for verification. This page tracks the status of all medical assessments submitted for review.")}
                 </h4>
-                <span className="text-[10px] font-mono text-secondary/30 bg-secondary/5 px-4 py-0.5 rounded-md">
+                <span className="text-[10px] font-mono text-center text-secondary/30 bg-secondary/5 px-4 py-0.5 rounded-md">
                     {assessments.length} {assessments.length === 1 ? t("report") : t("reports") }
                 </span>
             </div>
@@ -73,7 +77,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
             <div className="flex flex-col gap-2">
                 {assessments.map((item) => {
                     const isReviewed = item.status === "DOCTOR_REVIEWED";
-                    const isAssigned = item.doctorDetails !== null && item.doctorDetails !== undefined;
+                    const isAssigned = !!item.doctorDetails;
 
                     return (
                         <button
@@ -98,9 +102,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
 
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold text-secondary tracking-wide group-hover:text-primary-foreground transition-colors">
-                                     {(Boolean(item.doctorId) && item.doctorId !== "UNASSIGNED")
-                                         ? (item.doctorDetails?.name || t("Assigned Doctor"))
-                                         : t( "Loading doctor info...")}
+                                        {item.doctorDetails?.name || t("Assigned Doctor")}
                                     </span>
 
                                     <div className="flex items-center gap-2 mt-1.5">
@@ -116,14 +118,13 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                                             </span>
                                         )}
                                         <span className="text-[10px] font-mono text-secondary/40">
-
                                             {formatChartFullDate(item.createdAt)}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-1.5 rounded-lg bg-secondary/5 border border-secondary/5 group-hover:border-primary/30 group-hover:bg-primary/10 transition-all duration-300 relative z-10">
+                            <div className="p-1.5 rounded-lg bg-secondary/5 border border-secondary/5 group-hover:border-primary/30 group-hover:bg-primary/10 transition-all duration-300 relative z-10 hover:cursor-pointer">
                                 <ChevronRight size={14} className="text-secondary/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                             </div>
                         </button>

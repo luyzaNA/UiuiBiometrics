@@ -8,6 +8,34 @@ from src.models.fields import label_field, timestamp_field, target_person_field,
 from src.utils.enums import Gender, AssessmentStatus
 
 
+class DoctorDetails(BaseModel):
+    """
+    Represents the detailed information of the doctor assigned to the assessment.
+    Captured at the moment of assignment to keep a historical snapshot.
+    """
+    doctor_id: str = Field(
+        description="The unique Cognito sub or identifier of the doctor."
+    )
+    name: str = Field(
+        description="Doctor's full name."
+    )
+    price: float = Field(
+        description="The consultation price/fee charged by the doctor for this specific review."
+    )
+    bio: Optional[str] = Field(
+        default=None,
+        description="A short biography or professional description of the doctor."
+    )
+    avatar_url: Optional[str] = Field(
+        default=None,
+        description="The profile picture/avatar URL of the doctor."
+    )
+    avatar_key: Optional[str] = Field(
+        default=None,
+        description="The presigned avatar URL of the doctor."
+    )
+
+
 class AssessmentModel(BaseModel):
     """
     Represents a single health assessment session.
@@ -94,9 +122,9 @@ class AssessmentModel(BaseModel):
         description="Days until the user should retake the quiz. Set only if target_person is 'Principal'."
     )
 
-    doctor_id: Optional[str] = Field(
+    doctor_details: Optional[DoctorDetails] = Field(
         default=None,
-        description="The unique identifier of the doctor assigned to review this case."
+        description="The structured details of the doctor assigned to review this case."
     )
 
     doctor_notes: Optional[str] = Field(

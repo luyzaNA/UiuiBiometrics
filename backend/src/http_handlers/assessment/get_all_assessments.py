@@ -1,8 +1,10 @@
+"""Handler for GET /assessments endpoint."""
+
 from src.auth.auth import inject_user, require_roles, require_role_categories
-from src.http_handlers.common import bad_request, internal_server_error, ok
+from src.http_handlers.common import internal_server_error, ok
 from src.models.user import User
 from src.services.assessment_service import AssessmentService
-from src.services.doctor_service import DoctorService
+from src.services.profile_service import get_signed_url_from_s3
 from src.utils.constants.models import MODEL_EXCLUDED_KEYS
 from src.utils.enums import Role, RoleCategory
 from src.utils.logger import get_logger
@@ -10,19 +12,14 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 assessment_service = AssessmentService()
-doctor_service = DoctorService()
+
 
 @inject_user()
 @require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
-    """
-    Handler for GET /assessments endpoint.
-    Supports optional query parameter: ?target_person=Principal
-    Returns assessments with populated doctorDetails.
-    """
     try:
-        logger.info("[GET_ASSESSMENTS] Started for Cognito Sub: %s", user.sub)
+        logger.info("[GET_ASSESSMENTS] Started for user %s", user.sub)
 
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
@@ -32,43 +29,29 @@ def handler(event, context, user: User):
             target_person=target_person
         )
 
-        logger.info(
-            "[GET_ASSESSMENTS] Found %d assessments for Sub: %s (Filter: %s)",
-            len(assessments), user.sub, target_person or "None"
-        )
-
         serialized_data = []
 
         for assessment in assessments:
-            assessment_dict = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
+            data = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
 
-            doctor_id = getattr(assessment, 'doctor_id', None)
+            doctor = data.get("doctor_details") or {}
 
-            if doctor_id and doctor_id != "UNASSIGNED":
-                try:
-                    doctor = doctor_service.get_doctor_by_sub(doctor_id)
-                    if doctor:
-                        assessment_dict["doctorDetails"] = {
-                            "name": doctor.name,
-                            "avatarUrl": doctor.avatar_url,
-                            "bio": doctor.bio,
-                            "price": doctor.price
-                        }
-                    else:
-                        assessment_dict["doctorDetails"] = None
-                except Exception as e:
-                    logger.warning(f"[GET_ASSESSMENTS] Failed to retrieve the doctor {doctor_id}: {e}")
-                    assessment_dict["doctorDetails"] = None
-            else:
-                assessment_dict["doctorDetails"] = None
+            avatar_key = doctor.get("avatar_key")
 
-            serialized_data.append(assessment_dict)
+            doctor_details = {
+                "doctorId": doctor.get("doctor_id"),
+                "name": doctor.get("name"),
+                "bio": doctor.get("bio"),
+                "price": doctor.get("price"),
+                "avatarKey": avatar_key,
+                "avatarUrl": get_signed_url_from_s3(avatar_key) if avatar_key else None,
+            }
+            data["doctorDetails"] = doctor_details
 
-        if serialized_data:
-            logger.info(f"[DEBUG_PAYLOAD] First item doctorDetails: {serialized_data[0].get('doctorDetails')}")
+            serialized_data.append(data)
 
         return ok(data=serialized_data)
 
-    except Exception:  # pylint: disable=broad-except
-        logger.exception("[GET_ASSESSMENTS] Failed. Internal server error.")
+    except Exception:
+        logger.exception("[GET_ASSESSMENTS] Failed")
         return internal_server_error()
