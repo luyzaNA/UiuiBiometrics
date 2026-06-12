@@ -522,8 +522,30 @@
   "Last questionnaire": "Last questionnaire",
   "No patients found matching your search.": "No patients found matching your search.",
   "No patients assigned yet.": "No patients assigned yet.",
-  "Loading patients...": "Loading patients..."
-
+  "Loading patients...": "Loading patients...",
+  "Red Flag": "Red Flag",
+  "Pending Doctor": "Pending Doctor",
+  "Doctor Reviewed": "Doctor Reviewed",
+  "Pending": "Pending",
+  "No patient selected.": "No patient selected.",
+  "Back to patients": "Back to patients",
+  "Medical History": "Medical History",
+  "Patient": "Patient",
+  "Email": "Email",
+  "Loading history...": "Loading history...",
+  "No medical assessments found for this patient.": "No medical assessments found for this patient.",
+  "Wellness": "Wellness",
+  "Reported Symptoms": "Reported Symptoms",
+  "No symptoms recorded.": "No symptoms recorded.",
+  "Predicted Deficiencies": "Predicted Deficiencies",
+  "Calculation stopped due to a priority medical alert.": "* Calculation stopped due to a priority medical alert.",
+  "No likely deficiencies detected (over 30%).": "The system did not detect any likely deficiencies (over 30%).",
+  "Warnings": "Warnings",
+  "Medical Notes": "Medical Notes",
+  "The doctor did not leave any additional notes.": "The doctor did not leave any additional notes.",
+  "Attached Images": "Attached Images",
+  "Attachment": "Attachment",
+  "No Action Needed":  "No action needed"
 
 
 

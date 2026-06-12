@@ -51,5 +51,18 @@ export const assessmentService = {
             params
         });
         return response.data;
+    },
+    /**
+     * GET /api/assessments/history
+     */
+    async getPatientHistory(targetPerson: string, cognitoSub:string): Promise<any> {
+        const response = await apiClient.get<any>("/assessments/history", {
+            params: {
+                target_person: targetPerson,
+                cognito_sub: cognitoSub
+            }
+
+        });
+        return response.data;
     }
 };
