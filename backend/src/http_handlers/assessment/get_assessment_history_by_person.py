@@ -10,22 +10,24 @@ logger = get_logger(__name__)
 assessment_service = AssessmentService()
 
 @inject_user()
-@require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
-@require_roles({Role.ADMIN, Role.USER})
+@require_role_categories({RoleCategory.USER, RoleCategory.ADMIN, RoleCategory.DOCTOR})
+@require_roles({Role.ADMIN, Role.USER, Role.DOCTOR})
 def handler(event, context, user: User):
     """
-    Handler for GET /assessments/history?target_person=...
+    Handler for GET /assessments/history?target_person=...&cognito_sub=...
     Returns the fully mapped assessment history for a specific family member/target person.
     """
     try:
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
 
+        patient_sub = query_params.get("cognito_sub", user.sub)
+
         if not target_person:
             return bad_request("The 'target_person' query parameter is required.")
 
         assessments = assessment_service.get_history_by_target_person(
-            cognito_sub=user.sub,
+            cognito_sub=patient_sub,
             target_person=target_person
         )
 

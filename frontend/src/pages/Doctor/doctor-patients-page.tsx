@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Users, Search, Calendar, ChevronRight, UserRound, Loader2 } from "lucide-react";
 import type { DoctorPatientI } from "@/models/assesment-model.ts";
-import {formatDateMs} from "@/utils/form-data.ts";
-import {doctorService} from "@/services/doctor-service.ts";
+import { formatDateMs } from "@/utils/form-data.ts";
+import { doctorService } from "@/services/doctor-service.ts";
 
 type DoctorPatientsPageProps = {
     onSelectPatient?: (patient: DoctorPatientI) => void;
@@ -17,6 +18,7 @@ const getInitials = (name: string): string => {
 
 export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPageProps) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [patients, setPatients] = useState<DoctorPatientI[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -40,6 +42,20 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
     const filteredPatients = patients.filter(p =>
         p.targetPerson.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handlePatientClick = (patient: DoctorPatientI) => {
+        if (onSelectPatient) {
+            onSelectPatient(patient);
+        } else {
+            navigate("/doctor/patient/history", {
+                state: {
+                    targetPerson: patient.targetPerson,
+                    cognitoSub: patient.cognitoSub,
+                    email: patient.email
+                }
+            });
+        }
+    };
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 relative p-4 min-h-screen">
@@ -80,11 +96,11 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                     {filteredPatients.map((patient) => {
-                        const isPrincipal = patient.targetPerson=== "Principal"
+                        const isPrincipal = patient.targetPerson === "Principal"
                         return (
                             <button
                                 key={`${patient.cognitoSub}-${patient.targetPerson}`}
-                                onClick={() => onSelectPatient?.(patient)}
+                                onClick={() => handlePatientClick(patient)}
                                 className="flex flex-col p-4 rounded-2xl bg-secondary/[0.02] border border-secondary/10 hover:border-primary/40 hover:bg-secondary/[0.04] transition-all duration-300 text-left group w-full relative overflow-hidden hover:cursor-pointer"
                             >
                                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -125,7 +141,7 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
                                     </div>
                                 </div>
 
-                                <div  className="flex items-center gap-1.5 text-secondary/50">
+                                <div className="flex items-center gap-1.5 text-secondary/50">
                                     <Calendar size={12} className="shrink-0" />
                                     <div className="flex items-center gap-1 text-[10px] text-secondary/60">
                                         <span>{t("Last questionnaire")}:</span>
@@ -133,7 +149,6 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
                                             {formatDateMs(patient.lastAssessmentAt)}
                                         </span>
                                     </div>
-
                                 </div>
                             </button>
                         );
