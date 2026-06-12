@@ -155,8 +155,8 @@ class AssessmentRepository(BaseRepository):
                 "SET #status = :status, "
                 "updated_at = :updated_at, "
                 "doctor_details = :doctor_details, "
-                "gsi2_pk = :gsi2_pk, "
-                "gsi2_sk = :gsi2_sk"
+                "GSI2_PK = :gsi2_pk, "
+                "GSI2_SK = :gsi2_sk"
             ),
             ExpressionAttributeNames={
                 "#status": "status"
@@ -179,3 +179,34 @@ class AssessmentRepository(BaseRepository):
         attrs["assessment_id"] = str(assessment_id)
 
         return self.convert_to_assessment_model(attrs)
+
+    def get_history_by_target_person(self, cognito_sub: str, target_person: str) -> list[AssessmentModel]:
+        """
+        Fetch all historical assessments for a specific user, filtered by target_person.
+        """
+        pk = f"USER#{cognito_sub}"
+
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(pk)
+                                   & Key(self.sk_key).begins_with("ASSESS#"),
+            FilterExpression=Attr("target_person").eq(target_person)
+        )
+
+        return [
+            self.convert_to_assessment_model(item)
+            for item in response.get("Items", [])
+        ]
+
+    def get_assessments_by_doctor(self, doctor_id: str) -> list[AssessmentModel]:
+        """
+        Queries GSI2 to fetch all assessments assigned to a specific doctor.
+        """
+        response = self.table.query(
+            IndexName="GSI2",
+            KeyConditionExpression=Key("GSI2_PK").eq(f"DOCTOR#{doctor_id}")
+        )
+
+        return [
+            self.convert_to_assessment_model(item)
+            for item in response.get("Items", [])
+        ]

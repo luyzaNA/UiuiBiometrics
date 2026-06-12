@@ -109,6 +109,14 @@ export const router = createBrowserRouter([
                                 Component: (await import('@/pages/Doctor/doctor-dashboard-page.tsx')).default,
                             }
                         },
+                    },
+                    {
+                        path: "doctor/patients",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-patients-page.tsx')).default,
+                            }
+                        },
                     }
                 ]
             }

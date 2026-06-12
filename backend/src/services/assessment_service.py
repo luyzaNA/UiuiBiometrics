@@ -199,3 +199,93 @@ class AssessmentService:
             updated_at=current_date,
             created_at=current_date
         )
+
+    def get_history_by_target_person(self, cognito_sub: str, target_person: str) -> list[AssessmentModel]:
+        """
+        Retrieves the assessment history for a specific target person and generates presigned S3 URLs.
+        """
+        logger.info(f"[ASSESSMENT_SERVICE] Fetching history for user {cognito_sub} and target {target_person}")
+
+        assessments = self.assessment_repository.get_history_by_target_person(
+            cognito_sub=cognito_sub,
+            target_person=target_person
+        )
+
+        for assessment in assessments:
+            assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
+
+            if assessment.doctor_details and assessment.doctor_details.avatar_key:
+                assessment.doctor_details.avatar_url = get_signed_url_from_s3(assessment.doctor_details.avatar_key)
+
+        return assessments
+
+    def get_unique_patients_by_doctor(self, doctor_id: str) -> list[dict]:
+        """
+        Fetches all assessments for a doctor, filters out duplicates,
+        and enriches the data with the patient's avatar (DynamoDB) and email (Cognito).
+        """
+        assessments = self.assessment_repository.get_assessments_by_doctor(doctor_id)
+        unique_patients = {}
+
+        for item in assessments:
+            patient_key = (item.cognito_sub, item.target_person)
+
+            if patient_key not in unique_patients or item.created_at > unique_patients[patient_key]["lastAssessmentAt"]:
+                unique_patients[patient_key] = {
+                    "cognitoSub": item.cognito_sub,
+                    "targetPerson": item.target_person,
+                    "age": item.age,
+                    "gender": item.gender.value if hasattr(item.gender, "value") else item.gender,
+                    "lastAssessmentAt": item.created_at,
+                    "latestStatus": item.status.value if hasattr(item.status, "value") else item.status,
+                    "latestAssessmentId": str(item.assessment_id)
+                }
+
+        unique_subs = list({item.cognito_sub for item in assessments})
+        user_pool_id = os.environ.get("USER_POOL_ID")
+
+        try:
+            cognito_client = boto3.client('cognito-idp', region_name=os.environ.get("AWS_REGION", "eu-north-1"))
+        except Exception as e:
+            logger.error(f"[ENRICH_PATIENTS] Failed to initialize Cognito client: {e}")
+            cognito_client = None
+
+        user_details = {}
+        for sub in unique_subs:
+            details = {"avatarUrl": None, "email": None}
+
+            try:
+                profile_response = self.assessment_repository.table.get_item(
+                    Key={"PK": f"USER#{sub}", "SK": "PROFILE#METADATA"}
+                )
+                profile_item = profile_response.get("Item", {})
+
+                avatar_key = profile_item.get("avatar_key")
+                if avatar_key:
+                    details["avatarUrl"] = get_signed_url_from_s3(avatar_key)
+                elif profile_item.get("avatar_url"):
+                    details["avatarUrl"] = profile_item.get("avatar_url")
+            except Exception as e:
+                logger.warning(f"[ENRICH_PATIENTS] Failed to fetch profile for {sub}: {e}")
+
+            if user_pool_id and cognito_client:
+                try:
+                    cognito_response = cognito_client.admin_get_user(
+                        UserPoolId=user_pool_id,
+                        Username=sub
+                    )
+                    for attr in cognito_response.get("UserAttributes", []):
+                        if attr["Name"] == "email":
+                            details["email"] = attr["Value"]
+                            break
+                except Exception as e:
+                    logger.warning(f"[ENRICH_PATIENTS] Failed to fetch cognito email for {sub}. Are local AWS credentials set? Error: {e}")
+
+            user_details[sub] = details
+
+        for patient_data in unique_patients.values():
+            sub = patient_data["cognitoSub"]
+            patient_data["avatarUrl"] = user_details.get(sub, {}).get("avatarUrl")
+            patient_data["email"] = user_details.get(sub, {}).get("email")
+
+        return sorted(unique_patients.values(), key=lambda x: x["lastAssessmentAt"], reverse=True)
