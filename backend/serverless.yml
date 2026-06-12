@@ -12,6 +12,7 @@ provider:
     DYNAMODB_TABLE: uiui-biometrics-${self:provider.stage}
     STAGE: ${self:provider.stage}
     AVATAR_BUCKET: uiui-avatars-${self:provider.stage}
+    USER_POOL_ID: "eu-north-1_aBOOx7l1A"
 
   iamRoleStatements:
     - Effect: Allow
@@ -31,6 +32,12 @@ provider:
         - s3:GetObject
       Resource:
         - "arn:aws:s3:::uiui-avatars-${self:provider.stage}/*"
+    - Effect: Allow
+      Action:
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminListGroupsForUser
+      Resource:
+        - "arn:aws:cognito-idp:${self:provider.region}:*:userpool/eu-north-1_aBOOx7l1A"
 
 
   httpApi:

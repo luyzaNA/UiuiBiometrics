@@ -16,6 +16,18 @@ export interface DoctorDetailsI {
     doctorId: string;
 }
 
+export interface DoctorPatientI {
+    cognitoSub: string;
+    targetPerson: string;
+    age: number;
+    gender: string;
+    lastAssessmentAt: number;
+    latestStatus: AssessmentStatusType;
+    latestAssessmentId: string;
+    email?: string;
+    avatarUrl?: string;
+}
+
 export interface AssessmentI {
     assessmentId: string;
     cognitoSub?: string;

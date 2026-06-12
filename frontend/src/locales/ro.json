@@ -517,5 +517,12 @@
   "This doctor has not provided a professional biography yet." : "Acest medic nu a adăugat încă o biografie profesională.",
   "Platform Activity" : "Activitatea în platformă",
   "In our team since" : "Membru al echipei din:",
-  "Last updated" : "Profil actualizat:"
+  "Last updated" : "Profil actualizat:",
+  "My Patients" : "Pacienții mei",
+  "Search by patient...": "Caută după pacient...",
+  "View history": "Vezi istoricul",
+  "Last questionnaire": "Ultimul chestionar",
+  "No patients found matching your search." : "Nu s-au găsit pacienți care să corespundă căutarilor",
+  "No patients assigned yet.": "Nu aveți nici un pacient asignat încă",
+  "Loading patients...": "Se încarcă pacienții"
 }

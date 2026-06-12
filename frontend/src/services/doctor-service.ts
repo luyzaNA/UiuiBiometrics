@@ -1,6 +1,7 @@
 import type { Gender } from "@/models/profile-model.ts";
 import {apiClient} from "@/api/client.ts";
 import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import type {DoctorPatientI} from "@/models/assesment-model.ts";
 
 export interface CreateDoctorProfileRequest {
     age: number;
@@ -50,4 +51,11 @@ export const doctorService = {
         const response = await apiClient.get<DoctorProfileI>(`/doctor/${id}`);
         return response.data;
     },
+    /**
+     * GET /api/doctors/patients
+     */
+    async getDoctorPatients(): Promise<DoctorPatientI[]> {
+        const response = await apiClient.get("/doctor/patients");
+        return response.data;
+    }
 };

@@ -1,6 +1,7 @@
 from src.http_handlers.doctor.create_doctor_profile import handler as create_doctor_handler
 from src.http_handlers.doctor.get_doctor_profile import handler as get_doctor_handler
 from src.http_handlers.doctor.get_all_doctors import handler as get_all_doctors_handler
+from src.http_handlers.doctor.get_doctor_patients import handler as get_doctor_patients_handler
 from src.http_handlers.doctor.update_doctor_profile import handler as update_doctor_handler
 from src.http_handlers.doctor.get_doctor_by_id import handler as get_doctor_by_id_handler
 from src.utils.generic_router import Router
@@ -9,6 +10,7 @@ ROUTES = [
     ("GET", "doctor", get_all_doctors_handler),
     ("GET", "doctor/profile/me", get_doctor_handler),
     ("GET", "doctor/{doctor_id}", get_doctor_by_id_handler),
+    ("GET", "doctor/patients", get_doctor_patients_handler),
     ("POST", "doctor/profile", create_doctor_handler),
     ("PUT", "doctor/profile", update_doctor_handler),
 ]

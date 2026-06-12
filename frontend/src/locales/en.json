@@ -515,7 +515,14 @@
   "This doctor has not provided a professional biography yet." : "This doctor has not provided a professional biography yet.",
   "Platform Activity" : "Platform Activity",
   "In our team since" : "In our team since:",
-  "Last updated" : "Last updated"
+  "Last updated" : "Last updated",
+  "My Patients": "My Patients",
+  "Search by family patient...": "Search by family patient...",
+  "View history": "View history",
+  "Last questionnaire": "Last questionnaire",
+  "No patients found matching your search.": "No patients found matching your search.",
+  "No patients assigned yet.": "No patients assigned yet.",
+  "Loading patients...": "Loading patients..."
 
 
 
