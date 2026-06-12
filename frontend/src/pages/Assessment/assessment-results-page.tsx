@@ -52,7 +52,7 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
         .sort((a, b) => b.riskScore - a.riskScore);
 
     if (hasRedFlags || red_flags.length > 0) {
-        return <MedicalAlert redFlags={red_flags} />;
+        return <MedicalAlert redFlags={red_flags} assessmentId={data?.assessmentId} />;
     }
 
     return (

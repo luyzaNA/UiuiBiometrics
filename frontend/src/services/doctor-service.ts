@@ -43,5 +43,11 @@ export const doctorService = {
     async getAll(): Promise<DoctorProfileI[]> {
         const response = await apiClient.get<DoctorProfileI[]>("/doctor");
         return response.data;
-    }
+    },
+
+    /** GET /api/doctor/{id} */
+    async getById(id: string): Promise<DoctorProfileI> {
+        const response = await apiClient.get<DoctorProfileI>(`/doctor/${id}`);
+        return response.data;
+    },
 };

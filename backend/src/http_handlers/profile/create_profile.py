@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 
 @inject_user()
-@require_role_categories({RoleCategory.USER})
+@require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
     """

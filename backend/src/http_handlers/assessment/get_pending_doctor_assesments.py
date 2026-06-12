@@ -1,5 +1,3 @@
-"""Handler for GET /assessments endpoint."""
-
 from src.auth.auth import inject_user, require_roles, require_role_categories
 from src.http_handlers.common import internal_server_error, ok
 from src.models.user import User
@@ -34,24 +32,18 @@ def handler(event, context, user: User):
         for assessment in assessments:
             data = assessment.model_dump(exclude=MODEL_EXCLUDED_KEYS)
 
-            doctor = data.get("doctor_details") or {}
+            doctor = data.pop("doctor_details", None)
 
-            avatar_key = doctor.get("avatar_key")
+            if doctor:
+                if doctor.get("avatar_key"):
+                    doctor["avatar_url"] = get_signed_url_from_s3(doctor["avatar_key"])
 
-            doctor_details = {
-                "doctorId": doctor.get("doctor_id"),
-                "name": doctor.get("name"),
-                "bio": doctor.get("bio"),
-                "price": doctor.get("price"),
-                "avatarKey": avatar_key,
-                "avatarUrl": get_signed_url_from_s3(avatar_key) if avatar_key else None,
-            }
-            data["doctorDetails"] = doctor_details
+            data["doctorDetails"] = doctor
 
             serialized_data.append(data)
 
         return ok(data=serialized_data)
 
     except Exception:
-        logger.exception("[GET_ASSESSMENTS] Failed")
+        logger.exception("[GET_ALL_ASSESSMENTS] Failed")
         return internal_server_error()

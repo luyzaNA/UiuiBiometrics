@@ -8,7 +8,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from src.http_handlers.assessment_request import CreateAssessmentRequest
-from src.models.assessment.assessment_model import AssessmentModel
+from src.models.assessment.assessment_model import AssessmentModel, DoctorDetails
 from src.repositories.assessment_repository import AssessmentRepository
 from src.utils.calculate_wellness_score import calculate_wellness_score
 from src.utils.deficiencies_detection import detect_deficiencies
@@ -30,6 +30,7 @@ if os.environ.get("IS_OFFLINE") == "true":
     )
 else:
     s3 = boto3.client("s3", region_name="eu-north-1")
+
 
 def upload_assessment_image(image_data: str, cognito_sub: str, assessment_id: str) -> str | None:
     if not image_data or not image_data.startswith("data:image"):
@@ -60,19 +61,20 @@ def upload_assessment_image(image_data: str, cognito_sub: str, assessment_id: st
         logger.exception(f"Error uploading assessment image to S3: {e}")
         return None
 
+
 def get_signed_url_from_s3(key: str | None) -> str | None:
     if not key:
         return None
     try:
-        url: str = s3.generate_presigned_url(
+        return s3.generate_presigned_url(
             "get_object",
             Params={"Bucket": AVATAR_BUCKET, "Key": key},
             ExpiresIn=3600
         )
-        return url
     except ClientError:
         logger.exception("Error generating signed URL")
         return None
+
 
 class AssessmentService:
     def __init__(self):
@@ -80,11 +82,11 @@ class AssessmentService:
 
     def create_assessment(self, request: CreateAssessmentRequest, cognito_sub: str) -> AssessmentModel:
         current_date: int = current_millis()
-
         new_assessment_id = uuid4()
 
         uploaded_keys = []
         uploaded_urls = []
+
         if request.images:
             for img_base64 in request.images:
                 img_key = upload_assessment_image(img_base64, cognito_sub, str(new_assessment_id))
@@ -155,21 +157,45 @@ class AssessmentService:
 
     def get_assessment_by_id(self, assessment_id: str, cognito_sub: str) -> AssessmentModel:
         assessment = self.assessment_repository.get_by_id(cognito_sub=cognito_sub, assessment_id=assessment_id)
-        assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
+
+        assessment.image_urls = [
+            get_signed_url_from_s3(key)
+            for key in assessment.image_keys if key
+        ]
+
         return assessment
 
     def get_user_assessments(self, cognito_sub: str, target_person: str = None) -> list[AssessmentModel]:
-        """
-        Fetch assessments for a user, optionally filtered by target_person.
-        """
         if target_person:
-            logger.info(f"[ASSESSMENT_SERVICE] Fetching assessments for {cognito_sub} filtered by {target_person}")
-            assessments = self.assessment_repository.get_by_target_person(cognito_sub=cognito_sub, target_person=target_person)
+            assessments = self.assessment_repository.get_by_target_person(
+                cognito_sub=cognito_sub,
+                target_person=target_person
+            )
         else:
-            logger.info(f"[ASSESSMENT_SERVICE] Fetching ALL assessments for {cognito_sub}")
             assessments = self.assessment_repository.get_all_by_user(cognito_sub=cognito_sub)
 
         for assessment in assessments:
-            assessment.image_urls = [get_signed_url_from_s3(key) for key in assessment.image_keys if key]
+            assessment.image_urls = [
+                get_signed_url_from_s3(key)
+                for key in assessment.image_keys if key
+            ]
 
         return assessments
+
+    def send_to_doctor(
+            self,
+            cognito_sub: str,
+            assessment_id: str,
+            doctor_details: DoctorDetails | None = None
+    ) -> AssessmentModel:
+
+        current_date = current_millis()
+
+        return self.assessment_repository.assign_to_doctor(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            doctor_details=doctor_details,
+            new_status=AssessmentStatus.PENDING_DOCTOR,
+            updated_at=current_date,
+            created_at=current_date
+        )
