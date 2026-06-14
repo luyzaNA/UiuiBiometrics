@@ -9,6 +9,7 @@ export interface ProfileI {
     profileId: string;
     cognitoSub: string;
     age: number;
+    fullName:string
     gender: Gender;
     createdAt: number;
     updatedAt: number;

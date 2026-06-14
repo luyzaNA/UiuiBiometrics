@@ -17,16 +17,11 @@ class DoctorProfileModel(ProfileModel):
         description="Professional bio and experience."
     )
 
-    name: str = Field(
-        default="",
-        description="Doctor's full name."
-    )
-
     price: int = Field(
         default=0,
         description="Consultation price."
     )
-
+ 
     average_rating: float = Field(
         default=5.0,
         description="Calculated average rating from patient reviews."

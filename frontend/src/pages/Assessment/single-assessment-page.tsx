@@ -4,8 +4,11 @@ import {User, Activity, ImageIcon, Stethoscope, CheckCircle, Clock, ChevronRight
 import { useTranslation } from "react-i18next";
 import { SYMPTOM_MAPPER } from "@/utils/symptoms_wrap.ts";
 import { type AssessmentI, AssessmentStatus } from "@/models/assesment-model.ts";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import DoctorProfilePage from "./doctor-profile-page";
+import {profileService} from "@/services/profile-service.ts";
+import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 type AssessmentPageProps = {
     data: AssessmentI;
@@ -13,8 +16,9 @@ type AssessmentPageProps = {
 
 export default function AssessmentPage({ data }: AssessmentPageProps) {
     const { t } = useTranslation();
-    console.log("Data este",data)
+    console.log("Data este", data);
     const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
+    const [profile, setProfile] = useState<Partial<DoctorProfileI>>({});
 
     const deficiencyData = Object.entries(
         data.predictedDeficiencies || {}
@@ -31,6 +35,24 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
 
     const images = data.imageUrls || (data as any).image_urls || [];
 
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+
+                const profileData = await profileService.getMe();
+
+                console.log("PROFILE:", profileData);
+
+                setProfile(profileData);
+            } catch (error) {
+                console.error("Eroare la preluarea profilului:", error);
+            } finally {
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
     if (selectedDoctor) {
         return (
             <DoctorProfilePage
@@ -39,7 +61,6 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
             />
         );
     }
-
     return (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 animate-in fade-in duration-700">
             <Card className="xl:col-span-1 bg-gradient-to-br from-primary via-primary to-primary/70 text-secondary border-0 shadow-xl overflow-hidden relative">
@@ -53,8 +74,8 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                             <p className="text-xs uppercase tracking-[0.2em] text-secondary/60 font-medium">
                                 {t("Profile")}
                             </p>
-                            <h2 className="text-2xl font-bold">
-                                {data.targetPerson}
+                            <h2 className="text-2xl font-bold capitalize">
+                                {data.targetPerson ==="Principal" ? getFirstName(profile.fullName) : data.targetPerson}
                             </h2>
                         </div>
                     </CardTitle>
@@ -240,10 +261,11 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                 </Card>
             )}
 
-            {data.doctorDetails && (
+            {data.doctorDetails?.doctorId && (
                 <Card
                     onClick={() => {
                         setSelectedDoctor(data.doctorDetails!.doctorId);
+                        console.log("aICI",data.doctorDetails.fullName);
                     }}
                     className="xl:col-span-4 shadow-lg border-primary/20 bg-gradient-to-r from-primary/5 to-transparent cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:border-primary/40 transition-all duration-300 group"
                 >
@@ -256,14 +278,14 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                             {t("View Profile")} <ChevronRight size={16} />
                         </div>
                     </CardHeader>
-                    <CardContent className="flex flex-col md:flex-row gap-6 mt-2">
-                        <div className="flex items-start justify-between w-full gap-4">
+                    <CardContent className="flex flex-col gap-5 mt-2">
+                        <div className="flex flex-col sm:flex-row items-start justify-between w-full gap-4">
                             <div className="flex items-start gap-4">
                                 <div className="w-11 h-11 rounded-xl bg-secondary/5 border border-secondary/10 flex items-center justify-center overflow-hidden shrink-0 group-hover:border-primary/30 transition-colors">
                                     {data.doctorDetails?.avatarUrl ? (
                                         <img
                                             src={data.doctorDetails.avatarUrl}
-                                            alt={data.doctorDetails.name}
+                                            alt={data.doctorDetails.fullName || 'Doctor avatar'}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -273,12 +295,12 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
 
                                 <div>
                                     <h3 className="font-bold text-lg text-secondary group-hover:text-primary transition-colors">
-                                        {data.doctorDetails.name}
+                                        {data.doctorDetails.fullName}
                                     </h3>
                                     <p className="text-xs text-secondary/60 leading-relaxed mt-1 line-clamp-2">
                                         {data.doctorDetails.bio}
                                     </p>
-                                    <div className="mt-3 flex items-center gap-2">
+                                    <div className="mt-3 flex flex-wrap items-center gap-2">
                                         <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary px-2 py-1 rounded-md">
                                             {t("Verified Specialist")}
                                         </span>
@@ -289,7 +311,7 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                                 </div>
                             </div>
 
-                            <div className="shrink-0">
+                            <div className="shrink-0 self-start sm:self-auto">
                                 {data.status === AssessmentStatus.DOCTOR_REVIEWED ? (
                                     <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md">
                                         <CheckCircle size={10} />{t("Reviewed")}
@@ -301,14 +323,17 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                                 )}
                             </div>
                         </div>
+
                         {data.doctorNotes && (
-                            <div className="flex-1 border-t md:border-t-0 md:border-l border-secondary-foreground/10 pt-4 md:pt-0 md:pl-6">
-                                <h4 className="text-xs font-bold uppercase text-secondary-foreground/60 mb-2">
-                                    {t("Doctor's Notes")}
+                            <div className="w-full border-t border-secondary-foreground/10 pt-4 mt-2">
+                                <h4 className="text-xs font-bold uppercase text-secondary/60 mb-3">
+                                    {t("Doctor evaluation")}
                                 </h4>
-                                <p className="text-sm text-secondary-foreground/80 italic leading-relaxed">
-                                    "{data.doctorNotes}"
-                                </p>
+                                <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-4 transition-colors group-hover:border-primary/20">
+                                    <p className="text-sm text-secondary/80 italic leading-relaxed">
+                                        {data.doctorNotes}
+                                    </p>
+                                </div>
                             </div>
                         )}
                     </CardContent>

@@ -5,12 +5,14 @@ from decimal import Decimal
 from typing import List
 from uuid import UUID
 
+from boto3.dynamodb.conditions import Key
+
 from src.http_handlers.exceptions import NotFoundException
 from src.models.profile.doctor.profile_doctor_model import DoctorProfileModel
 from src.repositories.base_repository import BaseRepository
 from src.utils.enums import Gender
 from src.utils.settings import UIUI_BIOMETRICS_TABLE
-
+from src.models.profile.doctor.review_model import ReviewModel
 
 class DoctorRepository(BaseRepository):
     """Repository for managing doctor profiles."""
@@ -49,7 +51,6 @@ class DoctorRepository(BaseRepository):
         """
         Fetch a doctor profile by Cognito sub.
         """
-
         pk = f"DOCTOR#{sub}"
         sk = "PROFILE#METADATA"
 
@@ -73,7 +74,6 @@ class DoctorRepository(BaseRepository):
         """
         Fetch all doctor profiles using GSI2.
         """
-
         response = self.table.query(
             IndexName="GSI2",
             KeyConditionExpression="GSI2_PK = :GSI2_PK AND GSI2_SK = :GSI2_SK",
@@ -95,7 +95,7 @@ class DoctorRepository(BaseRepository):
             sub: str,
             updated_at: int,
             age=None,
-            name=None,
+            full_name=None,
             gender=None,
             bio=None,
             avatar_key=None,
@@ -105,13 +105,10 @@ class DoctorRepository(BaseRepository):
         """
         Update doctor profile fields dynamically.
         """
-
         update_parts = ["updated_at = :updated_at"]
         values = {
             ":updated_at": updated_at
         }
-
-        names = {}
 
         if age is not None:
             update_parts.append("age = :age")
@@ -121,10 +118,9 @@ class DoctorRepository(BaseRepository):
             update_parts.append("gender = :gender")
             values[":gender"] = gender.value
 
-        if name is not None:
-            update_parts.append("#doc_name = :name_val")
-            names["#doc_name"] = "name"
-            values[":name_val"] = name
+        if full_name is not None:
+            update_parts.append("full_name = :full_name_val")
+            values[":full_name_val"] = full_name
 
         if bio is not None:
             update_parts.append("bio = :bio")
@@ -153,9 +149,6 @@ class DoctorRepository(BaseRepository):
             "ReturnValues": "ALL_NEW"
         }
 
-        if names:
-            update_kwargs["ExpressionAttributeNames"] = names
-
         response = self.table.update_item(**update_kwargs)
 
         return self.convert_to_doctor_profile_model(
@@ -169,7 +162,6 @@ class DoctorRepository(BaseRepository):
         """
         Convert DynamoDB item to DoctorProfileModel.
         """
-
         return DoctorProfileModel(
             pk=item.get(self.pk_key),
             sk=item.get(self.sk_key),
@@ -179,7 +171,7 @@ class DoctorRepository(BaseRepository):
 
             age=int(item["age"]),
             gender=Gender(item["gender"]),
-            name=item.get("name", ""),
+            full_name=item.get("full_name", ""),
 
             avatar_url=item.get("avatar_url", ""),
             avatar_key=item.get("avatar_key"),
@@ -190,3 +182,49 @@ class DoctorRepository(BaseRepository):
             average_rating=float(item.get("average_rating", 0.0)),
             total_reviews=int(item.get("total_reviews", 0))
         )
+
+    def add_review_and_update_stats(self, doctor_sub: str, review: ReviewModel, new_avg: float, new_total: int):
+        review_item = review.model_dump(exclude_none=True)
+        review_item[self.pk_key] = f"DOCTOR#{doctor_sub}"
+        review_item[self.sk_key] = f"REVIEW#{review.created_at}#{review.reviewer_sub}"
+
+        self.table.put_item(Item=review_item)
+
+        self.table.update_item(
+            Key={
+                self.pk_key: f"DOCTOR#{doctor_sub}",
+                self.sk_key: "PROFILE#METADATA"
+            },
+            UpdateExpression="SET average_rating = :avg, total_reviews = :total",
+            ExpressionAttributeValues={
+                ":avg": Decimal(str(new_avg)),
+                ":total": new_total
+            }
+        )
+
+    def get_doctor_with_reviews(self, doctor_sub: str) -> dict:
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(f"DOCTOR#{doctor_sub}")
+        )
+
+        items = response.get("Items", [])
+        profile_item = None
+        reviews = []
+
+        for item in items:
+            if item.get(self.sk_key) == "PROFILE#METADATA":
+                profile_item = item
+            elif str(item.get(self.sk_key)).startswith("REVIEW#"):
+                reviews.append(item)
+
+        if not profile_item:
+            raise NotFoundException(f"Doctor profile for sub {doctor_sub} not found")
+
+        reviews.sort(key=lambda x: x.get("created_at", 0), reverse=True)
+
+        doctor_model = self.convert_to_doctor_profile_model(profile_item)
+
+        return {
+            "profile": doctor_model,
+            "reviews": [ReviewModel(**r) for r in reviews]
+        }

@@ -566,5 +566,23 @@
   "Oops! You seem lost.": "Ups! Se pare că te-ai rătăcit.",
   "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.": "Pagina pe care o cauți s-ar putea să fi fost eliminată, să-și fi schimbat numele sau să fie temporar indisponibilă.",
   "Go Back": "Înapoi",
-  "Back to Home": "Acasă"
+  "Back to Home": "Acasă",
+  "All patient assessments have been reviewed, or you do not have any patients to review.": "Toate evaluările pacienților au fost revizuite sau nu aveți niciun pacient de evaluat.",
+  "No pending reports": "Nu aveți rapoarte în așteptare",
+  "Back": "Înapoi",
+  "Set Up Profile": "Configurare profil",
+  "Max 500 characters": "Maxim 500 de caractere",
+  "Rate": "Tarif",
+  "Consultation Rate": "Tarif consultație",
+  "Briefly describe your experience, specializations, and approach to patient care...": "Descrieți pe scurt experiența, specializările și abordarea față de pacienți...",
+  "Loading profile": "Se încarcă profilul",
+  "No active menu for this profile.": "Nu există meniuri active pentru acest profil",
+  "No past menus found for this profile.": "Nu există meniuri din trecut pentru acest profil",
+  "Please provide your details to personalize your experience.": "Vă rugăm să completați detaliile pentru a vă personaliza experiența.",
+  "No pending medical reports found": "Nu au fost găsite rapoarte medicale în așteptare",
+  "You don't have any reports waiting for a doctor's review right now.": "Nu aveți niciun raport care să aștepte evaluarea unui medic în acest moment.",
+  "Reviewed" : "Evaluat",
+  "Doctor evaluation": "Evaluarea medicului"
+
+
 }

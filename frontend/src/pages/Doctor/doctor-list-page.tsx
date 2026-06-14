@@ -44,7 +44,7 @@ export default function DoctorsPage() {
 
         if (searchQuery.trim() !== '') {
             result = result.filter(doc =>
-                doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+                doc.fullName.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
@@ -150,7 +150,7 @@ interface DoctorCardProps {
 }
 
 function DoctorCard({ doctor, t, assessmentId }: DoctorCardProps) {
-    const cleanName = doctor.name.replace(/^Dr\.\s*/i, "");
+    const cleanName = doctor.fullName.replace(/^Dr\.\s*/i, "");
     const displayName = `Dr. ${cleanName}`;
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);

@@ -64,13 +64,12 @@ class AssessmentRepository(BaseRepository):
         if raw_doctor:
             doctor_obj = DoctorDetails(
                 doctor_id=raw_doctor.get("doctor_id"),
-                name=raw_doctor.get("name"),
+                full_name=raw_doctor.get("full_name"),
                 price=float(raw_doctor.get("price", 0.0)),
                 bio=raw_doctor.get("bio"),
 
-                # IMPORTANT:
                 avatar_key=raw_doctor.get("avatar_key"),
-                avatar_url=None  # NU din DB
+                avatar_url=None
             )
 
         return AssessmentModel(
@@ -298,4 +297,32 @@ class AssessmentRepository(BaseRepository):
         return [
             self.convert_to_assessment_model(item)
             for item in response.get("Items", [])
+        ]
+
+    def get_all_by_user_and_status(self, cognito_sub: str, status: str) -> list[AssessmentModel]:
+        """Fetch all assessments for a user filtered by a specific status."""
+        pk = f"USER#{cognito_sub}"
+
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(pk) & Key(self.sk_key).begins_with("ASSESS#"),
+            FilterExpression=Attr("status").eq(status)
+        )
+
+        return [
+            self.convert_to_assessment_model(i)
+            for i in response.get("Items", [])
+        ]
+
+    def get_by_target_person_and_status(self, cognito_sub: str, target_person: str, status: str) -> list[AssessmentModel]:
+        """Fetch all assessments for a user and target_person filtered by a specific status."""
+        pk = f"USER#{cognito_sub}"
+
+        response = self.table.query(
+            KeyConditionExpression=Key(self.pk_key).eq(pk) & Key(self.sk_key).begins_with("ASSESS#"),
+            FilterExpression=Attr("target_person").eq(target_person) & Attr("status").eq(status)
+        )
+
+        return [
+            self.convert_to_assessment_model(i)
+            for i in response.get("Items", [])
         ]

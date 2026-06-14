@@ -23,6 +23,7 @@ export default function SymptomQuizWizard() {
     const [personName, setPersonName] = useState<string>("");
 
     const [age, setAge] = useState<number>(25);
+    const [name, setName] = useState<string>(null);
     const [gender, setGender] = useState<"male" | "female" | null>(null);
 
     const [visionAnalyses, setVisionAnalyses] = useState<AnalysisEntry[]>([]);
@@ -44,6 +45,7 @@ export default function SymptomQuizWizard() {
                 if (profileData) {
                     setProfile(profileData);
                     if (profileData.age) setAge(profileData.age);
+                    if (profileData.fullName) setName(profileData.fullName);
 
                     if (profileData.gender === Gender.MASCULINE) setGender("male");
                     if (profileData.gender === Gender.FEMININE) setGender("female");
@@ -90,6 +92,7 @@ export default function SymptomQuizWizard() {
             const payload: CreateAssessmentRequest = {
                 target_person: targetPerson,
                 age: Number(age),
+                fullName: name,
                 gender: gender === "female" ? "feminine" : "masculine",
                 symptoms: formattedSymptoms,
                 images: base64Images

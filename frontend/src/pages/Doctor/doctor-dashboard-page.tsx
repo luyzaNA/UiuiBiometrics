@@ -72,7 +72,7 @@ export default function DoctorDashboard() {
         month: 'long'
     }).format(new Date());
 
-    const name = (profile?.name || "Doctor").replace(/^Dr\.\s*/i, "");
+    const name = (profile?.fullName || "Doctor").replace(/^Dr\.\s*/i, "");
 
     const displayName = `Dr. ${name.trim().split(" ")[0]}`;
 

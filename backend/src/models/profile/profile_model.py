@@ -36,6 +36,11 @@ class ProfileModel(BaseModel):
         description="The 'sub' (Subject) claim from the Cognito JWT, matching the raw ID inside the PK."
     )
 
+    full_name: str = Field(
+        default="",
+        description="User's full name."
+    )
+
     age: int = age_field()
 
     gender: Gender = Field(

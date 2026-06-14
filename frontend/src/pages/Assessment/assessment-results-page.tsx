@@ -3,7 +3,10 @@ import {Activity, Heart} from "lucide-react";
 import { MedicalAlert } from "@/components/medical-alert.tsx";
 import PlanSelectionSection from "@/pages/Assessment/sections/plan-selection-section.tsx";
 import {SYMPTOM_MAPPER} from "@/utils/symptoms_wrap.ts";
-import {useUser} from "@/hooks/use-user.ts";
+import {useEffect, useState} from "react";
+import {profileService} from "@/services/profile-service.ts";
+import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 interface AssessmentResultsProps {
     data: {
@@ -16,19 +19,39 @@ interface AssessmentResultsProps {
         predictedDeficiencies?: Record<string, number>;
         status?: string;
         assessmentId?: string;
+        fullName?: string;
     };
 }
 
 export default function AssessmentResultsPage({ data }: AssessmentResultsProps) {
     const { t } = useTranslation();
-    const userName:string = useUser().user.givenName;
+    const userName:string = data.fullName;
 
     const target_person = data?.targetPerson || "Principal";
     const hasRedFlags = data?.hasRedFlags || false;
     const red_flags = data?.redFlagDetails || [];
     const symptoms = data?.symptoms || {};
+    const [profile, setProfile] = useState<Partial<DoctorProfileI>>({});
 
     const rawDeficiencies = data?.predictedDeficiencies || {};
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+
+                const profileData = await profileService.getMe();
+
+                console.log("PROFILE:", profileData);
+
+                setProfile(profileData);
+            } catch (error) {
+                console.error("Eroare la preluarea profilului:", error);
+            } finally {
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
     const deficiencies = Object.entries(rawDeficiencies)
         .map(([nutrient, value]) => {
             const riskScore = Math.round((value as number) * 100);
@@ -51,6 +74,7 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
         })
         .sort((a, b) => b.riskScore - a.riskScore);
 
+
     if (hasRedFlags || red_flags.length > 0) {
         return <MedicalAlert redFlags={red_flags} assessmentId={data?.assessmentId} />;
     }
@@ -61,10 +85,9 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2.5 py-1 rounded-full">
                     {t("Analysis completed")}
                 </span>
-                <h1 className="text-2xl md:text-3xl font-black mt-3 tracking-tight text-secondary">
-                    <p>
-                        {t("What your body is telling you, ")} {target_person === "Principal" ? userName : target_person}
-                    </p>
+                <h1 className="text-2xl md:text-3xl font-black mt-3 tracking-tight text-secondary flex flex-row gap-2">
+                    <p>{t("What your body is telling you, ")}</p>
+                    <p className="capitalize">{target_person === "Principal" ? getFirstName(profile.fullName) : target_person}</p>
                 </h1>
                 <p className="text-secondary/60 mt-1 text-sm font-medium max-w-3xl leading-relaxed">
                     {t("Based on the symptoms you entered, here is a snapshot of your current nutritional state.")}

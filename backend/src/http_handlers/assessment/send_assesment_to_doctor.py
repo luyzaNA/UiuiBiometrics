@@ -39,19 +39,20 @@ def handler(event, context, user: User):
 
             if not doctor:
                 return bad_request("Doctor not found")
-
+            print(doctor)
             doctor_details = DoctorDetails(
                 doctor_id=doctor_id,
-                name=doctor.name,
+                full_name=doctor.full_name,
                 price=float(doctor.price),
                 bio=doctor.bio,
                 avatar_key=getattr(doctor, "avatar_key", None),
-                avatar_url=None  # IMPORTANT: runtime only
+                avatar_url=None
             )
+
         else:
             doctor_details = DoctorDetails(
                 doctor_id="POOL",
-                name="Specialist",
+                full_name="Specialist",
                 price=0.0,
                 bio="In progress",
                 avatar_key=None,

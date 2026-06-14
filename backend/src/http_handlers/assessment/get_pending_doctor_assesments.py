@@ -4,28 +4,35 @@ from src.models.user import User
 from src.services.assessment_service import AssessmentService
 from src.services.profile_service import get_signed_url_from_s3
 from src.utils.constants.models import MODEL_EXCLUDED_KEYS
-from src.utils.enums import Role, RoleCategory
+from src.utils.enums import Role, RoleCategory, AssessmentStatus
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 assessment_service = AssessmentService()
 
-
 @inject_user()
 @require_role_categories({RoleCategory.USER, RoleCategory.ADMIN})
 @require_roles({Role.ADMIN, Role.USER})
 def handler(event, context, user: User):
     try:
-        logger.info("[GET_ASSESSMENTS] Started for user %s", user.sub)
+        logger.info("[GET_PENDING_ASSESSMENTS] Started for user %s", user.sub)
 
         query_params = event.get("queryStringParameters") or {}
         target_person = query_params.get("target_person")
 
-        assessments = assessment_service.get_user_assessments(
-            cognito_sub=user.sub,
-            target_person=target_person
-        )
+        target_statuses = ["PENDING_DOCTOR", "DOCTOR_REVIEWED"]
+
+        assessments = []
+
+        for status in target_statuses:
+            fetched_assessments = assessment_service.get_user_assessments_by_status(
+                cognito_sub=user.sub,
+                status=status,
+                target_person=target_person
+            )
+            if fetched_assessments:
+                assessments.extend(fetched_assessments)
 
         serialized_data = []
 
@@ -45,5 +52,5 @@ def handler(event, context, user: User):
         return ok(data=serialized_data)
 
     except Exception:
-        logger.exception("[GET_ALL_ASSESSMENTS] Failed")
+        logger.exception("[GET_PENDING_ASSESSMENTS] Failed")
         return internal_server_error()

@@ -564,6 +564,23 @@
   "Oops! You seem lost.": "Oops! You seem lost.",
   "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
   "Go Back": "Go Back",
-  "Back to Home": "Back to Home"
-
+  "Back to Home": "Back to Home",
+  "No pending reports" : "No pending reports",
+  "All patient assessments have been reviewed, or you do not have any patients to review.": "All patient assessments have been reviewed, or you do not have any patients to review.",
+  "Back" : "Back",
+  "Set Up Profile": "Set Up Profile",
+  "Max 500 characters": "Max 500 characters",
+  "Rate": "Rate",
+  "Consultation Rate": "Consultation Rate",
+  "Briefly describe your experience, specializations, and approach to patient care...": "Briefly describe your experience, specializations, and approach to patient care...",
+  "Loading profile" : "Loading profile",
+  "No active menu for this profile.": "No active menu for this profile.",
+  "No past menus found for this profile.": "No past menus found for this profile.",
+  "Please provide your details to personalize your experience.": "Please provide your details to personalize your experience.",
+  "No pending medical reports found": "No pending medical reports found",
+  "You don't have any reports waiting for a doctor's review right now.": "You don't have any reports waiting for a doctor's review right now.",
+  "Reviewed" : "Reviewed",
+  "Doctor evaluation": "Doctor evaluation"
 }
+
+

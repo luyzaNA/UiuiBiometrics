@@ -7,7 +7,8 @@ import {
     Save,
     History,
     RefreshCw,
-    ArrowRight
+    ArrowRight,
+    User as UserIcon
 } from 'lucide-react';
 import { useUser } from "@/hooks/use-user.ts";
 import { Container } from "@/components/container";
@@ -23,6 +24,9 @@ import { formatDateMs, formatDateUnix } from "@/utils/form-data.ts";
 import { toast } from "sonner";
 
 const ProfileSchema = z.object({
+    fullName: z.string().min(2, {
+        message: t("Full name must be at least 2 characters"),
+    }),
     age: z.string().refine((val) => val !== "", {
         message: "Age is required",
     }).refine((val) => {
@@ -63,6 +67,7 @@ export function ProfilePage() {
     } = useForm<ProfileFormValues>({
         resolver: zodResolver(ProfileSchema),
         defaultValues: {
+            fullName: '',
             age: '',
             gender: '',
         }
@@ -99,16 +104,19 @@ export function ProfilePage() {
 
                 if (!profileData) {
                     setProfile(null);
+                    setValue('fullName', '');
                     setValue('age', '');
                     setValue('gender', '');
                     return;
                 }
 
                 setProfile(profileData);
+                setValue('fullName', (profileData as any).fullName || (profileData as any).full_name || '');
                 setValue('age', profileData.age?.toString() || '');
                 setValue('gender', profileData.gender || '');
             } catch (error) {
                 setProfile(null);
+                setValue('fullName', '');
                 setValue('age', '');
                 setValue('gender', '');
             } finally {
@@ -123,6 +131,7 @@ export function ProfilePage() {
             setSaving(true);
 
             const payload = {
+                full_name: data.fullName,
                 age: Number(data.age),
                 gender: data.gender as typeof Gender[keyof typeof Gender],
                 avatar: avatarBase64 || undefined,
@@ -137,10 +146,16 @@ export function ProfilePage() {
             }
 
             setProfile(savedProfile);
+            setValue('fullName', (savedProfile as any).fullName || (savedProfile as any).full_name || '');
             setValue('age', savedProfile.age.toString());
             setValue('gender', savedProfile.gender);
 
-            window.dispatchEvent(new CustomEvent("profile-updated", { detail: savedProfile.avatarUrl }));
+            window.dispatchEvent(new CustomEvent("profile-updated", {
+                detail: {
+                    avatarUrl: savedProfile.avatarUrl,
+                    fullName: savedProfile.fullName || savedProfile.full_name || "User"
+                }
+            }));
 
             toast.success(profile?.profileId
                 ? t("Profile updated successfully!")
@@ -156,20 +171,19 @@ export function ProfilePage() {
 
     if (loadingProfile) {
         return (
-            <div className="min-h-screen bg-secondary/90 pt-32 pb-20 text-[#1a1a1a]">
-                <Container>
-                    <div className="max-w-5xl mx-auto text-center">
-                        <p className="text-secondary-foreground/50">Loading profile...</p>
-                    </div>
-                </Container>
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4 text-secondary/60">
+                    <RefreshCw className="animate-spin text-primary w-8 h-8" />
+                    <span className="text-sm font-medium uppercase tracking-widest">{t("Loading Profile...")}</span>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-secondary/90 pt-32 pb-20 text-[#1a1a1a]">
+        <div className="min-h-screen bg-secondary/[0.02] pt-24 pb-20">
             <Container>
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     {imageToCrop && (
                         <ImageCropperModal
                             image={imageToCrop}
@@ -178,9 +192,21 @@ export function ProfilePage() {
                         />
                     )}
 
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
-                        <div className="flex items-center gap-6">
-                            <div className="relative group">
+                    <div className="flex justify-end mb-8">
+                        <button
+                            onClick={() => navigate("/dashboard")}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-background border border-secondary/10 text-sm font-medium text-secondary hover:border-primary/40 hover:text-primary transition-all cursor-pointer shadow-sm"
+                        >
+                            {t("Go to dashboard")}
+                            <ArrowRight size={16} />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="bg-background rounded-3xl p-8 shadow-sm border border-secondary/10 flex flex-col items-center text-center relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -189,153 +215,157 @@ export function ProfilePage() {
                                     className="hidden"
                                 />
 
-                                <div className="w-24 h-24 rounded-2xl bg-secondary border border-secondary-foreground/5 shadow-sm flex items-center justify-center overflow-hidden">
+                                <div
+                                    onClick={handleCameraClick}
+                                    className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg mb-5 group cursor-pointer bg-secondary/5 flex items-center justify-center"
+                                >
                                     {avatarPreview ? (
                                         <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
                                     ) : profile?.avatarUrl ? (
                                         <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-3xl font-light tracking-tighter text-secondary-foreground/40 uppercase">
-                                            {user?.nameInitial}
-                                        </span>
+                                        <UserIcon className="w-12 h-12 text-secondary/30" />
                                     )}
+
+                                    <div className="absolute inset-0 bg-secondary-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1 text-white">
+                                        <Camera size={24} />
+                                        <span className="text-xs font-medium">{t("Change")}</span>
+                                    </div>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={handleCameraClick}
-                                    className="absolute -bottom-2 -right-2 p-2 bg-secondary-foreground text-secondary rounded-xl shadow-xl hover:bg-primary transition-colors cursor-pointer"
-                                >
-                                    <Camera size={14} />
-                                </button>
-                            </div>
-                            <div>
-                                <h1 className="text-4xl font-medium tracking-tight mb-1 capitalize">
-                                    {user.givenName}
-                                </h1>
-                                <p className="text-sm text-secondary-foreground/40 font-medium tracking-wide flex items-center gap-2">
-                                    <Mail size={12} /> {user?.email}
-                                </p>
-                            </div>
-                        </div>
+                                <h2 className="text-2xl font-bold text-foreground mb-1 capitalize">
+                                    {(profile as any)?.fullName || (profile as any)?.full_name || user?.givenName || t("User")}
+                                </h2>
 
-                        <button
-                            onClick={() => navigate("/dashboard")}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-secondary-foreground/10 text-xs tracking-widest hover:bg-secondary-foreground hover:text-secondary transition-all cursor-pointer"
-                        >
-                            {t("Go to dashboard")}
-                            <ArrowRight size={14} />
-                        </button>
-                    </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground w-full justify-center bg-secondary/5 py-2 rounded-xl mt-3">
+                                    <Mail size={14} className="text-primary/60" />
+                                    <span className="truncate max-w-[200px]">{user?.email}</span>
+                                </div>
+                            </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        <div className="lg:col-span-4 space-y-8">
-                            <section>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary-foreground/30 mb-6">
+                            <div className="bg-background rounded-3xl p-6 shadow-sm border border-secondary/10">
+                                <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-5 px-1">
                                     {t("Account Activity")}
                                 </h4>
 
                                 <div className="space-y-3">
-                                    <div className="p-4 rounded-2xl bg-secondary border border-secondary-foreground/5 flex items-center gap-4">
-                                        <div className="p-2.5 bg-secondary-foreground/5 rounded-xl text-secondary-foreground/60">
+                                    <div className="flex items-center gap-4 p-3.5 bg-secondary/5 rounded-2xl border border-secondary/5">
+                                        <div className="p-2.5 bg-background rounded-xl text-secondary/60 shadow-sm">
                                             <History size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-secondary-foreground/40 uppercase tracking-wider">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                 {t("Last Login")}
                                             </p>
-                                            <p className="text-xs font-semibold text-secondary-foreground/80">
+                                            <p className="text-sm font-medium text-foreground mt-0.5">
                                                 {lastLogin || t("Unknown")}
                                             </p>
                                         </div>
                                     </div>
 
                                     {profile?.createdAt && (
-                                        <div className="p-4 rounded-2xl bg-secondary border border-secondary-foreground/5 flex items-center gap-4">
-                                            <div className="p-2.5 bg-secondary-foreground/5 rounded-xl text-secondary-foreground/60">
+                                        <div className="flex items-center gap-4 p-3.5 bg-secondary/5 rounded-2xl border border-secondary/5">
+                                            <div className="p-2.5 bg-background rounded-xl text-secondary/60 shadow-sm">
                                                 <Calendar size={16} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-secondary-foreground/40 uppercase tracking-wider">
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                     {t("Member Since")}
                                                 </p>
-                                                <p className="text-xs font-semibold text-secondary-foreground/80">
+                                                <p className="text-sm font-medium text-foreground mt-0.5">
                                                     {formatDateMs(profile.createdAt)}
                                                 </p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-                            </section>
+                            </div>
                         </div>
 
                         <div className="lg:col-span-8">
                             <form
                                 onSubmit={handleSubmit(onSubmit)}
-                                className="space-y-8 bg-secondary p-8 rounded-3xl border border-secondary-foreground/5 shadow-sm"
+                                className="bg-background p-6 sm:p-10 rounded-3xl shadow-sm border border-secondary/10 h-full flex flex-col"
                             >
-                                <div className="border-b border-secondary-foreground/5 pb-4">
-                                    <h3 className="text-xl font-medium tracking-tight text-secondary-foreground">
-                                        {isCreateMode ? t("Set Up Your Profile") : t("Edit Profile Details")}
+                                <div className="mb-8">
+                                    <h3 className="text-2xl font-bold text-foreground">
+                                        {isCreateMode ? t("Set Up Your Profile") : t("Profile Settings")}
                                     </h3>
-                                    <p className="text-xs text-secondary-foreground/50 mt-1">
+                                    <p className="text-sm text-muted-foreground mt-1">
                                         {t("Please provide your details to personalize your experience.")}
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-secondary-foreground/60">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
+                                            {t("Full Name")}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            {...register("fullName")}
+                                            className="w-full px-4 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-foreground"
+                                            placeholder={t("e.g. John Doe")}
+                                        />
+                                        {errors.fullName && (
+                                            <p className="text-xs text-destructive font-medium px-1">
+                                                {errors.fullName.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
                                             {t("Age")}
                                         </label>
                                         <input
                                             type="number"
                                             {...register("age")}
-                                            className="px-4 py-3 rounded-xl border border-secondary-foreground/10 bg-transparent text-sm focus:outline-none focus:border-primary transition-colors text-secondary-foreground w-full"
+                                            className="w-full px-4 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-foreground"
                                             placeholder={t("e.g. 25")}
                                         />
                                         {errors.age && (
-                                            <p className="text-xs text-destructive font-medium mt-0.5">
+                                            <p className="text-xs text-destructive font-medium px-1">
                                                 {errors.age.message}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-secondary-foreground/60">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
                                             {t("Gender")}
                                         </label>
                                         <div className="relative">
                                             <select
                                                 {...register("gender")}
-                                                className="px-4 py-3 rounded-xl border border-secondary-foreground/10 bg-transparent text-sm focus:outline-none focus:border-primary transition-colors text-secondary-foreground w-full appearance-none bg-secondary"
+                                                className="w-full px-4 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-foreground appearance-none cursor-pointer"
                                             >
-                                                <option value="" className="text-secondary-foreground/40">{t("Select gender")}</option>
+                                                <option value="" disabled>{t("Select gender")}</option>
                                                 <option value={Gender.FEMININE}>{t("Feminine")}</option>
                                                 <option value={Gender.MASCULINE}>{t("Masculine")}</option>
                                             </select>
-                                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-secondary-foreground/40">
-                                                <span className="text-xs">▼</span>
+                                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-secondary/50">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                                             </div>
                                         </div>
                                         {errors.gender && (
-                                            <p className="text-xs text-destructive font-medium mt-0.5">
+                                            <p className="text-xs text-destructive font-medium px-1">
                                                 {errors.gender.message}
                                             </p>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end pt-4 border-t border-secondary-foreground/5">
+                                <div className="mt-10 pt-6 border-t border-secondary/10 flex justify-end">
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className="flex items-center gap-2 px-6 py-3 bg-secondary-foreground text-secondary rounded-xl font-bold uppercase tracking-widest text-xs shadow-md hover:bg-primary hover:text-secondary transition-all disabled:opacity-50 cursor-pointer"
+                                        className="flex items-center gap-2 px-8 py-3 bg-primary/80 text-secondary rounded-xl font-semibold text-sm shadow-sm hover:bg-primary/90 hover:shadow transition-all disabled:opacity-70 cursor-pointer"
                                     >
                                         {saving ? (
-                                            <RefreshCw size={14} className="animate-spin" />
+                                            <RefreshCw size={18} className="animate-spin" />
                                         ) : (
-                                            <Save size={14} />
+                                            <Save size={18} />
                                         )}
                                         {saving ? t("Saving...") : isCreateMode ? t("Create Profile") : t("Save Changes")}
                                     </button>

@@ -7,18 +7,23 @@ import { profileService } from "@/services/profile-service.ts";
 import { Greeting } from "@/components/greeting";
 import { Daily_quote } from "@/components/daily_quote";
 import {useNavigate} from "react-router-dom";
+import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import {getInitial} from "@/utils/get-initiasl-from-name.ts";
 
 export default function DashboardPage() {
     const { t } = useTranslation();
     const { user, isAuthenticated } = useUser();
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [profile, setProfile] = useState<Partial<DoctorProfileI>>({});
+
 
     useEffect(() => {
         const loadDashboardProfile = async () => {
             if (isAuthenticated) {
                 try {
                     const profileData = await profileService.getMe();
+                    setProfile(profileData);
                     setAvatarUrl(profileData?.avatarUrl || null);
                 } catch (error) {
                     console.error("Profile load failed", error);
@@ -59,7 +64,7 @@ export default function DashboardPage() {
                                 {avatarUrl ? (
                                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-full" />
                                 ) : (
-                                    <span className="text-xl font-light tracking-widest text-primary uppercase">{user.nameInitial}</span>
+                                    <span className="text-xl font-light tracking-widest text-primary uppercase">{getInitial(profile.fullName)}</span>
                                 )}
                             </div>
                         </div>

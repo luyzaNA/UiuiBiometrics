@@ -11,7 +11,7 @@ class ProfileUpdateModel(BaseModel):
 
     age: Optional[int] = Field(default=None, ge=0, le=120)
     gender: Optional[Gender] = Field(default=None)
-    name: Optional[str] = Field(default=None, description="User's full name")
+    full_name: Optional[str] = Field(default=None, description="Doctor's full name")
     updated_at: int = timestamp_field()
     avatar_url: Optional[str] = Field(default=None)
     avatar_key: Optional[str] = Field(default=None, description="S3 key for the avatar image")
@@ -23,8 +23,8 @@ class ProfileUpdateModel(BaseModel):
             values[":age"] = self.age
         if self.gender is not None:
             values[":gender"] = self.gender.value
-        if self.name is not None:
-            values[":name"] = self.name
+        if self.full_name is not None:
+            values[":full_name"] = self.full_name
         if self.avatar_url is not None:
             values[":avatar_url"] = self.avatar_url
         if self.avatar_key is not None:

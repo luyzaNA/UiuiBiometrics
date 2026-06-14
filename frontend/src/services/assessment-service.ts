@@ -7,6 +7,7 @@ export interface CreateAssessmentRequest {
     gender: string;
     symptoms: Record<string, number>;
     images?: string[];
+    fullName: string;
 }
 
 export const assessmentService = {

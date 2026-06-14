@@ -110,6 +110,7 @@ class ProfileService:
             cognito_sub=cognito_sub,
             age=request.age,
             gender=request.gender,
+            full_name=request.full_name,
             avatar_url=avatar_url,
             avatar_key=avatar_key,
             created_at=current_date,
@@ -138,6 +139,7 @@ class ProfileService:
             pk=f"USER#{cognito_sub}",
             age=request.age,
             gender=request.gender,
+            full_name=request.full_name,
             updated_at=current_date,
             avatar_key=avatar_key,
             avatar_url=avatar_url

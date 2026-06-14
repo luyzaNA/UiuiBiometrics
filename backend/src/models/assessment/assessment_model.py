@@ -16,7 +16,7 @@ class DoctorDetails(BaseModel):
     doctor_id: str = Field(
         description="The unique Cognito sub or identifier of the doctor."
     )
-    name: str = Field(
+    full_name: str = Field(
         description="Doctor's full name."
     )
     price: float = Field(
