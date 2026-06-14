@@ -1,7 +1,7 @@
 import type { Gender } from "@/models/profile-model.ts";
 import {apiClient} from "@/api/client.ts";
 import type {DoctorProfileI} from "@/models/doctor-model.ts";
-import type {DoctorPatientI} from "@/models/assesment-model.ts";
+import type {AssessmentI, DoctorPatientI} from "@/models/assesment-model.ts";
 
 export interface CreateDoctorProfileRequest {
     age: number;
@@ -19,6 +19,15 @@ export interface UpdateDoctorProfileRequest {
     avatar?: string;
     price?: number;
     name?: string;
+}
+export interface PatientsStatsI{
+    total: number;
+    lastMonth: number;
+}
+
+export interface ReviewedStatsI {
+    totalReviewed: number;
+    reviewedLastWeek: number;
 }
 
 export const doctorService = {
@@ -57,5 +66,26 @@ export const doctorService = {
     async getDoctorPatients(): Promise<DoctorPatientI[]> {
         const response = await apiClient.get("/doctor/patients");
         return response.data;
-    }
-};
+    },
+    /**
+     * GET /api/doctor/patients/count
+     */
+    async getPatientsNumber(): Promise<PatientsStatsI> {
+        const response = await apiClient.get<PatientsStatsI>("/doctor/patients/count");
+        return response.data;
+    },
+    /**
+     * GET /api/doctor/assessments/pending
+     */
+    async getPendingAssessments(): Promise<AssessmentI[]> {
+        const response = await apiClient.get<AssessmentI[]>("/doctor/assessments/pending");
+        return response.data;
+    },
+    /**
+     * GET /api/doctor/assessments/reviewed-stats
+     */
+    async getReviewedStats(): Promise<{ data: ReviewedStatsI }> {
+        return  await apiClient.get<ReviewedStatsI>("/doctor/assessments/reviewed-stats");
+    },
+
+}

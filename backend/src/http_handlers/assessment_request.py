@@ -25,3 +25,10 @@ class CreateAssessmentRequest(BaseModel):
         default_factory=list,
         description="List of base64 encoded images."
     )
+
+class UpdateDoctorNotesRequest(BaseModel):
+    """Payload received when a doctor adds notes to an assessment."""
+    doctor_notes: str = Field(
+        min_length=1,
+        description="Doctor's recommendations and notes for the patient."
+    )

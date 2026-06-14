@@ -125,9 +125,32 @@ export const router = createBrowserRouter([
                                 Component: (await import('@/pages/Doctor/doctor-patient-history-page.tsx')).default,
                             }
                         },
-                    }
+                    },
+                    {
+                        path: "doctor/review/assessments",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-pending-assessments-list.tsx')).default,
+                            }
+                        },
+                    },
+                    {
+                        path: "/doctor/assessment/:cognitoSub/:id",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-assigned-assessment-details.tsx')).default,
+                            }
+                        },
+                    },
                 ]
             }
-        ]
+        ]},
+    {
+        path:"*",
+        lazy: async () => {
+            return {
+                Component: (await import('@/pages/not-found-page.tsx')).default,
+            }
+        },
     }
 ]);
