@@ -2,18 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from "react-i18next";
-import { Users, ClipboardList, Settings, Activity, Quote } from 'lucide-react';
+import { Users, ClipboardList, Settings, Activity, Quote, FileClock, Star } from 'lucide-react';
 
 import { QUOTES_DATA, type QuoteItem } from "@/data/quotes.ts";
 import { useUser } from "@/hooks/use-user.ts";
-import { doctorService, type PatientsStatsI, type ReviewedStatsI } from "@/services/doctor-service.ts";
+import {
+    doctorService,
+    type PatientsStatsI,
+    type ReviewedStatsI,
+    type PendingCountStatsI
+} from "@/services/doctor-service.ts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ActionCard } from "@/components/action-card.tsx";
 import type { DoctorProfileI } from "@/models/doctor-model.ts";
 
 export default function DoctorDashboard() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { user } = useUser();
 
@@ -22,6 +27,7 @@ export default function DoctorDashboard() {
 
     const [patientsCount, setPatientsCount] = useState<PatientsStatsI | null>(null);
     const [reviewedStats, setReviewedStats] = useState<ReviewedStatsI | null>(null);
+    const [pendingCount, setPendingCount] = useState<PendingCountStatsI | null>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
 
     useEffect(() => {
@@ -48,13 +54,15 @@ export default function DoctorDashboard() {
         const fetchDashboardStats = async () => {
             try {
                 setIsLoadingStats(true);
-                const [countRes, reviewedRes] = await Promise.all([
+                const [countRes, reviewedRes, pendingRes] = await Promise.all([
                     doctorService.getPatientsNumber(),
-                    doctorService.getReviewedStats()
+                    doctorService.getReviewedStats(),
+                    doctorService.getPendingCount()
                 ]);
 
                 setPatientsCount(countRes);
                 setReviewedStats(reviewedRes.data);
+                setPendingCount(pendingRes.data);
 
             } catch (error) {
                 console.error("Eroare la aducerea statisticilor de dashboard:", error);
@@ -66,7 +74,7 @@ export default function DoctorDashboard() {
         fetchDashboardStats();
     }, []);
 
-    const currentDate = new Intl.DateTimeFormat('en-US', {
+    const currentDate = new Intl.DateTimeFormat(i18n.language || 'en-US', {
         weekday: 'long',
         day: 'numeric',
         month: 'long'
@@ -110,7 +118,7 @@ export default function DoctorDashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                className="grid grid-cols-1 md:grid-cols-4 gap-6"
             >
                 <StatCard
                     icon={Users}
@@ -118,17 +126,44 @@ export default function DoctorDashboard() {
                     value={isLoadingStats ? "..." : String(patientsCount?.total || 0)}
                     trend={isLoadingStats ? "..." : `+${patientsCount?.lastMonth || 0} ${t("this month")}`}
                 />
+
                 <StatCard
                     icon={Activity}
-                    label={t("Completed Assessments")}
+                    label={t("Completed reports")}
                     value={isLoadingStats ? "..." : String(reviewedStats?.totalReviewed || 0)}
                     trend={isLoadingStats ? "..." : `+${reviewedStats?.reviewedLastWeek || 0} ${t("this week")}`}
                 />
+
+                <StatCard
+                    icon={FileClock}
+                    label={t("Pending Reports")}
+                    value={isLoadingStats ? "..." : String(pendingCount?.pendingCount || 0)}
+                    trend={t("Needs your review")}
+                />
+
                 <StatCard
                     icon={ClipboardList}
-                    label={t("New Reviews")}
-                    value="4.9"
-                    trend="From 82 total evaluations"
+                    label={t("Rating")}
+                    value={
+                        !profile ? "..." : (
+                            <div className="flex items-center gap-2">
+                                <span>{profile.averageRating}</span>
+                                <div className="flex items-center gap-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                            key={star}
+                                            className={`w-4 h-4 ${
+                                                star <= Math.round(profile.averageRating)
+                                                    ? "fill-amber-400 text-amber-400"
+                                                    : "text-muted-foreground/20"
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )
+                    }
+                    trend={!profile ? "..." : t("From {{count}} total evaluations", { count: profile.totalReviews || 0 })}
                 />
             </motion.div>
 
@@ -178,14 +213,14 @@ export default function DoctorDashboard() {
     );
 }
 
-function StatCard({ icon: Icon, label, value, trend }: { icon: any, label: string, value: string, trend: string }) {
+function StatCard({ icon: Icon, label, value, trend }: { icon: any, label: string, value: React.ReactNode, trend: string }) {
     return (
         <Card className="bg-secondary/5 border-secondary/10 hover:border-secondary/20 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-semibold tracking-wide text-muted-foreground">
+                <CardTitle className="text-sm font-semibold tracking-wide text-muted-foreground whitespace-nowrap">
                     {label}
                 </CardTitle>
-                <Icon className="w-5 h-5 text-primary/70" />
+                <Icon className="w-5 h-5 text-primary/70 shrink-0" />
             </CardHeader>
             <CardContent>
                 <div className="text-4xl font-extrabold text-foreground tracking-tight">{value}</div>

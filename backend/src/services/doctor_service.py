@@ -5,6 +5,7 @@ from uuid import uuid4
 from src.http_handlers.doctor_request import CreateDoctorProfileRequest, UpdateDoctorProfileRequest
 from src.models.profile.doctor.profile_doctor_model import DoctorProfileModel
 from src.repositories.doctor_repository import DoctorRepository
+from src.repositories.profile_repository import ProfileRepository
 from src.services.profile_service import upload_avatar_if_exists, get_signed_url_from_s3
 from src.utils.time import current_millis
 from src.utils.logger import get_logger
@@ -24,30 +25,32 @@ class DoctorService:
 
     def __init__(self):
         self.doctor_repository = DoctorRepository()
+        self.profile_repository = ProfileRepository()
+
 
     def create_profile(self, request: CreateDoctorProfileRequest, cognito_sub: str) -> DoctorProfileModel:
-        """Creates a new doctor profile partition using the Cognito sub as PK."""
-        current_date: int = current_millis()
-        avatar_key = upload_avatar_if_exists(request.avatar, cognito_sub)
-        avatar_url = get_signed_url_from_s3(avatar_key) if avatar_key else None
+            """Creates a new doctor profile partition using the Cognito sub as PK."""
+            current_date: int = current_millis()
+            avatar_key = upload_avatar_if_exists(request.avatar, cognito_sub)
+            avatar_url = get_signed_url_from_s3(avatar_key) if avatar_key else None
 
-        new_doctor = DoctorProfileModel(
-            pk=f"DOCTOR#{cognito_sub}",
-            sk="PROFILE#METADATA",
-            profile_id=uuid4(),
-            cognito_sub=cognito_sub,
-            age=request.age,
-            full_name=request.fullName,
-            gender=request.gender,
-            bio=request.bio,
-            price=request.price,
-            avatar_url=avatar_url,
-            avatar_key=avatar_key,
-            created_at=current_date,
-            updated_at=current_date
-        )
+            new_doctor = DoctorProfileModel(
+                pk=f"DOCTOR#{cognito_sub}",
+                sk="PROFILE#METADATA",
+                profile_id=uuid4(),
+                cognito_sub=cognito_sub,
+                age=request.age,
+                full_name=request.fullName,
+                gender=request.gender,
+                bio=request.bio,
+                price=request.price,
+                avatar_url=avatar_url,
+                avatar_key=avatar_key,
+                created_at=current_date,
+                updated_at=current_date
+            )
 
-        return self.doctor_repository.create_profile(new_doctor)
+            return self.doctor_repository.create_profile(new_doctor)
 
     def get_doctor_by_sub(self, cognito_sub: str) -> DoctorProfileModel:
         """Retrieve a doctor profile based on Cognito Sub and inject dynamic presigned avatar URL."""
@@ -94,7 +97,7 @@ class DoctorService:
         return doctor
 
     def add_review(self, doctor_sub: str, reviewer: User, request: CreateDoctorReviewRequest):
-        """Calculează noua medie a doctorului și adaugă review-ul."""
+        """Calculează noua medie a doctorului și adaugă review-ul cu datele din profil."""
         doctor = self.get_doctor_by_sub(doctor_sub)
 
         current_total = doctor.total_reviews
@@ -103,9 +106,16 @@ class DoctorService:
         new_total = current_total + 1
         new_avg = ((current_avg * current_total) + request.rating) / new_total
 
+        user_profile = self.profile_repository.get_by_cognito_sub(reviewer.sub)
+
+        if user_profile and user_profile.full_name:
+            reviewer_name = user_profile.full_name
+        else:
+            reviewer_name = f"{reviewer.first_name} {reviewer.last_name}".strip() or "Anonymous"
+
         review = ReviewModel(
             reviewer_sub=reviewer.sub,
-            reviewer_name=f"{reviewer.first_name} {reviewer.last_name}".strip() or "Anonymous",
+            reviewer_name=reviewer_name,
             rating=request.rating,
             comment=request.comment
         )
@@ -126,3 +136,4 @@ class DoctorService:
             "profile": doctor.model_dump(exclude={"gsi2_pk", "gsi2_sk", "pk", "sk", "avatar_key"}),
             "reviews": [r.model_dump() for r in data["reviews"]]
         }
+

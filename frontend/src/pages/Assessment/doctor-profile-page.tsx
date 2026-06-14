@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import type { DoctorProfileI } from "@/models/doctor-model.ts";
 import { doctorService, type ReviewI } from "@/services/doctor-service.ts";
 import { formatDateMs } from "@/utils/form-data";
+import {toast} from "sonner";
 
 type DoctorProfilePageProps = {
     doctorId?: string;
@@ -73,6 +74,8 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                 ...prev,
                 totalReviews: (prev.totalReviews || 0) + 1
             }));
+            toast.success(t("Review sent successfully!"));
+
         } catch (error) {
             console.error("Failed to add review:", error);
         } finally {
@@ -87,7 +90,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                 <div className="absolute inset-0 z-50 flex items-start justify-center pt-20 bg-background/50 backdrop-blur-sm rounded-xl">
                     <div className="flex items-center gap-2 text-primary font-bold bg-background p-4 rounded-xl shadow-lg">
                         <Loader2 className="animate-spin" size={20} />
-                        {t("Loading full profile...")}
+                        {t("Loading profile...")}
                     </div>
                 </div>
             )}
@@ -95,14 +98,12 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
             {onBack && (
                 <button
                     onClick={onBack}
-                    className="text-[10px] uppercase tracking-[0.2em] font-bold text-secondary/40 hover:text-secondary transition-colors inline-flex items-center gap-2 mb-2 hover:cursor-pointer"
-                >
+                    className="text-[10px] uppercase tracking-[0.2em] font-bold text-secondary/40 hover:text-secondary transition-colors inline-flex items-center gap-2 mb-2 hover:cursor-pointer">
                     <ArrowLeft size={12} /> {t("Back to list")}
                 </button>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
                 <Card className="lg:col-span-1 bg-gradient-to-br from-primary/20 to-background border border-secondary/10 shadow-2xl overflow-hidden h-fit sticky top-6">
                     <CardHeader className="flex flex-col items-center text-center pb-2">
                         <div className="w-24 h-24 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl mb-4 bg-secondary/10">
@@ -125,7 +126,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                         <div className="bg-secondary/5 border border-secondary/5 p-3 rounded-xl flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Star className="text-amber-400 fill-amber-400" size={14} />
-                                <span className="text-sm text-secondary/80 font-bold">{profile.averageRating?.toFixed(1) || "5.0"}</span>
+                                <span className="text-sm text-secondary/80 font-bold">{profile.averageRating?.toFixed(2) || "No reviews yet"}</span>
                             </div>
                             <span className="text-[10px] text-secondary/40 font-medium uppercase tracking-wider">
                                 {profile.totalReviews || 0} {t("reviews")}
@@ -187,69 +188,80 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                             </div>
                         </CardContent>
                     </Card>
+                </div>
+            </div>
 
-                    {doctorId && (
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/60 flex items-center gap-2">
-                                <Star size={16} className="text-primary" /> {t("Patient Reviews")}
-                            </h3>
+            {doctorId && (
+                <div className="space-y-8 pt-6 border-t border-secondary/10 mt-6">
 
-                            <Card className="border border-primary/20 bg-primary/5 shadow-sm">
-                                <CardContent className="pt-6 space-y-4">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-xs font-bold text-secondary/60 uppercase">{t("Your Rating")}:</span>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <Star
-                                                    key={star}
-                                                    size={20}
-                                                    onClick={() => setNewRating(star)}
-                                                    className={`cursor-pointer transition-colors ${
-                                                        star <= newRating
-                                                            ? "text-amber-400 fill-amber-400"
-                                                            : "text-secondary/20"
-                                                    }`}
-                                                />
-                                            ))}
-                                        </div>
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/60 flex items-center gap-2">
+                            <Star size={16} className="text-primary" /> {t("Leave a Review")}
+                        </h3>
+
+                        <Card className="border border-primary/20 bg-primary/5 shadow-sm">
+                            <CardContent className="pt-6 space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xs font-bold text-secondary/60 uppercase">{t("Your Rating")}:</span>
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                                key={star}
+                                                size={20}
+                                                onClick={() => setNewRating(star)}
+                                                className={`cursor-pointer transition-colors ${
+                                                    star <= newRating
+                                                        ? "text-amber-400 fill-amber-400"
+                                                        : "text-secondary/20"
+                                                }`}
+                                            />
+                                        ))}
                                     </div>
+                                </div>
 
-                                    <textarea
-                                        value={newComment}
-                                        onChange={(e) => setNewComment(e.target.value)}
-                                        placeholder={t("Share your experience with this doctor (optional)...")}
-                                        className="w-full min-h-[80px] p-3 rounded-xl bg-background border border-secondary/10 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all resize-none"
-                                    />
+                                <textarea
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder={t("Share your experience with this doctor (optional)...")}
+                                    className="w-full min-h-[80px] p-3 rounded-xl bg-background border border-secondary/10 text-sm text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all resize-none"
+                                />
 
-                                    <div className="flex justify-end">
-                                        <button
-                                            onClick={handleAddReview}
-                                            disabled={isSubmittingReview}
-                                            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                        >
-                                            {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                            {t("Submit Review")}
-                                        </button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={handleAddReview}
+                                        disabled={isSubmittingReview}
+                                        className="flex items-center gap-2 bg-primary/80 text-secondary px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 hover:cursor-pointer"
+                                    >
+                                        {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                        {t("Submit Review")}
+                                    </button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                            <div className="space-y-3">
-                                {reviews.length === 0 ? (
-                                    <div className="text-center p-6 bg-secondary/5 rounded-2xl border border-secondary/10">
-                                        <p className="text-sm text-secondary/40 font-medium">
-                                            {t("No reviews yet. Be the first to share your experience!")}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    reviews.map((review, index) => (
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/60 flex items-center gap-2">
+                            <MessageSquare size={16} className="text-primary" /> {t("Past Reviews")}
+                        </h3>
+
+                        <div className="space-y-3">
+                            {reviews.length === 0 ? (
+                                <div className="text-center p-6 bg-secondary/5 rounded-2xl border border-secondary/10">
+                                    <p className="text-sm text-secondary/40 font-medium">
+                                        {t("No reviews yet. Be the first to share your experience!")}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {reviews.map((review, index) => (
                                         <Card key={index} className="border border-secondary/10 bg-secondary/[0.01]">
-                                            <CardContent className="p-4 space-y-3">
+                                            <CardContent className="p-4 space-y-3 h-full">
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <p className="text-sm font-bold text-secondary">{review.reviewer_name}</p>
+                                                        <p className="text-sm font-bold text-secondary capitalize">{review.reviewerName}</p>
                                                         <p className="text-[10px] text-secondary/40 font-bold uppercase tracking-wider mt-0.5">
-                                                            {formatDateMs(review.created_at)}
+                                                            {formatDateMs(review.createdAt)}
                                                         </p>
                                                     </div>
                                                     <div className="flex gap-0.5">
@@ -260,7 +272,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                                                                 className={
                                                                     star <= review.rating
                                                                         ? "text-amber-400 fill-amber-400"
-                                                                        : "text-secondary/10"
+                                                                        : "text-secondary/40"
                                                                 }
                                                             />
                                                         ))}
@@ -273,13 +285,14 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                                                 )}
                                             </CardContent>
                                         </Card>
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
+
                 </div>
-            </div>
+            )}
         </div>
     );
 }

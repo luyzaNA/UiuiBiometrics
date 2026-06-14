@@ -25,7 +25,6 @@ interface AssessmentResultsProps {
 
 export default function AssessmentResultsPage({ data }: AssessmentResultsProps) {
     const { t } = useTranslation();
-    const userName:string = data.fullName;
 
     const target_person = data?.targetPerson || "Principal";
     const hasRedFlags = data?.hasRedFlags || false;

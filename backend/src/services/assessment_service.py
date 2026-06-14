@@ -376,3 +376,15 @@ class AssessmentService:
             ]
 
         return assessments
+
+    def count_pending_assessments(self, doctor_id: str) -> dict:
+        """
+        Fetches the total number of pending assessments for a specific doctor.
+        """
+        logger.info(f"[ASSESSMENT_SERVICE] Counting pending assessments for doctor {doctor_id}")
+
+        count = self.assessment_repository.count_pending_assessments_by_doctor(doctor_id)
+
+        return {
+            "pendingCount": count
+        }
