@@ -40,7 +40,7 @@ def handler(event, context, user: User):
 
             doctor_details = {
                 "doctorId": doctor.get("doctor_id"),
-                "name": doctor.get("name"),
+                "full_name": doctor.get("full_name"),
                 "bio": doctor.get("bio"),
                 "price": doctor.get("price"),
                 "avatarKey": avatar_key,

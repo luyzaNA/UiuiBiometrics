@@ -36,6 +36,7 @@ class ProfileRepository(BaseRepository):
                 "cognito_sub": profile.cognito_sub,
                 "age": profile.age,
                 "gender": profile.gender.value,
+                "full_name": profile.full_name,
                 "avatar_url": profile.avatar_url,
                 "avatar_key": profile.avatar_key,
                 "created_at": profile.created_at,
@@ -70,6 +71,7 @@ class ProfileRepository(BaseRepository):
             cognito_sub=item.get("cognito_sub"),
             age=int(item.get("age")),
             gender=Gender(item.get("gender")),
+            full_name=item.get("full_name", ""),
             avatar_url=item.get("avatar_url", ""),
             avatar_key=item.get("avatar_key"),
             created_at=int(item.get("created_at", 0)),
@@ -80,6 +82,8 @@ class ProfileRepository(BaseRepository):
         """Update an existing profile using a partial update expression."""
 
         update_parts = ["updated_at = :updated_at"]
+        if profile_update.full_name is not None:
+            update_parts.append("full_name = :full_name")
         if profile_update.age is not None:
             update_parts.append("age = :age")
         if profile_update.gender is not None:

@@ -6,5 +6,4 @@ export interface DoctorProfileI extends ProfileI {
     averageRating: number;
     totalReviews: number;
     price: number
-    name: string
 }

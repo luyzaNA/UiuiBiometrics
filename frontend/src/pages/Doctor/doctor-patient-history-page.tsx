@@ -10,7 +10,7 @@ export default function PatientHistoryPage() {
 
     const targetPerson: string = location.state?.targetPerson;
     const cognitoSub: string = location.state?.cognitoSub;
-    const email: string = location.state?.email;
+    const fullName:string = location.state?.fullName;
 
     if (!targetPerson) {
         return (
@@ -40,10 +40,7 @@ export default function PatientHistoryPage() {
                         {t("Medical History")}
                     </h1>
                     <p className="text-sm text-secondary/40 mt-1">
-                        {t("Patient")}: <strong className="text-secondary/80">{targetPerson}</strong>
-                    </p>
-                    <p className="text-sm text-secondary/40 mt-1">
-                        {t("Email")}: <strong className="text-secondary/80">{email}</strong>
+                        {t("Patient")}: <strong className="text-secondary/80">{targetPerson === "Principal" ? fullName : targetPerson }</strong>
                     </p>
                 </div>
             </div>

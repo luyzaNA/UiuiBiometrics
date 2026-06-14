@@ -42,6 +42,7 @@ export default function AssessmentsHistoryPage() {
                 const response = await assessmentService.getAll();
                 const dataArray = Array.isArray(response) ? response : (response?.data || []);
                 setAssessments([...dataArray].sort((a, b) => b.createdAt - a.createdAt));
+                console.log("set", dataArray);
             } catch (error) {
                 setHasError(true);
             } finally {
@@ -93,7 +94,7 @@ export default function AssessmentsHistoryPage() {
     const currentAssessment = useMemo(() => {
         return personAssessments.find((a) => a.assessmentId === selectedView) || selectedDoctorAssessment;
     }, [personAssessments, selectedView, selectedDoctorAssessment]);
-
+console.log("Cureent", currentAssessment);
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -199,8 +200,7 @@ export default function AssessmentsHistoryPage() {
                         ) : (
                             <div className="text-center py-20 bg-secondary/30 rounded-3xl border border-dashed border-foreground/10">
                                 <Apple size={40} className="mx-auto mb-4 text-muted-foreground opacity-20" />
-                                <p className="text-muted-foreground font-medium">{t("No active protocol for this profile.")}</p>
-                                <p className="text-xs text-muted-foreground/60 mt-1">{t("Generate a menu from your latest assessment.")}</p>
+                                <p className="text-muted-foreground font-medium">{t("No active menu for this profile.")}</p>
                             </div>
                         )}
                     </div>
@@ -240,7 +240,7 @@ export default function AssessmentsHistoryPage() {
                                 </div>
                             ) : (
                                 <div className="text-center py-20 bg-secondary/30 rounded-3xl border border-dashed border-foreground/10">
-                                    <p className="text-muted-foreground font-medium">{t("No past protocols found for this profile.")}</p>
+                                    <p className="text-muted-foreground font-medium">{t("No past menus found for this profile.")}</p>
                                 </div>
                             )
                         ) : (

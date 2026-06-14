@@ -25,12 +25,16 @@ def handler(event, context, user: User):
 
         data = loads(event.get("body") or "{}")
         update_req = UpdateDoctorProfileRequest(**data)
+        logger.info("[UPDATE_DOCTOR_PROFILE]DATA: %s", data)
+        logger.info("[UPDATE_DOCTOR_PROFILE]requess: %s", update_req)
 
         doctor_service = DoctorService()
         updated_profile = doctor_service.update_profile(
             request=update_req,
             cognito_sub=user.sub
         )
+        logger.info("[UPDATE_DOCTOR_PROFILE]Updateeeeeed: %s", updated_profile)
+
 
         return ok(data=updated_profile.model_dump(exclude=MODEL_EXCLUDED_KEYS))
 

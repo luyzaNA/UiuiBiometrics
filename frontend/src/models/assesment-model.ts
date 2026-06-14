@@ -9,7 +9,7 @@ export const AssessmentStatus = {
 export type AssessmentStatusType = typeof AssessmentStatus[keyof typeof AssessmentStatus];
 
 export interface DoctorDetailsI {
-    name: string;
+    fullName: string;
     avatarUrl?: string;
     bio: string;
     price: number;
@@ -24,7 +24,7 @@ export interface DoctorPatientI {
     lastAssessmentAt: number;
     latestStatus: AssessmentStatusType;
     latestAssessmentId: string;
-    email?: string;
+    fullName: string;
     avatarUrl?: string;
 }
 

@@ -1,18 +1,40 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useUser } from "@/hooks/use-user.ts";
+import {profileService} from "@/services/profile-service.ts";
+import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 export function Greeting() {
     const { t } = useTranslation();
-    const { user } = useUser();
     const [fullGreeting, setFullGreeting] = useState('');
     const [displayedGreeting, setDisplayedGreeting] = useState('');
     const [isWriting, setIsWriting] = useState(true);
+    const [profile, setProfile] = useState<Partial<DoctorProfileI>>({});
+
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+
+                const profileData = await profileService.getMe();
+
+                console.log("PROFILE:", profileData);
+
+                setProfile(profileData);
+            } catch (error) {
+                console.error("Eroare la preluarea profilului:", error);
+            } finally {
+            }
+        };
+
+        fetchProfile();
+    }, []);
 
     useEffect(() => {
         const getGreetingMessage = () => {
             const hour = new Date().getHours();
+
             let baseGreeting = "";
 
             if (hour >= 5 && hour < 12) {
@@ -23,7 +45,11 @@ export function Greeting() {
                 baseGreeting = t("Good evening");
             }
 
-            return user?.givenName ? `${baseGreeting}, ${user.givenName}` : baseGreeting;
+            const firstName = getFirstName(profile.fullName)
+
+            return profile.fullName
+                ? `${baseGreeting}, ${firstName}`
+                : baseGreeting;
         };
 
         setFullGreeting(getGreetingMessage());
@@ -33,7 +59,7 @@ export function Greeting() {
         }, 60000);
 
         return () => clearInterval(interval);
-    }, [t, user?.givenName]);
+    }, [t, profile.fullName]);
 
     useEffect(() => {
         if (!fullGreeting) return;

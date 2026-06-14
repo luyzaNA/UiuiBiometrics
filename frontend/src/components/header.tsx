@@ -26,6 +26,8 @@ import {
 import { useUser } from "@/hooks/use-user.ts";
 import { profileService } from "@/services/profile-service.ts";
 import {doctorService} from "@/services/doctor-service.ts";
+import {getInitial} from "@/utils/get-initiasl-from-name.ts";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 export function Header() {
     const { t, i18n } = useTranslation();
@@ -34,6 +36,8 @@ export function Header() {
     const { user, isAuthenticated, login, logout } = useUser();
 
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [name, setName] = useState<string>(null);
+
 
     const isDoctor = user?.["groups"]?.includes("doctor");
 
@@ -48,12 +52,12 @@ export function Header() {
 
                     if (isDoctor) {
                       profileData = await doctorService.getMe();
-                        console.log("Doctor profile loaded", profileData);
                     } else {
                         profileData = await profileService.getMe();
                     }
 
                     setAvatarUrl(profileData?.avatarUrl || null);
+                    setName(getFirstName(profileData.fullName));
                 } catch (error) {
                     console.error("Profile load failed", error);
                 }
@@ -63,16 +67,10 @@ export function Header() {
         };
 
         loadHeaderProfile();
-
-        const handleProfileUpdate = (e: Event) => {
-            const customEvent = e as CustomEvent<string | null>;
-            setAvatarUrl(customEvent.detail);
-        };
-
-        window.addEventListener("profile-updated", handleProfileUpdate);
-        return () => {
-            window.removeEventListener("profile-updated", handleProfileUpdate);
-        };
+        window.addEventListener("profile-updated", ((e: CustomEvent) => {
+            setAvatarUrl(e.detail.avatarUrl);
+            setName(e.detail.fullName?.split(" ")[0]);
+        }) as EventListener);
     }, [isAuthenticated, isDoctor]);
 
     const navItems = [
@@ -237,12 +235,12 @@ export function Header() {
                                             {avatarUrl ? (
                                                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
-                                                user.nameInitial
+                                                getInitial(name)
                                             )}
                                         </div>
                                         <div className="flex flex-col items-start">
                                             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">
-                                                {user.givenName}
+                                                {name}
                                             </span>
                                             <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest leading-none">
                                                 {t("Account")}

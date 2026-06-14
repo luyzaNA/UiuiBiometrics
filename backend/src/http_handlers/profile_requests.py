@@ -29,6 +29,11 @@ class CreateProfileRequest(BaseModel):
         description="Optional URL for the user's avatar image."
     )
 
+    full_name: str = Field(
+        ...,
+        description="User's full name"
+    )
+
 
 class UpdateProfileRequest(BaseModel):
     """
@@ -51,4 +56,8 @@ class UpdateProfileRequest(BaseModel):
     avatar: Optional[str] = Field(
         None,
         description="Updated URL for the user's avatar image."
+    )
+    full_name: Optional[str] = Field(
+        None,
+        description="User's full name"
     )

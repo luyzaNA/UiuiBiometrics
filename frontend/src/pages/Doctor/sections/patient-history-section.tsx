@@ -244,7 +244,7 @@ export function PatientHistorySection({ targetPerson, cognitoSub, excludeAssessm
                                     )}
                                     <div>
                                         <h4 className="text-sm font-bold text-primary">
-                                            {assessment.doctorDetails.name}
+                                            {assessment.doctorDetails.fullName}
                                         </h4>
                                         <p className="text-[10px] text-primary/70 uppercase font-bold tracking-wider">{t("Medical Notes")}</p>
                                     </div>

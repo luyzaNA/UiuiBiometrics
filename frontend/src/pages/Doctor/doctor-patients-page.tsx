@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Users, Search, Calendar, ChevronRight, UserRound, Loader2 } from "lucide-react";
+import { Users, Search, Calendar, ChevronRight, UserRound, Loader2, ArrowLeft } from "lucide-react";
 import type { DoctorPatientI } from "@/models/assesment-model.ts";
 import { formatDateMs } from "@/utils/form-data.ts";
 import { doctorService } from "@/services/doctor-service.ts";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 type DoctorPatientsPageProps = {
     onSelectPatient?: (patient: DoctorPatientI) => void;
@@ -51,7 +52,7 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
                 state: {
                     targetPerson: patient.targetPerson,
                     cognitoSub: patient.cognitoSub,
-                    email: patient.email
+                    fullName: patient.fullName
                 }
             });
         }
@@ -59,15 +60,23 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 relative p-4 min-h-screen">
+            <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-secondary/60 hover:text-primary transition-colors mb-4 md:mt-16 w-fit hover:cursor-pointer"
+            >
+                <ArrowLeft size={16} />
+                <span className="text-sm font-medium">{t("Back")}</span>
+            </button>
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary flex items-center gap-2 md:mt-24 ">
+                    <h1 className="text-2xl font-bold text-secondary flex items-center gap-2">
                         <Users className="text-primary" size={24} />
                         {t("My Patients")}
                     </h1>
                 </div>
 
-                <div className="relative md:mt-24">
+                <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary/40" size={16} />
                     <input
                         type="text"
@@ -123,13 +132,9 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
                                         </div>
                                         <div className="flex flex-col">
                                             <h3 className="text-sm font-bold text-secondary group-hover:text-primary-foreground transition-colors truncate max-w-[150px] md:max-w-[180px]">
-                                                {patient.targetPerson}
+                                                {patient.targetPerson === "Principal" ? getFirstName(patient.fullName) : patient.targetPerson}
                                             </h3>
-                                            {patient.email && (
-                                                <p className="text-[11px] text-secondary/50 truncate max-w-[150px] md:max-w-[180px] mb-0.5">
-                                                    {patient.email}
-                                                </p>
-                                            )}
+
 
                                             <p className="text-[10px] uppercase tracking-widest text-secondary/40 mt-0.5">
                                                 {patient.age} {t("years")} • {t(patient.gender.toLowerCase())}

@@ -25,7 +25,6 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                 const sortedArray = [...dataArray].sort((a, b) => b.createdAt - a.createdAt);
 
                 setAssessments(sortedArray);
-                console.log(sortedArray);
             } catch (error) {
                 console.error("Failed to fetch doctor reviews:", error);
             } finally {
@@ -54,10 +53,10 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                     <Stethoscope size={22} className="opacity-80" />
                 </div>
                 <p className="text-sm font-medium text-secondary/80">
-                    {t("No medical reports found")}
+                    {t("No pending medical reports found")}
                 </p>
                 <p className="text-xs text-secondary/40 max-w-xs mt-1 leading-relaxed">
-                    {t("You haven't sent any reports to doctors yet. Once you do, they'll appear here for easy access and tracking.")}
+                    {t("You don't have any reports waiting for a doctor's review right now.")}
                 </p>
             </div>
         );
@@ -92,7 +91,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
                                     {isAssigned && item.doctorDetails?.avatarUrl ? (
                                         <img
                                             src={item.doctorDetails.avatarUrl}
-                                            alt={item.doctorDetails.name}
+                                            alt={item.doctorDetails.fullName}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -102,7 +101,7 @@ export function DoctorAssessmentsList({ targetPerson = "Principal", onSelectAsse
 
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold text-secondary tracking-wide group-hover:text-primary-foreground transition-colors">
-                                        {item.doctorDetails?.name || t("Assigned Doctor")}
+                                        {item.doctorDetails?.fullName || t("Assigned Doctor")}
                                     </span>
 
                                     <div className="flex items-center gap-2 mt-1.5">
