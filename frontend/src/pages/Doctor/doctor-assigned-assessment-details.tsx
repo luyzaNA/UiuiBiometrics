@@ -19,7 +19,9 @@ import { formatDateMs } from "@/utils/form-data.ts";
 import { assessmentService } from "@/services/assessment-service.ts";
 import { SYMPTOM_MAPPER } from "@/utils/symptoms_wrap.ts";
 import { PatientHistorySection } from "@/pages/Doctor/sections/patient-history-section.tsx";
-import {toast} from "sonner";
+import { toast } from "sonner";
+
+import { PatientHistorySummary } from "@/pages/Doctor/sections/patient-history-summary-section.tsx";
 
 export default function AssessmentDetailsPage() {
     const { cognitoSub, id } = useParams<{ cognitoSub: string; id: string }>();
@@ -242,6 +244,12 @@ export default function AssessmentDetailsPage() {
             {showHistory && (
                 <div className="mt-6 animate-in slide-in-from-top-4 fade-in duration-300">
                     <h3 className="text-xl font-bold text-foreground mb-4">{t("Past Assessments")}</h3>
+
+                    <PatientHistorySummary
+                        targetPerson={assessment.targetPerson}
+                        cognitoSub={cognitoSub!}
+                    />
+
                     <PatientHistorySection
                         targetPerson={assessment.targetPerson}
                         cognitoSub={cognitoSub!}

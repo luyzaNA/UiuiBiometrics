@@ -612,7 +612,22 @@
   "Critical (≤3 ★)": "Critical (≤3 ★)",
   "No reviews match the selected filter.": "No reviews match the selected filter.",
   "Rating left without a text comment.": "Rating left without a text comment.",
-  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Read feedback, tracking ratings, and analyze written responses from your patients."
+  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Read feedback, tracking ratings, and analyze written responses from your patients.",
+  "Failed to generate summary. Please try again.": "Failed to generate summary. Please try again.",
+  "Analyzing history...": "Analyzing history...",
+  "AI Clinical Summary": "Summary the history",
+  "AI Assistant Summary": "Summary",
+  "Clinical Overview": "Clinical Overview",
+  "Symptom Evolution": "Symptom Evolution",
+  "Deficiency Trends": "Deficiency Trends",
+  "Physician Consensus": "Physician Consensus",
+  "Actionable Recommendations": "Actionable Recommendations",
+  "AI History Analysis": "History analysis",
+  "Get an intelligent overview of the patient's past assessments. The AI analyzes symptom evolution, deficiency trends, and highlights critical insights.": "Get an intelligent overview of the patient's past assessments. The AI analyzes symptom evolution, deficiency trends, and highlights critical insights.",
+  "Regenerate Summary": "Regenerate summary",
+  "Medical Feedback": "Medical feedback",
+  "A doctor has reviewed your assessment and left notes.": "A doctor has reviewed your assessment and left notes."
+
 }
 
 
