@@ -594,7 +594,25 @@
   "this week" : "this week",
   "Needs your review" : "Needs your review",
   "From {{count}} total evaluations": "From {{count}} total evaluations",
-  "Completed reports": "Completed reports"
+  "Completed reports": "Completed reports",
+  "Pending Assessments":  "Pending assessments",
+  "You have received new reports from patients.":  "You have received new reports from patients.",
+  "You have received new reviews from your patients.":"You have received new reviews from your patients.",
+  "Error polling notifications:": "Error polling notifications:",
+  "Notifications": "Notifications",
+  "No new notifications": "No new notifications",
+  "Mark all as read": "Mark all as read",
+  "Patient Reviews": "Patient Reviews",
+  "Open Reviews": "Open reviews",
+  "Patient Feedback": "Patient feedback",
+  "Reviews Overview": "Reviews overview",
+  "Based on {{count}} ratings": "Based on {{count}} ratings",
+  "All reviews": "All reviews",
+  "Positive (4-5 ★)": "Positive (4-5 ★)",
+  "Critical (≤3 ★)": "Critical (≤3 ★)",
+  "No reviews match the selected filter.": "No reviews match the selected filter.",
+  "Rating left without a text comment.": "Rating left without a text comment.",
+  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Read feedback, tracking ratings, and analyze written responses from your patients."
 }
 
 

@@ -88,7 +88,15 @@ export const router = createBrowserRouter([
                                 Component: (await import('@/pages/Doctor/doctor-list-page.tsx')).default,
                             }
                         }
-                    }
+                    },
+                    {
+                        path: "assessment/details/:cognitoSub/:assessmentId",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Assessment/assessment-details-page.tsx')).default,
+                            }
+                        },
+                    },
                 ]
              },
             {
@@ -142,6 +150,14 @@ export const router = createBrowserRouter([
                             }
                         },
                     },
+                    {
+                        path:"/doctor/reviews",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Doctor/doctor-reviews-page.tsx')).default,
+                            }
+                        },
+                    }
                 ]
             }
         ]},
