@@ -81,7 +81,6 @@ export default function DoctorDashboard() {
     }).format(new Date());
 
     const name = (profile?.fullName || "Doctor").replace(/^Dr\.\s*/i, "");
-
     const displayName = `Dr. ${name.trim().split(" ")[0]}`;
 
     return (
@@ -176,37 +175,42 @@ export default function DoctorDashboard() {
                     {t("Dashboard")}
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-1 h-full">
-                        <ActionCard
-                            icon={Users}
-                            title={t("Patient Registry")}
-                            description={t("Access medical records, view biometric analyses, and adjust protocols.")}
-                            actionText={t("Open Registry")}
-                            variant="primary"
-                            onClick={() => navigate('/doctor/patients')}
-                        />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <ActionCard
+                        icon={Users}
+                        title={t("Patient Registry")}
+                        description={t("Access medical records, view biometric analyses, and adjust protocols.")}
+                        actionText={t("Open Registry")}
+                        variant="primary"
+                        onClick={() => navigate('/doctor/patients')}
+                    />
 
-                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
-                        <ActionCard
-                            icon={ClipboardList}
-                            title={t("Pending Reports")}
-                            description={t("Check reports waiting for your medical review.")}
-                            actionText={t("View Reports")}
-                            variant="outline"
-                            onClick={() => navigate('/doctor/review/assessments')}
-                        />
+                    <ActionCard
+                        icon={ClipboardList}
+                        title={t("Pending Reports")}
+                        description={t("Check reports waiting for your medical review.")}
+                        actionText={t("View Reports")}
+                        variant="outline"
+                        onClick={() => navigate('/doctor/review/assessments')}
+                    />
 
-                        <ActionCard
-                            icon={Settings}
-                            title={t("Public Profile Settings")}
-                            description={t("Update your biography, expertise, and rates visible to patients.")}
-                            actionText={t("Edit Profile")}
-                            variant="outline"
-                            onClick={() => navigate('/doctor/profile')}
-                        />
-                    </div>
+                    <ActionCard
+                        icon={Star}
+                        title={t("Patient Reviews")}
+                        description={t("Read feedback, tracking ratings, and analyze written responses from your patients.")}
+                        actionText={t("Open Reviews")}
+                        variant="outline"
+                        onClick={() => navigate('/doctor/reviews')}
+                    />
+
+                    <ActionCard
+                        icon={Settings}
+                        title={t("Public Profile Settings")}
+                        description={t("Update your biography, expertise, and rates visible to patients.")}
+                        actionText={t("Edit Profile")}
+                        variant="outline"
+                        onClick={() => navigate('/doctor/profile')}
+                    />
                 </div>
             </motion.div>
         </div>

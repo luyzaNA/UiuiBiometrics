@@ -596,7 +596,25 @@
   "this week": "săptămana aceasta",
   "Needs your review" : "Necesită revizuire",
   "From {{count}} total evaluations": "Din totalul de {{count}} evaluări",
-  "Completed reports" : "Rapoarte completate"
+  "Completed reports" : "Rapoarte completate",
+  "Pending Assessments":  "Rapoarte în așteptare",
+  "You have received new reports from patients.":  "Ai primit rapoarte noi spre verificare",
+  "You have received new reviews from your patients.": "Ai primit review-uri noi de la pacienții tăi",
+  "Error polling notifications:": "Eroare la afișarea notificarilor",
+  "Notifications" : "Notificări",
+  "No new notifications": "Nu s-au găsit notificari noi",
+  "Mark all as read": "Marcheză-le ca citit",
+  "Patient Reviews": "Recenzii pacienți",
+  "Open Reviews": "Deschide Recenzii",
+  "Patient Feedback": "Feedback-ul pacienților",
+  "Reviews Overview": "Sumar Evaluări",
+  "Based on {{count}} ratings": "Bazat pe {{count}} evaluări",
+  "All reviews": "Toate recenziile",
+  "Positive (4-5 ★)": "Pozitive (4-5 ★)",
+  "Critical (≤3 ★)": "Critice (≤3 ★)",
+  "No reviews match the selected filter.": "Nicio recenzie nu corespunde filtrului selectat.",
+  "Rating left without a text comment.": "Evaluare acordată fără comentariu.",
+  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Citește feedback-ul, urmărește evaluările și analizează răspunsurile scrise de la pacienții tăi."
 
 
 }
