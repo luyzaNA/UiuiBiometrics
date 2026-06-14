@@ -6,11 +6,11 @@ import { Users, ClipboardList, Settings, Activity, Quote } from 'lucide-react';
 
 import { QUOTES_DATA, type QuoteItem } from "@/data/quotes.ts";
 import { useUser } from "@/hooks/use-user.ts";
-import { doctorService } from "@/services/doctor-service.ts";
+import { doctorService, type PatientsStatsI, type ReviewedStatsI } from "@/services/doctor-service.ts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ActionCard } from "@/components/action-card.tsx";
-import type {DoctorProfileI} from "@/models/doctor-model.ts";
+import type { DoctorProfileI } from "@/models/doctor-model.ts";
 
 export default function DoctorDashboard() {
     const { t } = useTranslation();
@@ -19,6 +19,10 @@ export default function DoctorDashboard() {
 
     const [dailyQuote, setDailyQuote] = useState<QuoteItem | null>(null);
     const [profile, setProfile] = useState<DoctorProfileI | null>(null);
+
+    const [patientsCount, setPatientsCount] = useState<PatientsStatsI | null>(null);
+    const [reviewedStats, setReviewedStats] = useState<ReviewedStatsI | null>(null);
+    const [isLoadingStats, setIsLoadingStats] = useState(true);
 
     useEffect(() => {
         const today = new Date();
@@ -39,6 +43,28 @@ export default function DoctorDashboard() {
         };
         fetchProfile();
     }, [user?.id]);
+
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                setIsLoadingStats(true);
+                const [countRes, reviewedRes] = await Promise.all([
+                    doctorService.getPatientsNumber(),
+                    doctorService.getReviewedStats()
+                ]);
+
+                setPatientsCount(countRes);
+                setReviewedStats(reviewedRes.data);
+
+            } catch (error) {
+                console.error("Eroare la aducerea statisticilor de dashboard:", error);
+            } finally {
+                setIsLoadingStats(false);
+            }
+        };
+
+        fetchDashboardStats();
+    }, []);
 
     const currentDate = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
@@ -86,9 +112,24 @@ export default function DoctorDashboard() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
-                <StatCard icon={Users} label={t("Active Patients")} value="124" trend="+3 this month" />
-                <StatCard icon={Activity} label={t("Completed Assessments")} value="48" trend="+12 this week" />
-                <StatCard icon={ClipboardList} label={t("New Reviews")} value="4.9" trend="From 82 total evaluations" />
+                <StatCard
+                    icon={Users}
+                    label={t("Active Patients")}
+                    value={isLoadingStats ? "..." : String(patientsCount?.total || 0)}
+                    trend={isLoadingStats ? "..." : `+${patientsCount?.lastMonth || 0} ${t("this month")}`}
+                />
+                <StatCard
+                    icon={Activity}
+                    label={t("Completed Assessments")}
+                    value={isLoadingStats ? "..." : String(reviewedStats?.totalReviewed || 0)}
+                    trend={isLoadingStats ? "..." : `+${reviewedStats?.reviewedLastWeek || 0} ${t("this week")}`}
+                />
+                <StatCard
+                    icon={ClipboardList}
+                    label={t("New Reviews")}
+                    value="4.9"
+                    trend="From 82 total evaluations"
+                />
             </motion.div>
 
             <motion.div
@@ -116,10 +157,10 @@ export default function DoctorDashboard() {
                         <ActionCard
                             icon={ClipboardList}
                             title={t("Pending Reports")}
-                            description={t("You have 3 new reports that require your review.")}
+                            description={t("Check reports waiting for your medical review.")}
                             actionText={t("View Reports")}
                             variant="outline"
-                            onClick={() => navigate('/doctor/assessments/pending')}
+                            onClick={() => navigate('/doctor/review/assessments')}
                         />
 
                         <ActionCard

@@ -289,3 +289,87 @@ class AssessmentService:
             patient_data["email"] = user_details.get(sub, {}).get("email")
 
         return sorted(unique_patients.values(), key=lambda x: x["lastAssessmentAt"], reverse=True)
+
+    def get_number_of_patients(self, doctor_id: str) -> dict:
+        """
+        Fetches all assessments for a doctor and calculates total unique patients
+        and active patients in the last 30 days.
+        """
+        from src.utils.time import current_millis
+
+        assessments = self.assessment_repository.get_assessments_by_doctor(doctor_id)
+
+        thirty_days_ago = current_millis() - (30 * 24 * 60 * 60 * 1000)
+
+        total_unique_patients = set()
+        active_last_month = set()
+
+        for item in assessments:
+            patient_key = (item.cognito_sub, item.target_person)
+            total_unique_patients.add(patient_key)
+
+            if item.created_at >= thirty_days_ago:
+                active_last_month.add(patient_key)
+
+        return {
+            "total": len(total_unique_patients),
+            "lastMonth": len(active_last_month)
+        }
+
+    def get_pending_assessments(self, doctor_id: str) -> list[AssessmentModel]:
+        """
+        Fetches the list of assessments waiting for the doctor's review and enriches S3 image URLs.
+        """
+        assessments = self.assessment_repository.get_pending_assessments_by_doctor(doctor_id)
+
+        for assessment in assessments:
+            assessment.image_urls = [
+                get_signed_url_from_s3(key)
+                for key in assessment.image_keys if key
+            ]
+
+        return assessments
+
+    def update_doctor_notes(self, cognito_sub: str, assessment_id: str, doctor_notes: str) -> AssessmentModel:
+        """
+        Adds doctor notes to an assessment and transitions its status to DOCTOR_REVIEWED.
+        """
+        assessment = self.assessment_repository.get_by_id(cognito_sub, assessment_id)
+
+        if not assessment.doctor_details or not assessment.doctor_details.doctor_id:
+            raise ValueError("Assessment is not assigned to any doctor.")
+
+        current_time = current_millis()
+        new_status = AssessmentStatus.DOCTOR_REVIEWED
+
+        status_val = new_status.value if hasattr(new_status, "value") else new_status
+        new_gsi2_sk = f"STATUS#{status_val}#{assessment.created_at}"
+
+        return self.assessment_repository.update_assessment_notes_and_status(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            doctor_notes=doctor_notes,
+            new_status=new_status,
+            updated_at=current_time,
+            gsi2_sk=new_gsi2_sk
+        )
+
+    def get_reviewed_assessments_stats(self, doctor_id: str) -> dict:
+        """
+        Fetches all DOCTOR_REVIEWED assessments for a doctor and calculates
+        the total count and the count from the last 7 days.
+        """
+        from src.utils.time import current_millis
+
+        assessments = self.assessment_repository.get_reviewed_assessments_by_doctor(doctor_id)
+
+        seven_days_ago = current_millis() - (7 * 24 * 60 * 60 * 1000)
+
+        total_reviewed = len(assessments)
+
+        reviewed_last_week = sum(1 for item in assessments if item.updated_at >= seven_days_ago)
+
+        return {
+            "totalReviewed": total_reviewed,
+            "reviewedLastWeek": reviewed_last_week
+        }

@@ -538,24 +538,32 @@
   "Reported Symptoms": "Reported Symptoms",
   "No symptoms recorded.": "No symptoms recorded.",
   "Predicted Deficiencies": "Predicted Deficiencies",
-  "Calculation stopped due to a priority medical alert.": "* Calculation stopped due to a priority medical alert.",
+  "*Calculation stopped due to a priority medical alert.": "* Calculation stopped due to a priority medical alert.",
   "No likely deficiencies detected (over 30%).": "The system did not detect any likely deficiencies (over 30%).",
   "Warnings": "Warnings",
   "Medical Notes": "Medical Notes",
   "The doctor did not leave any additional notes.": "The doctor did not leave any additional notes.",
   "Attached Images": "Attached Images",
   "Attachment": "Attachment",
-  "No Action Needed":  "No action needed"
-
-
-
-
-
-
-
-
-
-
-
+  "No Action Needed":  "No action needed",
+  "Pending reviews": "Pending reviews",
+  "Calculation stopped due to a priority medical alert.": "Calculation stopped due to a priority medical alert.",
+  "Date": "Date",
+  "Red Flags Detected": "Red Flags Detected",
+  "Name": "Name",
+  "Assessment Details": "Assessment Details",
+  "PENDING_DOCTOR": "PENDING DOCTOR",
+  "Patient Info": "Patient info",
+  "Hide Patient History":"Hide patient history",
+  "View Patient History": "View patient history",
+  "Past Assessments": "Past Assessments",
+  "Doctor's Recommendations": "Doctor's recommendations",
+  "Enter your recommendations for the patient...": "Enter your recommendations for the patient...",
+  "Send to patient": "Send to patient",
+  "Recommendations sent!": "Recommendations sent!",
+  "Oops! You seem lost.": "Oops! You seem lost.",
+  "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
+  "Go Back": "Go Back",
+  "Back to Home": "Back to Home"
 
 }

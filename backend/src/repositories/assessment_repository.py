@@ -11,6 +11,7 @@ from src.models.assessment.assessment_model import AssessmentModel, DoctorDetail
 from src.repositories.base_repository import BaseRepository
 from src.utils.enums import Gender, AssessmentStatus
 from src.utils.settings import UIUI_BIOMETRICS_TABLE
+from src.utils.enums import AssessmentStatus
 
 
 class AssessmentRepository(BaseRepository):
@@ -204,6 +205,94 @@ class AssessmentRepository(BaseRepository):
         response = self.table.query(
             IndexName="GSI2",
             KeyConditionExpression=Key("GSI2_PK").eq(f"DOCTOR#{doctor_id}")
+        )
+
+        return [
+            self.convert_to_assessment_model(item)
+            for item in response.get("Items", [])
+        ]
+
+    def get_pending_assessments_by_doctor(self, doctor_id: str) -> list[AssessmentModel]:
+        """
+        Queries GSI2 to fetch all assessments assigned to a specific doctor
+        that are currently in PENDING_DOCTOR status.
+        """
+
+        status_val = AssessmentStatus.PENDING_DOCTOR.value if hasattr(AssessmentStatus.PENDING_DOCTOR, "value") else AssessmentStatus.PENDING_DOCTOR
+
+        response = self.table.query(
+            IndexName="GSI2",
+            KeyConditionExpression=(
+                    Key("GSI2_PK").eq(f"DOCTOR#{doctor_id}") &
+                    Key("GSI2_SK").begins_with(f"STATUS#{status_val}")
+            )
+        )
+
+        return [
+            self.convert_to_assessment_model(item)
+            for item in response.get("Items", [])
+        ]
+
+
+    def update_assessment_notes_and_status(
+            self,
+            cognito_sub: str,
+            assessment_id: str,
+            doctor_notes: str,
+            new_status: str,
+            updated_at: int,
+            gsi2_sk: str
+    ) -> AssessmentModel:
+        """
+        Updates doctor notes, assessment status, and its GSI2_SK index key.
+        """
+        status_value = new_status.value if hasattr(new_status, "value") else new_status
+
+        response = self.table.update_item(
+            Key={
+                self.pk_key: f"USER#{cognito_sub}",
+                self.sk_key: f"ASSESS#{assessment_id}"
+            },
+            UpdateExpression=(
+                "SET doctor_notes = :doctor_notes, "
+                "#status = :status, "
+                "updated_at = :updated_at, "
+                "GSI2_SK = :gsi2_sk"
+            ),
+            ExpressionAttributeNames={
+                "#status": "status"
+            },
+            ExpressionAttributeValues={
+                ":doctor_notes": doctor_notes,
+                ":status": status_value,
+                ":updated_at": updated_at,
+                ":gsi2_sk": gsi2_sk
+            },
+            ReturnValues="ALL_NEW"
+        )
+
+        attrs = response.get("Attributes", {})
+
+        attrs[self.pk_key] = f"USER#{cognito_sub}"
+        attrs[self.sk_key] = f"ASSESS#{assessment_id}"
+        attrs["cognito_sub"] = cognito_sub
+        attrs["assessment_id"] = str(assessment_id)
+
+        return self.convert_to_assessment_model(attrs)
+
+    def get_reviewed_assessments_by_doctor(self, doctor_id: str) -> list[AssessmentModel]:
+        """
+        Queries GSI2 to fetch all assessments assigned to a specific doctor
+        that are in DOCTOR_REVIEWED status.
+        """
+        status_val = AssessmentStatus.DOCTOR_REVIEWED.value if hasattr(AssessmentStatus.DOCTOR_REVIEWED, "value") else AssessmentStatus.DOCTOR_REVIEWED
+
+        response = self.table.query(
+            IndexName="GSI2",
+            KeyConditionExpression=(
+                    Key("GSI2_PK").eq(f"DOCTOR#{doctor_id}") &
+                    Key("GSI2_SK").begins_with(f"STATUS#{status_val}")
+            )
         )
 
         return [

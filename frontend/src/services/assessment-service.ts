@@ -19,10 +19,10 @@ export const assessmentService = {
     },
 
     /**
-     * GET /api/assessments/{id}
+     * GET /api/assessments/{cognitoSub}/{assessmentId}
      */
-    async getById(assessmentId: string): Promise<any> {
-        const response = await apiClient.get<any>(`/assessments/${assessmentId}`);
+    async getById(cognitoSub: string, assessmentId: string): Promise<any> {
+        const response = await apiClient.get<any>(`/assessments/${cognitoSub}/${assessmentId}`);
         return response.data;
     },
 
@@ -61,7 +61,15 @@ export const assessmentService = {
                 target_person: targetPerson,
                 cognito_sub: cognitoSub
             }
-
+        });
+        return response.data;
+    },
+    /**
+     * PUT /api/assessments/{cognitoSub}/{assessmentId}/doctor-notes
+     */
+    async updateDoctorNotes(cognitoSub: string, assessmentId: string, doctorNotes: string): Promise<any> {
+        const response = await apiClient.put<any>(`/assessments/${cognitoSub}/${assessmentId}/doctor-notes`, {
+            doctor_notes: doctorNotes
         });
         return response.data;
     }
