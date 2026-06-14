@@ -614,7 +614,23 @@
   "Critical (≤3 ★)": "Critice (≤3 ★)",
   "No reviews match the selected filter.": "Nicio recenzie nu corespunde filtrului selectat.",
   "Rating left without a text comment.": "Evaluare acordată fără comentariu.",
-  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Citește feedback-ul, urmărește evaluările și analizează răspunsurile scrise de la pacienții tăi."
+  "Read feedback, tracking ratings, and analyze written responses from your patients.": "Citește feedback-ul, urmărește evaluările și analizează răspunsurile scrise de la pacienții tăi.",
+  "Failed to generate summary. Please try again.": "Generarea rezumatului a eșuat. Te rugăm să încerci din nou.",
+  "Analyzing history...": "Se analizează istoricul...",
+  "AI Clinical Summary": " Rezumă istoricul",
+  "AI Assistant Summary": "Rezumat ",
+  "Clinical Overview": "Prezentare clinică generală",
+  "Symptom Evolution": "Evoluția simptomelor",
+  "Deficiency Trends": "Evoluția deficiențelor",
+  "Physician Consensus": "Consens medical",
+  "Actionable Recommendations": "Recomandări de urmat",
+  "AI History Analysis": "Analiza istoricului",
+  "Get an intelligent overview of the patient's past assessments. The AI analyzes symptom evolution, deficiency trends, and highlights critical insights.": "Obține o imagine de ansamblu inteligentă a evaluărilor trecute ale pacientului. Inteligența artificială analizează evoluția simptomelor, tendințele carențelor și evidențiază informațiile clinice esențiale.",
+  "Regenerate Summary": "Regenerează rezumatul",
+  "Medical Feedback": "Feedback medical",
+  "A doctor has reviewed your assessment and left notes.": "Un medic ți-a analizat evaluarea și a lăsat notițe."
+
+
 
 
 }

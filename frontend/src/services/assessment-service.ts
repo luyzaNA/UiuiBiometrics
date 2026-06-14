@@ -73,5 +73,16 @@ export const assessmentService = {
             doctor_notes: doctorNotes
         });
         return response.data;
+    },
+    /**
+     * GET /api/assessments/{cognitoSub}/history/summary?target_person={targetPerson}
+     */
+    async getHistorySummary(cognitoSub: string, targetPerson: string): Promise<any> {
+        const response = await apiClient.get<any>(`/assessments/${cognitoSub}/history/summary`, {
+            params: {
+                target_person: targetPerson
+            }
+        });
+        return response.data;
     }
 };

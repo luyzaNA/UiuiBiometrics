@@ -5,6 +5,8 @@ import os
 import uuid
 from uuid import uuid4
 import boto3
+import json
+from openai import OpenAI
 from botocore.exceptions import ClientError
 
 from src.http_handlers.assessment_request import CreateAssessmentRequest
@@ -385,6 +387,178 @@ class AssessmentService:
 
         count = self.assessment_repository.count_pending_assessments_by_doctor(doctor_id)
 
-        return {
-            "pendingCount": count
+        return { "pendingCount": count}
+
+    def generate_patient_history_summary(self, cognito_sub: str, target_person: str) -> dict:
+        """
+        Fetches the complete clinical history of a patient, processes it,
+        and generates a structured medical summary using GPT-4o.
+        Includes a synthesis of previous physician notes and recommendations.
+        """
+        api_key = os.environ.get("VISION_API_KEY")
+        if not api_key:
+            raise ValueError("VISION_API_KEY missing in environment variables.")
+
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://llm.wavespeed.ai/v1"
+        )
+
+        assessments = self.get_history_by_target_person(
+            cognito_sub=cognito_sub,
+            target_person=target_person
+        )
+
+        if not assessments:
+            return {
+                "success": False,
+                "message": f"No assessment history found for patient: {target_person}"
+            }
+
+        latest_assessment = assessments[0]
+
+        patient_metadata = {
+            "name/target": target_person,
+            "age": latest_assessment.age,
+            "gender": (
+                latest_assessment.gender.value
+                if hasattr(latest_assessment.gender, "value")
+                else latest_assessment.gender
+            )
         }
+
+        history_payload = []
+        doctor_notes_history = []
+
+        for record in assessments:
+            history_payload.append({
+                "date_timestamp": record.created_at,
+                "status": (
+                    record.status.value
+                    if hasattr(record.status, "value")
+                    else record.status
+                ),
+                "symptoms_reported": record.symptoms,
+                "detected_deficiencies": record.predicted_deficiencies,
+                "wellness_score": record.wellness_score,
+                "doctor_notes_past": getattr(record, "doctor_notes", None)
+            })
+
+            if getattr(record, "doctor_notes", None):
+                doctor_notes_history.append({
+                    "date_timestamp": record.created_at,
+                    "doctor_notes": record.doctor_notes
+                })
+
+        prompt = f"""
+    You are an expert clinical AI assistant specializing in internal medicine and functional nutrition.
+    
+    PATIENT PROFILE
+    {json.dumps(patient_metadata, indent=2)}
+    
+    HISTORICAL DATA TIMELINE (Ordered from newest to oldest)
+    {json.dumps(history_payload, indent=2)}
+    
+    PREVIOUS PHYSICIAN NOTES
+    {json.dumps(doctor_notes_history, indent=2)}
+    
+    TASK
+    
+    Analyze the complete patient history and generate a clinically useful summary for the attending physician.
+    
+    You must analyze:
+    
+    1. Symptom evolution across all assessments.
+    2. Nutritional deficiency trends over time.
+    3. Wellness score progression.
+    4. Historical physician observations and recommendations.
+    5. Consistency between physician opinions and objective assessment findings.
+    
+    SPECIAL INSTRUCTIONS ABOUT PHYSICIAN NOTES
+    
+    If physician notes exist:
+    
+    - Summarize the key medical observations made by previous physicians.
+    - Identify recurring concerns mentioned across multiple assessments.
+    - Detect recurring recommendations or treatment directions.
+    - Highlight any documented improvements or deteriorations.
+    - Extract clinical patterns that physicians repeatedly noticed.
+    - Do NOT copy physician notes verbatim.
+    - Create a concise medical synthesis suitable for another physician reviewing the case.
+    - Mention areas where physician observations align with symptom and deficiency trends.
+    
+    CRITICAL INSTRUCTIONS
+    
+    * Return ONLY valid JSON matching the schema below.
+    * Do not include markdown.
+    * Do not include explanations outside JSON.
+    * All patient-facing or physician-facing text must be available in BOTH English ("en") and Romanian ("ro").
+    * Keep summaries concise but clinically meaningful.
+    * Base conclusions only on the supplied historical data.
+    
+    JSON SCHEMA
+    
+    {{
+      "clinical_overview": {{
+        "en": "Brief high-level summary of the current clinical state.",
+        "ro": "Rezumat scurt, la nivel înalt, al stării clinice actuale."
+      }},
+      "symptom_evolution": {{
+        "en": "Analysis of how symptoms changed, improved, or worsened over time.",
+        "ro": "Analiza modului în care simptomele s-au schimbat, îmbunătățit sau înrăutățit în timp."
+      }},
+      "deficiency_trends": {{
+        "en": "Identification of persistent, resolving, or newly appearing nutritional deficiencies.",
+        "ro": "Identificarea deficiențelor nutriționale persistente, în curs de rezolvare sau nou apărute."
+      }},
+      "physician_consensus": {{
+        "en": "Summary of historical physician observations, conclusions and recurring recommendations.",
+        "ro": "Rezumat al observațiilor medicilor, concluziilor și recomandărilor recurente din istoricul pacientului."
+      }},
+      "clinical_recommendations": [
+        {{
+          "en": "Actionable focus area for the doctor during next consultation.",
+          "ro": "Zonă de acțiune recomandată pentru medic la următoarea consultație."
+        }}
+      ]
+    }}
+    """
+
+        try:
+            logger.info(
+                f"[ASSESSMENT_SERVICE] Generating history summary for {target_person}..."
+            )
+
+            response = client.chat.completions.create(
+                model="openai/gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                response_format={"type": "json_object"},
+                max_tokens=2500,
+                temperature=0.3
+            )
+
+            ai_response_text = response.choices[0].message.content.strip()
+
+            if ai_response_text.startswith("```json"):
+                ai_response_text = ai_response_text[7:-3].strip()
+            elif ai_response_text.startswith("```"):
+                ai_response_text = ai_response_text[3:-3].strip()
+
+            return json.loads(ai_response_text)
+
+        except json.JSONDecodeError as je:
+            logger.error(
+                f"[ASSESSMENT_SERVICE] JSON Decode Error on summary generation: {str(je)}"
+            )
+            raise je
+
+        except Exception as e:
+            logger.error(
+                f"[ASSESSMENT_SERVICE] Exception during AI history summary generation: {str(e)}"
+            )
+            raise e
