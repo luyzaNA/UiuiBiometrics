@@ -163,9 +163,7 @@ export default function DoctorDashboardPage() {
                     )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* LEFT COLUMN: Avatar & Stats */}
                         <div className="lg:col-span-4 space-y-6">
-                            {/* Profile Card */}
                             <div className="bg-background rounded-3xl p-8 shadow-sm border border-secondary/10 flex flex-col items-center text-center relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
 
@@ -183,8 +181,7 @@ export default function DoctorDashboardPage() {
                                         <User className="w-12 h-12 text-secondary/30" />
                                     )}
 
-                                    {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1 text-white">
+                                    <div className="absolute inset-0 bg-secondary-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1 text-white">
                                         <Camera size={24} />
                                         <span className="text-xs font-medium">{t("Change")}</span>
                                     </div>
@@ -204,7 +201,6 @@ export default function DoctorDashboardPage() {
                                 </div>
                             </div>
 
-                            {/* Performance Stats */}
                             <div className="bg-background rounded-3xl p-6 shadow-sm border border-secondary/10">
                                 <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-5 px-1">
                                     {t("Performance Metrics")}
@@ -251,7 +247,6 @@ export default function DoctorDashboardPage() {
                                 </div>
                             </div>
 
-                            {/* Account Info */}
                             {profile?.createdAt && (
                                 <div className="bg-background rounded-3xl p-6 shadow-sm border border-secondary/10">
                                     <div className="space-y-4">
@@ -287,7 +282,6 @@ export default function DoctorDashboardPage() {
                             )}
                         </div>
 
-                        {/* RIGHT COLUMN: Edit Form */}
                         <div className="lg:col-span-8">
                             <form
                                 onSubmit={handleSubmit(onSubmit)}
@@ -303,7 +297,6 @@ export default function DoctorDashboardPage() {
                                 </div>
 
                                 <div className="space-y-6 flex-1">
-                                    {/* Full Name */}
                                     <div className="space-y-2">
                                         <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
                                             {t("Full Name")}
@@ -317,7 +310,6 @@ export default function DoctorDashboardPage() {
                                         {errors.fullName && <p className="text-xs text-destructive font-medium px-1">{errors.fullName.message}</p>}
                                     </div>
 
-                                    {/* Grid: Age, Gender, Price */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
@@ -371,7 +363,6 @@ export default function DoctorDashboardPage() {
                                         </div>
                                     </div>
 
-                                    {/* Bio */}
                                     <div className="space-y-2">
                                         <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
                                             {t("Professional Bio")}
@@ -392,7 +383,6 @@ export default function DoctorDashboardPage() {
                                     </div>
                                 </div>
 
-                                {/* Footer Actions */}
                                 <div className="mt-10 pt-6 border-t border-secondary/10 flex justify-end">
                                     <button
                                         type="submit"

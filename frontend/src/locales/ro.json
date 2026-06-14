@@ -582,7 +582,21 @@
   "No pending medical reports found": "Nu au fost găsite rapoarte medicale în așteptare",
   "You don't have any reports waiting for a doctor's review right now.": "Nu aveți niciun raport care să aștepte evaluarea unui medic în acest moment.",
   "Reviewed" : "Evaluat",
-  "Doctor evaluation": "Evaluarea medicului"
+  "Doctor evaluation": "Evaluarea medicului",
+  "No reviews yet. Be the first to share your experience!": "Nicio recenzie. Fii primul care lasă un feedback!",
+  "No reviews yet": "Nicio recenzie.",
+  "Past Reviews" : "Istoric review-uri",
+  "Leave a Review" : "Lasă un review",
+  "Your Rating" : "Nota ta",
+  "Submit Review" : "Trimite review",
+  "Loading profile...": "Loading profile...",
+  "Share your experience with this doctor (optional)...": "Descrie experiența ta cu acest medic (opțional)...",
+  "Review sent successfully!": "Review trimis cu succes!",
+  "this month": "luna aceasta",
+  "this week": "săptămana aceasta",
+  "Needs your review" : "Necesită revizuire",
+  "From {{count}} total evaluations": "Din totalul de {{count}} evaluări",
+  "Completed reports" : "Rapoarte completate"
 
 
 }

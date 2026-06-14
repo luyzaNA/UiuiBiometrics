@@ -326,3 +326,21 @@ class AssessmentRepository(BaseRepository):
             self.convert_to_assessment_model(i)
             for i in response.get("Items", [])
         ]
+
+    def count_pending_assessments_by_doctor(self, doctor_id: str) -> int:
+        """
+        Queries GSI2 to count the number of assessments assigned to a specific doctor
+        that are currently in PENDING_DOCTOR status. Uses Select='COUNT' for efficiency.
+        """
+        status_val = AssessmentStatus.PENDING_DOCTOR.value if hasattr(AssessmentStatus.PENDING_DOCTOR, "value") else AssessmentStatus.PENDING_DOCTOR
+
+        response = self.table.query(
+            IndexName="GSI2",
+            Select="COUNT",
+            KeyConditionExpression=(
+                    Key("GSI2_PK").eq(f"DOCTOR#{doctor_id}") &
+                    Key("GSI2_SK").begins_with(f"STATUS#{status_val}")
+            )
+        )
+
+        return response.get("Count", 0)

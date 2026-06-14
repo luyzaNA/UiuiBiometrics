@@ -580,7 +580,21 @@
   "No pending medical reports found": "No pending medical reports found",
   "You don't have any reports waiting for a doctor's review right now.": "You don't have any reports waiting for a doctor's review right now.",
   "Reviewed" : "Reviewed",
-  "Doctor evaluation": "Doctor evaluation"
+  "Doctor evaluation": "Doctor evaluation",
+  "No reviews yet. Be the first to share your experience!": "No reviews yet. Be the first to share your experience!",
+  "No reviews yet": "No reviews yet",
+  "Past Reviews": "Past reviews",
+  "Leave a Review": "Leave a Review",
+  "Your Rating" : "Your Rating",
+  "Submit Review" :"Submit Review",
+  "Loading profile...": "Se încarcă profilul...",
+  "Share your experience with this doctor (optional)...": "Share your experience with this doctor (optional)...",
+  "Review sent successfully!": "Review sent successfully!",
+  "this month": "this month",
+  "this week" : "this week",
+  "Needs your review" : "Needs your review",
+  "From {{count}} total evaluations": "From {{count}} total evaluations",
+  "Completed reports": "Completed reports"
 }
 
 

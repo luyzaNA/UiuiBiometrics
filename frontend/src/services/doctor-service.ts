@@ -32,11 +32,11 @@ export interface ReviewedStatsI {
 }
 
 export interface ReviewI {
-    reviewer_sub?: string;
-    reviewer_name: string;
+    reviewerSub?: string;
+    reviewerName: string;
     rating: number;
     comment?: string;
-    created_at: number;
+    createdAt: number;
 }
 
 export interface CreateReviewRequest {
@@ -47,6 +47,10 @@ export interface CreateReviewRequest {
 export interface DoctorProfileWithReviews {
     profile: DoctorProfileI;
     reviews: ReviewI[];
+}
+
+export interface PendingCountStatsI {
+    pendingCount: number;
 }
 
 export const doctorService = {
@@ -109,5 +113,9 @@ export const doctorService = {
     /** GET /api/doctor/assessments/reviewed-stats */
     async getReviewedStats(): Promise<{ data: ReviewedStatsI }> {
         return await apiClient.get<ReviewedStatsI>("/doctor/assessments/reviewed-stats");
+    },
+    /** GET /api/doctor/assessments/pending/count */
+    async getPendingCount(): Promise<{ data: PendingCountStatsI }> {
+        return await apiClient.get< PendingCountStatsI>("/doctor/assessments/pending/count");
     },
 };
