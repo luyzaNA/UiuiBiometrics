@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Container } from "@/components/container";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -30,17 +30,33 @@ import { profileService } from "@/services/profile-service.ts";
 import { doctorService } from "@/services/doctor-service.ts";
 import { getInitial } from "@/utils/get-initiasl-from-name.ts";
 import { getFirstName } from "@/utils/get-first-name.ts";
-import { apiClient } from "@/api/client";
-import type { AssessmentI } from "@/models/assesment-model.ts";
+import { notificationService } from "@/services/notifiaction-service.ts";
 
 interface AppNotification {
     id: string;
     title: string;
     message: string;
-    link: string;
-    count: number;
-    assessmentId?: string;
+    notificationType: string;
+    metadata?: Record<string, any>;
 }
+
+const getNotificationRoute = (type: string, metadata?: Record<string, any>): string => {
+    switch (type) {
+        case 'DOCTOR_PENDING_ASSESSMENT':
+            return '/doctor/review/assessments';
+        case 'DOCTOR_NEW_REVIEW':
+            return '/doctor/reviews';
+        case 'PATIENT_DOCTOR_NOTES':
+            console.log("metadata", metadata);
+            if (metadata?.cognitoSub && metadata?.assessmentId) {
+                return `/assessment/details/${metadata.cognitoSub}/${metadata.assessmentId}`;
+            }
+            return '/';
+
+        default:
+            return '/';
+    }
+};
 
 export function Header() {
     const { t, i18n } = useTranslation();
@@ -56,8 +72,6 @@ export function Header() {
 
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-    const latestCounts = useRef({ pending: 0, reviews: 0, patientNotes: 0 });
-
     const isDoctor = user?.["groups"]?.includes("doctor");
     const profileRoute = isDoctor ? "/doctor/profile" : "/profile";
 
@@ -71,7 +85,6 @@ export function Header() {
                     } else {
                         profileData = await profileService.getMe();
                     }
-
                     setAvatarUrl(profileData?.avatarUrl || null);
                     setName(getFirstName(profileData.fullName));
                 } catch (error) {
@@ -97,66 +110,16 @@ export function Header() {
 
         const checkUpdates = async () => {
             try {
-                const activeNotifications: AppNotification[] = [];
+                const allNotifications = await notificationService.getAll();
+                const unread = allNotifications.filter(n => !n.isRead);
 
-                if (isDoctor) {
-                    const [pendingRes, profileRes] = await Promise.all([
-                        doctorService.getPendingCount(),
-                        doctorService.getMe()
-                    ]);
-
-                    const pendingCount = pendingRes.data?.pendingCount ?? (pendingRes as any).pendingCount ?? 0;
-                    const totalReviews = profileRes?.totalReviews ?? 0;
-
-                    latestCounts.current = { ...latestCounts.current, pending: pendingCount, reviews: totalReviews };
-
-                    if (pendingCount > 0) {
-                        const dismissedPending = localStorage.getItem('dismissedPendingCount');
-                        if (dismissedPending !== String(pendingCount)) {
-                            activeNotifications.push({
-                                id: 'pending-assessments',
-                                title: t("Pending Assessments"),
-                                message: t("You have received new reports from patients."),
-                                link: "/doctor/review/assessments",
-                                count: pendingCount
-                            });
-                        }
-                    }
-
-                    if (totalReviews > 0) {
-                        const dismissedReviews = localStorage.getItem('dismissedReviewCount');
-                        if (dismissedReviews !== String(totalReviews)) {
-                            activeNotifications.push({
-                                id: 'new-reviews',
-                                title: t("New Reviews"),
-                                message: t("You have received new reviews from your patients."),
-                                link: "/doctor/reviews",
-                                count: totalReviews
-                            });
-                        }
-                    }
-                } else {
-                    const response = await apiClient.get<AssessmentI[]>("/assessments?status=completed");
-                    const completedAssessments = response.data || [];
-
-                    const unreadNotes = completedAssessments.filter(assessment => {
-                        const isRead = localStorage.getItem(`read_note_${assessment.assessmentId}`) === 'true';
-                        return assessment.doctorNotes && !isRead;
-                    });
-
-                    latestCounts.current = { ...latestCounts.current, patientNotes: unreadNotes.length };
-
-                    unreadNotes.forEach(assessment => {
-                        activeNotifications.push({
-                            id: `doctor-notes-${assessment.assessmentId}`,
-                            title: t("Medical Feedback"),
-                            message: t("A doctor has reviewed your assessment and left notes."),
-                            link: `/assessment/details/${assessment.cognitoSub}/${assessment.assessmentId}`,
-                            count: 1,
-                            assessmentId: assessment.assessmentId
-                        });
-                    });
-                }
+                const activeNotifications: AppNotification[] = unread.map(n => ({
+                    id: n.sk,
+                    title: t(n.title),
+                    message: t(n.message),
+                    notificationType: n.notificationType,
+                    metadata: n.metadata
+                }));
 
                 setNotifications(activeNotifications);
             } catch (error) {
@@ -165,40 +128,31 @@ export function Header() {
         };
 
         checkUpdates();
-        const intervalId = setInterval(checkUpdates, 3000);
-
+        const intervalId = setInterval(checkUpdates, 10000);
         return () => clearInterval(intervalId);
-    }, [isAuthenticated, isDoctor, t]);
+    }, [isAuthenticated, t]);
 
-    const markAllAsRead = () => {
-        if (isDoctor) {
-            localStorage.setItem('dismissedPendingCount', String(latestCounts.current.pending));
-            localStorage.setItem('dismissedReviewCount', String(latestCounts.current.reviews));
-        } else {
-            notifications.forEach(notif => {
-                if (notif.id.startsWith('doctor-notes-') && notif.assessmentId) {
-                    localStorage.setItem(`read_note_${notif.assessmentId}`, 'true');
-                }
-            });
+    const markAllAsRead = async () => {
+        try {
+            await notificationService.markAllAsRead();
+            setNotifications([]);
+            setIsNotifOpen(false);
+        } catch (error) {
+            console.error("Failed to mark all notifications as read:", error);
         }
-        setNotifications([]);
-        setIsNotifOpen(false);
     };
 
     const handleNotificationClick = (notif: AppNotification) => {
-        if (notif.id === 'pending-assessments') {
-            localStorage.setItem('dismissedPendingCount', String(notif.count));
-        } else if (notif.id === 'new-reviews') {
-            localStorage.setItem('dismissedReviewCount', String(notif.count));
-        } else if (notif.id.startsWith('doctor-notes-')) {
-            if (notif.assessmentId) {
-                localStorage.setItem(`read_note_${notif.assessmentId}`, 'true');
-            }
-        }
-
-        setNotifications(notifications.filter(n => n.id !== notif.id));
+        setNotifications(prev => prev.filter(n => n.id !== notif.id));
         setIsNotifOpen(false);
-        navigate(notif.link);
+
+        const route = getNotificationRoute(notif.notificationType, notif.metadata);
+        console.log("route", route);
+        navigate(route);
+
+        notificationService.markAsRead(notif.id).catch(err => {
+            console.error("Failed to mark notification as read:", err);
+        });
     };
 
     const navItems = [
@@ -206,6 +160,15 @@ export function Header() {
         { label: t("Experience"), href: "/#how-it-works" },
         { label: t("Science"), href: "/#science" },
     ];
+
+    const NotificationBadge = ({ count, className = "" }: { count: number; className?: string }) => {
+        if (count === 0) return null;
+        return (
+            <span className={`absolute flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-destructive rounded-full border-2 border-navbar ${className}`}>
+                {count > 99 ? "99+" : count}
+            </span>
+        );
+    };
 
     return (
         <header className="fixed top-0 z-[100] w-full bg-navbar backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500">
@@ -235,21 +198,56 @@ export function Header() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 lg:gap-6 z-10 ">
+                    <div className="flex items-center gap-4 lg:gap-6 z-10">
 
                         {isAuthenticated && (
                             <div className="lg:hidden relative">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => navigate(isDoctor ? '/doctor/review/assessments' : '/profile')}
+                                    onClick={() => setIsNotifOpen(!isNotifOpen)}
                                     className="relative active:scale-90 rounded-full transition-transform"
                                 >
                                     <Bell className="h-5 w-5 text-primary" />
-                                    {notifications.length > 0 && (
-                                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-navbar" />
-                                    )}
+                                    <NotificationBadge count={notifications.length} className="-top-1 -right-1" />
                                 </Button>
+
+                                <AnimatePresence>
+                                    {isNotifOpen && (
+                                        <motion.div variants={dropdownAnimation} initial="initial" animate="animate" exit="exit" className="absolute right-0 top-full w-80 pt-3 z-[110]">
+                                            <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                                                <div className="flex items-center justify-between px-4 py-3 border-b border-secondary/5">
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("Notifications")}</span>
+                                                    {notifications.length > 0 && (
+                                                        <button onClick={markAllAsRead} className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer">
+                                                            <CheckCheck className="w-3 h-3" />
+                                                            {t("Mark all as read")}
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                <div className="max-h-[300px] overflow-y-auto">
+                                                    {notifications.length === 0 ? (
+                                                        <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+                                                            {t("No new notifications")}
+                                                        </div>
+                                                    ) : (
+                                                        notifications.map(notif => (
+                                                            <button
+                                                                key={notif.id}
+                                                                onClick={() => handleNotificationClick(notif)}
+                                                                className="w-full flex flex-col gap-1 p-4 text-left hover:bg-secondary/5 transition-colors border-b border-secondary/5 last:border-0 hover:cursor-pointer"
+                                                            >
+                                                                <span className="text-sm font-semibold text-secondary-foreground/70">{notif.title}</span>
+                                                                <span className="text-xs text-muted-foreground leading-relaxed">{notif.message}</span>
+                                                            </button>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         )}
 
@@ -275,7 +273,7 @@ export function Header() {
                                                     {navItems.map((item) => (
                                                         <motion.div key={item.href} variants={itemVariants}>
                                                             <SheetClose asChild>
-                                                                <Link to={item.href} className="relative flex items-center justify-between px-6 py-5 rounded-2xl bg-secondary[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-all">
+                                                                <Link to={item.href} className="relative flex items-center justify-between px-6 py-5 rounded-2xl bg-secondary/[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-all">
                                                                     <span className="text-lg font-bold tracking-tight text-secondary-foreground/90">{item.label}</span>
                                                                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                                                                         <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary" />
@@ -350,9 +348,7 @@ export function Header() {
                                     >
                                         <button className="relative p-2 rounded-full hover:bg-secondary/5 transition-colors z-[120]">
                                             <Bell strokeWidth={1.5} className="w-5 h-5 text-primary" />
-                                            {notifications.length > 0 && (
-                                                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-navbar" />
-                                            )}
+                                            <NotificationBadge count={notifications.length} className="-top-0.5 -right-0.5" />
                                         </button>
 
                                         <AnimatePresence>
@@ -418,7 +414,6 @@ export function Header() {
                                                 <motion.div variants={dropdownAnimation} initial="initial" animate="animate" exit="exit" className="absolute right-0 top-full w-56 pt-3 z-[110]">
                                                     <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
                                                         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
                                                         <div className="p-2 flex flex-col gap-1">
                                                             <div className="px-4 py-3 mb-1 border-b border-secondary/5">
                                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">{t("Signed in as")}</p>
@@ -428,7 +423,6 @@ export function Header() {
                                                                 <User className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" strokeWidth={1.5} />
                                                                 <span className="text-[11px] font-medium tracking-wide text-secondary-foreground/80 group-hover:text-primary">{t("Profile Settings")}</span>
                                                             </Link>
-
                                                             <button onClick={logout} className="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-all hover:bg-destructive/5 w-full text-left cursor-pointer">
                                                                 <LogOut className="w-4 h-4 text-destructive/50 group-hover:text-destructive transition-colors" strokeWidth={1.5} />
                                                                 <span className="text-[11px] font-medium tracking-wide text-destructive/70 group-hover:text-destructive">{t("Logout")}</span>
