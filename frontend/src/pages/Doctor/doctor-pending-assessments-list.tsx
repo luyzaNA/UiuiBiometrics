@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, ChevronRight, ClipboardList, Stethoscope, AlertCircle, ArrowLeft } from "lucide-react";
 import { doctorService } from "@/services/doctor-service";
-import type { AssessmentI } from "@/models/assesment-model.ts";
+import type { AssessmentI, DoctorPatientI } from "@/models/assesment-model.ts";
 import { formatChartFullDate } from "@/utils/form-data.ts";
 import { useNavigate } from "react-router-dom";
+import {getFirstName} from "@/utils/get-first-name.ts";
 
 export default function PendingAssessmentsList() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<AssessmentI[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [patients, setPatients] = useState<DoctorPatientI[]>([]);
 
     useEffect(() => {
         const fetchAssessments = async () => {
@@ -27,6 +29,19 @@ export default function PendingAssessmentsList() {
         };
 
         fetchAssessments();
+    }, []);
+
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const data = await doctorService.getDoctorPatients();
+                setPatients(data || []);
+            } catch (error) {
+                console.error("Failed to fetch patients:", error);
+            }
+        };
+
+        fetchPatients();
     }, []);
 
     return (
@@ -67,55 +82,63 @@ export default function PendingAssessmentsList() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-3 mt-6">
-                    {assessments.map((assessment) => (
-                        <div
-                            key={assessment.assessmentId}
-                            className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background border border-secondary/15 rounded-xl hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer"
-                            onClick={() => navigate(`/doctor/assessment/${assessment.cognitoSub}/${assessment.assessmentId}`)}
-                        >
-                            <div className="flex items-center gap-4 mb-3 sm:mb-0">
-                                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
-                                    <span className="text-slate-300 font-medium text-sm">
-                                        {assessment.targetPerson.charAt(0).toUpperCase()}
-                                    </span>
+                    {assessments.map((assessment) => {
+                        const currentPatient = patients.find(p => p.cognitoSub === assessment.cognitoSub);
+
+                        const displayName = assessment.targetPerson === "Principal"
+                            ? (getFirstName(currentPatient?.fullName) || t("Principal"))
+                            : assessment.targetPerson;
+
+                        return (
+                            <div
+                                key={assessment.assessmentId}
+                                className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background border border-secondary/15 rounded-xl hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer"
+                                onClick={() => navigate(`/doctor/assessment/${assessment.cognitoSub}/${assessment.assessmentId}`)}
+                            >
+                                <div className="flex items-center gap-4 mb-3 sm:mb-0">
+                                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
+                                        <span className="text-slate-300 font-medium text-sm">
+                                            {displayName.charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <h3 className="font-medium text-foreground text-sm">
+                                            {displayName}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-xs text-secondary/60 mt-0.5">
+                                            <span>
+                                                {assessment.age} {t("years")} • {assessment.gender}
+                                            </span>
+                                            <span className="w-1 h-1 rounded-full bg-secondary/30"></span>
+                                            <span className="flex items-center gap-1">
+                                                <Clock className="w-3 h-3" />
+                                                {formatChartFullDate(assessment.createdAt)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="flex flex-col">
-                                    <h3 className="font-medium text-foreground text-sm">
-                                        {assessment.targetPerson}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-xs text-secondary/60 mt-0.5">
-                                        <span>
-                                            {assessment.age} {t("years")} • {assessment.gender}
-                                        </span>
-                                        <span className="w-1 h-1 rounded-full bg-secondary/30"></span>
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {formatChartFullDate(assessment.createdAt)}
-                                        </span>
+                                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                                    {assessment.hasRedFlags && assessment.redFlagDetails?.length > 0 ? (
+                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-900/20 text-red-400 rounded-md border border-red-900/30">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            <span className="text-xs font-medium max-w-[150px] truncate">
+                                                {t(assessment.redFlagDetails[0])}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-md border border-slate-700 text-xs font-medium">
+                                            {t("Standard Review")}
+                                        </div>
+                                    )}
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-secondary/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                        <ChevronRight className="w-4 h-4" />
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                                {assessment.hasRedFlags && assessment.redFlagDetails?.length > 0 ? (
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-900/20 text-red-400 rounded-md border border-red-900/30">
-                                        <AlertCircle className="w-3.5 h-3.5" />
-                                        <span className="text-xs font-medium max-w-[150px] truncate">
-                                            {t(assessment.redFlagDetails[0])}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <div className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-md border border-slate-700 text-xs font-medium">
-                                        {t("Standard Review")}
-                                    </div>
-                                )}
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-secondary/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
-                                    <ChevronRight className="w-4 h-4" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

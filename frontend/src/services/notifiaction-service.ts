@@ -1,6 +1,6 @@
 import { apiClient } from "@/api/client.ts";
 
-export type NotificationTypeEnum = | 'DOCTOR_PENDING_ASSESSMENT' | 'DOCTOR_NEW_REVIEW' | 'PATIENT_DOCTOR_NOTES';
+export type NotificationTypeEnum = | 'DOCTOR_PENDING_ASSESSMENT' | 'DOCTOR_NEW_REVIEW' | 'PATIENT_DOCTOR_NOTES' | 'RETAKE_QUIZ';
 
 export interface NotificationI {
     pk: string;

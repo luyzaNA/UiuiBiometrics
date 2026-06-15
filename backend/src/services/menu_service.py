@@ -11,9 +11,10 @@ from src.models.menu.meal_base_menu import MealBaseMenuModel, MealOptionDef
 from src.models.menu.food_base_menu import FoodBaseMenuModel, DeficiencyTargetDef
 from src.repositories.menu_repository import MenuRepository
 from src.services.assessment_service import AssessmentService
+from src.services.notification_service import NotificationService
 
 from src.utils.calculate_review_after_days import calculate_review_days
-from src.utils.enums import MenuStatus, MenuType
+from src.utils.enums import MenuStatus, MenuType, NotificationType
 from src.utils.time import current_millis
 from src.utils.logger import get_logger
 
@@ -36,6 +37,7 @@ class MenuService:
     def __init__(self):
         self.repository = MenuRepository()
         self.assessment_service = AssessmentService()
+        self.notification_service = NotificationService()
 
 
     def generate_and_create_food_menu(self, assessment_id: str, deficiencies_list: list, cognito_sub: str) -> FoodBaseMenuModel:
@@ -204,6 +206,8 @@ class MenuService:
     def _create_food_menu_record(self, assessment_id: str, review_after_days: int, deficiency_targets: List[DeficiencyTargetDef], cognito_sub: str) -> FoodBaseMenuModel:
         assessment = self.assessment_service.get_assessment_by_id(assessment_id, cognito_sub)
         new_menu_id = uuid.uuid4()
+        now = current_millis()
+        review_deadline_ms = now + 5000
 
         new_food_menu = FoodBaseMenuModel(
             pk=f"USER#{cognito_sub}",
@@ -215,6 +219,7 @@ class MenuService:
             menu_type=MenuType.FOOD_ITEMS,
             status=MenuStatus.DRAFT,
             review_after_days=review_after_days,
+            review_deadline=review_deadline_ms,
             deficiency_targets=deficiency_targets,
             created_at=current_millis(),
             updated_at=current_millis()
@@ -365,6 +370,8 @@ class MenuService:
         new_menu_id = uuid.uuid4()
         review_days = calculate_review_days(deficiencies)
 
+        review_deadline_ms = current_millis() + (review_days * 24 * 60 * 60 * 1000)
+
         extracted_deficiencies = [
             d.get("name") for d in deficiencies if isinstance(d, dict) and d.get("name")
         ]
@@ -379,6 +386,7 @@ class MenuService:
             menu_type=MenuType.MEALS,
             status=MenuStatus.DRAFT,
             review_after_days=review_days,
+            review_deadline=review_deadline_ms,
             deficiencies=extracted_deficiencies,
             breakfasts=[MealOptionDef(**meal) for meal in ai_data.get("breakfasts", [])],
             lunches=[MealOptionDef(**meal) for meal in ai_data.get("lunches", [])],
@@ -416,3 +424,36 @@ class MenuService:
         except ValueError as ve:
             logger.error(f"[MENU_SERVICE] Invalid UUID format provided for menu_id: {menu_id}")
             raise ve
+
+    def process_expired_menus(self) -> int:
+        now = current_millis()
+        expired_menus = self.repository.get_expired_active_menus(now)
+
+        processed_count = 0
+        for menu in expired_menus:
+            user_pk = getattr(menu, 'pk', f"USER#{menu.cognito_sub}")
+            menu_sk = getattr(menu, 'sk', f"MENU#{menu.menu_id}")
+
+            try:
+                self.repository.mark_menu_as_needs_review(user_pk, menu_sk)
+
+                try:
+                    self.notification_service.create_notification(
+                        cognito_sub=menu.cognito_sub,
+                        notif_type=NotificationType.RETAKE_QUIZ,
+                        metadata={
+                            "menuId":  str(menu.menu_id),
+                            "cognitoSub": menu.cognito_sub,
+                            "targetPerson" : menu.target_person
+                        }
+                    )
+                except Exception as notify_err:
+                    logger.error(f"[MENU_SERVICE] Failed to send expiration notification to {menu.cognito_sub}: {notify_err}")
+
+                processed_count += 1
+                logger.info(f"[MENU_SERVICE] Menu {menu_sk} processed and notification triggered for {menu.cognito_sub}.")
+
+            except Exception as e:
+                logger.error(f"[MENU_SERVICE] Failed to update menu {menu_sk}: {e}")
+
+        return processed_count
