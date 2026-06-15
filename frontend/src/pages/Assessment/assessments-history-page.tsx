@@ -17,6 +17,7 @@ import { formatDateMs } from "@/utils/form-data.ts";
 import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-section.tsx";
 import MealBankProtocol from "@/pages/Menu/meal-base/section/meal-base-section.tsx";
 import { DoctorAssessmentsList } from "@/pages/Assessment/doctor-assessments-list-page.tsx";
+import { ComparisonCharts } from "@/pages/Assessment/sections/comparison-charts-section.tsx";
 
 export default function AssessmentsHistoryPage() {
     const { t } = useTranslation();
@@ -35,6 +36,43 @@ export default function AssessmentsHistoryPage() {
     const [selectedPerson, setSelectedPerson] = useState<string>("Principal");
     const [selectedView, setSelectedView] = useState<string>("ALL");
 
+    const [comparisonData, setComparisonData] = useState<any>(null);
+    const [isLoadingComparison, setIsLoadingComparison] = useState(false);
+
+
+    const uniquePersons = useMemo(() => {
+        return Array.from(new Set(assessments.map((a) => a.targetPerson).filter(Boolean)));
+    }, [assessments]);
+
+    const personAssessments = useMemo(() => {
+        return assessments.filter((a) => a.targetPerson === selectedPerson);
+    }, [assessments, selectedPerson]);
+
+    const currentAssessment = useMemo(() => {
+        return personAssessments.find((a) => a.assessmentId === selectedView) || selectedDoctorAssessment;
+    }, [personAssessments, selectedView, selectedDoctorAssessment]);
+
+    useEffect(() => {
+        const fetchComparison = async () => {
+            if (selectedView === "ALL" && personAssessments.length > 1 && selectedPerson) {
+                try {
+                    setIsLoadingComparison(true);
+                    const data = await assessmentService.getLatestComparison(selectedPerson);
+                    setComparisonData(data);
+                } catch (error) {
+                    console.error("Failed to fetch comparison", error);
+                    setComparisonData(null);
+                } finally {
+                    setIsLoadingComparison(false);
+                }
+            } else {
+                setComparisonData(null);
+            }
+        };
+
+        fetchComparison();
+    }, [selectedView, selectedPerson, personAssessments.length]);
+
     useEffect(() => {
         const fetchAssessments = async () => {
             try {
@@ -42,7 +80,6 @@ export default function AssessmentsHistoryPage() {
                 const response = await assessmentService.getAll();
                 const dataArray = Array.isArray(response) ? response : (response?.data || []);
                 setAssessments([...dataArray].sort((a, b) => b.createdAt - a.createdAt));
-                console.log("set", dataArray);
             } catch (error) {
                 setHasError(true);
             } finally {
@@ -83,18 +120,7 @@ export default function AssessmentsHistoryPage() {
         }
     }, [selectedView, selectedPerson]);
 
-    const uniquePersons = useMemo(() => {
-        return Array.from(new Set(assessments.map((a) => a.targetPerson).filter(Boolean)));
-    }, [assessments]);
 
-    const personAssessments = useMemo(() => {
-        return assessments.filter((a) => a.targetPerson === selectedPerson);
-    }, [assessments, selectedPerson]);
-
-    const currentAssessment = useMemo(() => {
-        return personAssessments.find((a) => a.assessmentId === selectedView) || selectedDoctorAssessment;
-    }, [personAssessments, selectedView, selectedDoctorAssessment]);
-console.log("Cureent", currentAssessment);
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -172,6 +198,22 @@ console.log("Cureent", currentAssessment);
                     <div className="space-y-6">
                         <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                         <HistoryCharts assessments={[...personAssessments].reverse()} />
+
+                        {isLoadingComparison ? (
+                            <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+                        ) : comparisonData ? (
+                            <div className="space-y-4 mt-6 animate-fadeIn">
+                                <div className="space-y-1.5 px-1">
+                                    <h4 className="text-sm font-bold uppercase tracking-wider text-secondary/80">
+                                        {t("latestQuizComparisonTitle")}
+                                    </h4>
+                                    <p className="text-sm text-secondary/60 max-w-2xl leading-relaxed italic">
+                                        {t("latestQuizComparisonDesc")}
+                                    </p>
+                                </div>
+                                <ComparisonCharts data={comparisonData} />
+                            </div>
+                        ) : null}
                     </div>
                 )}
 

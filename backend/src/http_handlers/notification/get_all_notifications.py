@@ -1,5 +1,3 @@
-# src/http_handlers/notifications/get_notifications.py
-
 from src.auth.auth import inject_user, require_roles
 from src.http_handlers.common import ok, internal_server_error
 from src.models.user import User

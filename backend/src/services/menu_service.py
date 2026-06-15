@@ -370,11 +370,13 @@ class MenuService:
         new_menu_id = uuid.uuid4()
         review_days = calculate_review_days(deficiencies)
 
-        review_deadline_ms = current_millis() + (review_days * 24 * 60 * 60 * 1000)
+        # review_deadline_ms = current_millis() + (review_days * 24 * 60 * 60 * 1000)
+        now = current_millis()
+        review_deadline_ms = now + 5000
 
         extracted_deficiencies = [
-            d.get("name") for d in deficiencies if isinstance(d, dict) and d.get("name")
-        ]
+                d.get("name") for d in deficiencies if isinstance(d, dict) and d.get("name")
+            ]
 
         new_meal_menu = MealBaseMenuModel(
             pk=f"USER#{cognito_sub}",
@@ -428,6 +430,14 @@ class MenuService:
     def process_expired_menus(self) -> int:
         now = current_millis()
         expired_menus = self.repository.get_expired_active_menus(now)
+        logger.info(f"Found {len(expired_menus)} expired menus")
+
+        for menu in expired_menus:
+            logger.info(
+                f"Menu found: type={menu.menu_type}, "
+                f"id={menu.menu_id}, "
+                f"user={menu.cognito_sub}"
+            )
 
         processed_count = 0
         for menu in expired_menus:
@@ -436,13 +446,16 @@ class MenuService:
 
             try:
                 self.repository.mark_menu_as_needs_review(user_pk, menu_sk)
+                logger.info("[LUYZAASS] AFTER UPDATE")
+
+                logger.info(f"[LUYZAASS] MENU: {menu}")
 
                 try:
                     self.notification_service.create_notification(
                         cognito_sub=menu.cognito_sub,
                         notif_type=NotificationType.RETAKE_QUIZ,
                         metadata={
-                            "menuId":  str(menu.menu_id),
+                            "assessmentId":  str(menu.assessment_id),
                             "cognitoSub": menu.cognito_sub,
                             "targetPerson" : menu.target_person
                         }

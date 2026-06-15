@@ -44,6 +44,7 @@ export interface AssessmentI {
     wellnessScore: number;
     imageUrls?: string[];
     imageKeys?: string[];
+    parentAssessmentId? :string;
 
     doctorDetails?: DoctorDetailsI | null;
     doctorNotes?: string;

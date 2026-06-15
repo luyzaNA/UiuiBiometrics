@@ -46,7 +46,7 @@ class AssessmentRepository(BaseRepository):
         item = response.get("Item")
 
         if not item:
-            raise NotFoundException(f"Assessment with ID {assessment_id} not found")
+                raise NotFoundException(f"Assessment with ID {assessment_id} not found")
 
         return self.convert_to_assessment_model(item)
 
@@ -67,7 +67,6 @@ class AssessmentRepository(BaseRepository):
                 full_name=raw_doctor.get("full_name"),
                 price=float(raw_doctor.get("price", 0.0)),
                 bio=raw_doctor.get("bio"),
-
                 avatar_key=raw_doctor.get("avatar_key"),
                 avatar_url=None
             )
@@ -96,6 +95,8 @@ class AssessmentRepository(BaseRepository):
             next_review_days=item.get("next_review_days"),
             gsi2_pk=item.get("gsi2_pk"),
             gsi2_sk=item.get("gsi2_sk"),
+
+            parent_assessment_id=UUID(item.get("parent_assessment_id")) if item.get("parent_assessment_id") else None
         )
 
     def get_all_by_user(self, cognito_sub: str):

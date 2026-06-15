@@ -10,6 +10,7 @@ from openai import OpenAI
 from botocore.exceptions import ClientError
 
 from src.http_handlers.assessment_request import CreateAssessmentRequest
+from src.http_handlers.exceptions import NotFoundException
 from src.models.assessment.assessment_model import AssessmentModel, DoctorDetails
 from src.repositories.assessment_repository import AssessmentRepository
 from src.utils.calculate_wellness_score import calculate_wellness_score
@@ -124,6 +125,7 @@ class AssessmentService:
                 red_flag_details=symptom_red_flags,
                 image_keys=uploaded_keys,
                 image_urls=uploaded_urls,
+                parent_assessment_id =request.parentAssessmentId,
                 created_at=current_date,
                 updated_at=current_date
             )
@@ -153,6 +155,7 @@ class AssessmentService:
             status=status_flux,
             has_red_flags=has_alerts,
             red_flag_details=systemic_red_flags,
+            parent_assessment_id=request.parentAssessmentId,
             image_keys=uploaded_keys,
             image_urls=uploaded_urls,
             created_at=current_date,
@@ -589,3 +592,47 @@ class AssessmentService:
                 f"[ASSESSMENT_SERVICE] Exception during AI history summary generation: {str(e)}"
             )
             raise e
+
+    def get_latest_comparison(self, cognito_sub: str, target_person: str):
+        all_assessments = self.assessment_repository.get_all_by_user(cognito_sub)
+
+        person_assessments = [
+            a for a in all_assessments
+            if getattr(a, 'target_person', None) == target_person or getattr(a, 'targetPerson', None) == target_person
+        ]
+
+        retakes = [a for a in person_assessments if a.parent_assessment_id]
+        sorted(retakes, key=lambda x: x.created_at, reverse=True)
+
+        if not retakes:
+            raise NotFoundException(f"Nu există chestionare de follow-up pentru {target_person}.")
+
+        latest_retake = retakes[0]
+
+
+        parent_assessment = self.assessment_repository.get_by_id(cognito_sub, str(latest_retake.parent_assessment_id))
+
+        return self._format_comparison_data(parent_assessment, latest_retake)
+
+    def _format_comparison_data(self, old, new):
+        all_symptom_keys = set(old.symptoms.keys()) | set(new.symptoms.keys())
+        all_deficiency_keys = set(old.predicted_deficiencies.keys()) | set(new.predicted_deficiencies.keys())
+
+        return {
+            "symptoms": [
+                {
+                    "name": key,
+                    "initial": old.symptoms.get(key, 0.0),
+                    "current": new.symptoms.get(key, 0.0)
+                }
+                for key in all_symptom_keys
+            ],
+            "deficiencies": [
+                {
+                    "name": key,
+                    "initial": old.predicted_deficiencies.get(key, 0.0),
+                    "current": new.predicted_deficiencies.get(key, 0.0)
+                }
+                for key in all_deficiency_keys
+            ]
+        }

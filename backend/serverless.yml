@@ -181,7 +181,7 @@ functions:
           authorizer:
             name: serviceAuthorizer
   cronProcessExpiredMenus:
-    handler: src/http_handlers/menu/cron_expired_menus
+    handler: src/http_handlers/menu/cron_expired_menus.handler
     events:
       - schedule: rate(1 minute)
 

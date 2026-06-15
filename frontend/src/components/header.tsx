@@ -56,12 +56,12 @@ const getNotificationRoute = (type: string, metadata?: Record<string, any>): str
             return '/';
 
         case 'RETAKE_QUIZ':
-            if (metadata?.menuId) {
+            if (metadata?.assessmentId) {
                 const targetPerson = metadata?.targetPerson || metadata?.targetPerspm || "";
                 const ageStr = metadata?.age ? `&age=${metadata.age}` : "";
                 const genderStr = metadata?.gender ? `&gender=${metadata.gender}` : "";
 
-                return `/quiz?menuId=${metadata.menuId}&target=${targetPerson}${ageStr}${genderStr}&step=4`;
+                return `/quiz?assessmentId=${metadata.assessmentId}&target=${targetPerson}${ageStr}${genderStr}&step=4`;
             }
             return '/quiz';
         default:

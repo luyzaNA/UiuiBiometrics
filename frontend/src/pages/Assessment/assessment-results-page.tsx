@@ -1,12 +1,14 @@
 import { useTranslation } from "react-i18next";
-import {Activity, Heart} from "lucide-react";
+import { Activity, Heart, Loader2 } from "lucide-react";
 import { MedicalAlert } from "@/components/medical-alert.tsx";
 import PlanSelectionSection from "@/pages/Assessment/sections/plan-selection-section.tsx";
-import {SYMPTOM_MAPPER} from "@/utils/symptoms_wrap.ts";
-import {useEffect, useState} from "react";
-import {profileService} from "@/services/profile-service.ts";
-import type {DoctorProfileI} from "@/models/doctor-model.ts";
-import {getFirstName} from "@/utils/get-first-name.ts";
+import { SYMPTOM_MAPPER } from "@/utils/symptoms_wrap.ts";
+import { useEffect, useState } from "react";
+import { profileService } from "@/services/profile-service.ts";
+import { assessmentService } from "@/services/assessment-service";
+import { ComparisonCharts } from "@/pages/Assessment/sections/comparison-charts-section.tsx";
+import type { DoctorProfileI } from "@/models/doctor-model.ts";
+import { getFirstName } from "@/utils/get-first-name.ts";
 
 interface AssessmentResultsProps {
     data: {
@@ -20,6 +22,7 @@ interface AssessmentResultsProps {
         status?: string;
         assessmentId?: string;
         fullName?: string;
+        parentAssessmentId?: string | null;
     };
 }
 
@@ -30,26 +33,43 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
     const hasRedFlags = data?.hasRedFlags || false;
     const red_flags = data?.redFlagDetails || [];
     const symptoms = data?.symptoms || {};
+
     const [profile, setProfile] = useState<Partial<DoctorProfileI>>({});
+    const [comparisonData, setComparisonData] = useState<any>(null);
+    const [isLoadingComparison, setIsLoadingComparison] = useState(false);
 
     const rawDeficiencies = data?.predictedDeficiencies || {};
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-
                 const profileData = await profileService.getMe();
-
-                console.log("PROFILE:", profileData);
-
                 setProfile(profileData);
             } catch (error) {
                 console.error("Eroare la preluarea profilului:", error);
-            } finally {
             }
         };
 
         fetchProfile();
     }, []);
+
+    useEffect(() => {
+        const fetchComparison = async () => {
+            if (data?.parentAssessmentId && target_person) {
+                try {
+                    setIsLoadingComparison(true);
+                    const compData = await assessmentService.getLatestComparison(target_person);
+                    setComparisonData(compData);
+                } catch (error) {
+                    console.error("Failed to fetch comparison data:", error);
+                } finally {
+                    setIsLoadingComparison(false);
+                }
+            }
+        };
+
+        fetchComparison();
+    }, [data?.parentAssessmentId, target_person]);
 
     const deficiencies = Object.entries(rawDeficiencies)
         .map(([nutrient, value]) => {
@@ -126,14 +146,14 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
                 </div>
 
                 <div className="lg:col-span-2 bg-secondary p-6 rounded-2xl border border-secondary-foreground/10 shadow-sm space-y-5">
-                        <div className="flex flex-col gap-1 border-b border-secondary-foreground/5 pb-3">
-                            <div className="flex items-center gap-2 text-secondary-foreground font-bold text-lg">
-                                <Heart className="text-primary" size={20} />
-                                <h4>{t("Your micronutrient map")}</h4>
-                            </div>
-                            <p className="text-[11px] sm:text-xs text-secondary-foreground/50 font-medium leading-normal">
-                                {t("The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient.")}
-                            </p>
+                    <div className="flex flex-col gap-1 border-b border-secondary-foreground/5 pb-3">
+                        <div className="flex items-center gap-2 text-secondary-foreground font-bold text-lg">
+                            <Heart className="text-primary" size={20} />
+                            <h4>{t("Your micronutrient map")}</h4>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-secondary-foreground/50 font-medium leading-normal">
+                            {t("The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient.")}
+                        </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 pt-1">
                         {deficiencies.length === 0 ? (
@@ -258,11 +278,33 @@ export default function AssessmentResultsPage({ data }: AssessmentResultsProps) 
                 </div>
             </div>
 
-            {deficiencies?.some(d => d.riskScore >= 50) && (
+            {!data?.parentAssessmentId && deficiencies?.some(d => d.riskScore >= 50) && (
                 <PlanSelectionSection
                     assessmentId={data?.assessmentId || "placeholder-id"}
                     deficiencies={deficiencies}
                 />
+            )}
+
+            {data?.parentAssessmentId && (
+                <>
+                    {isLoadingComparison ? (
+                        <div className="flex justify-center py-10">
+                            <Loader2 className="animate-spin text-primary" size={32} />
+                        </div>
+                    ) : comparisonData ? (
+                        <div className="space-y-4 mt-6 animate-fadeIn">
+                            <div className="space-y-1.5 px-1">
+                                <h4 className="text-sm font-bold uppercase tracking-wider text-secondary/80">
+                                    {t("latestQuizComparisonTitle")}
+                                </h4>
+                                <p className="text-sm text-secondary/60 max-w-2xl leading-relaxed italic">
+                                    {t("latestQuizComparisonDesc")}
+                                </p>
+                            </div>
+                            <ComparisonCharts data={comparisonData} />
+                        </div>
+                    ) : null}
+                </>
             )}
         </div>
     );
