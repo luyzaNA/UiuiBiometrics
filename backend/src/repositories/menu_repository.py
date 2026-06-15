@@ -41,6 +41,16 @@ class MenuRepository(BaseRepository):
         item_data[self.pk_key] = item_data.pop("pk")
         item_data[self.sk_key] = item_data.pop("sk")
 
+        if item_data.get("gsi3_pk") is not None:
+            item_data["GSI3_PK"] = item_data.pop("gsi3_pk")
+        else:
+            item_data.pop("gsi3_pk", None)
+
+        if item_data.get("gsi3_sk") is not None:
+            item_data["GSI3_SK"] = item_data.pop("gsi3_sk")
+        else:
+            item_data.pop("gsi3_sk", None)
+
         self.table.put_item(Item=item_data)
         return menu
 
@@ -84,13 +94,46 @@ class MenuRepository(BaseRepository):
 
         return [parsed for item in items if (parsed := self._deserialize_item(item)) is not None]
 
+    def get_expired_active_menus(self, current_time: int) -> List[Union[MealBaseMenuModel, FoodBaseMenuModel]]:
+        """
+        Queries GSI3 to find all active menus whose review deadline has passed.
+        Efficiently targets only pending records without scanning the table.
+        """
+        response = self.table.query(
+            IndexName="GSI3",
+            KeyConditionExpression=Key("GSI3_PK").eq("MENU#ACTIVE") & Key("GSI3_SK").lte(str(current_time))
+        )
+        items = response.get("Items", [])
+        return [parsed for item in items if (parsed := self._deserialize_item(item)) is not None]
+
+    def mark_menu_as_needs_review(self, user_pk: str, menu_sk: str) -> None:
+        """
+        Updates the menu status to COMPLETED and completely removes GSI3 attributes
+        so it drops out of the active monitoring index.
+        """
+        self.table.update_item(
+            Key={self.pk_key: user_pk, self.sk_key: menu_sk},
+            UpdateExpression="SET #st = :ns, updated_at = :now REMOVE GSI3_PK, GSI3_SK",
+            ExpressionAttributeNames={"#st": "status"},
+            ExpressionAttributeValues={
+                ":ns": MenuStatus.COMPLETED.value,
+                ":now": current_millis()
+            }
+        )
+
     def activate_menu_for_target_person(self, cognito_sub: str, menu_id: UUID, target_person: str) -> bool:
         """
-        Activates a specific menu and automagically deactivates ALL past active menus
-        for that specific target person to maintain state consistency.
+        Activates a specific menu, populates GSI3 tracking properties, and automagically
+        deactivates ALL past active menus for that specific target person.
         """
         user_pk = f"USER#{cognito_sub}"
         target_sk = f"MENU#{menu_id}"
+
+        target_menu = self.get_menu_by_id(cognito_sub, menu_id)
+        if not target_menu:
+            return False
+
+        deadline = getattr(target_menu, "review_deadline", current_millis())
 
         response = self.table.query(
             KeyConditionExpression=Key(self.pk_key).eq(user_pk) & Key(self.sk_key).begins_with("MENU#"),
@@ -106,7 +149,7 @@ class MenuRepository(BaseRepository):
 
             self.table.update_item(
                 Key={self.pk_key: user_pk, self.sk_key: old_sk},
-                UpdateExpression="SET #st = :inactive, updated_at = :now",
+                UpdateExpression="SET #st = :inactive, updated_at = :now REMOVE GSI3_PK, GSI3_SK",
                 ExpressionAttributeNames={"#st": "status"},
                 ExpressionAttributeValues={
                     ":inactive": MenuStatus.ARCHIVED.value,
@@ -116,11 +159,13 @@ class MenuRepository(BaseRepository):
 
         self.table.update_item(
             Key={self.pk_key: user_pk, self.sk_key: target_sk},
-            UpdateExpression="SET #st = :active, updated_at = :now",
+            UpdateExpression="SET #st = :active, updated_at = :now, GSI3_PK = :gsi3_pk, GSI3_SK = :gsi3_sk",
             ExpressionAttributeNames={"#st": "status"},
             ExpressionAttributeValues={
                 ":active": MenuStatus.ACTIVE.value,
-                ":now": now_ms
+                ":now": now_ms,
+                ":gsi3_pk": "MENU#ACTIVE",
+                ":gsi3_sk": str(deadline)
             }
         )
         return True
@@ -132,6 +177,11 @@ class MenuRepository(BaseRepository):
 
         item["pk"] = item.pop(self.pk_key, None)
         item["sk"] = item.pop(self.sk_key, None)
+
+        if "GSI3_PK" in item:
+            item["gsi3_pk"] = item.pop("GSI3_PK")
+        if "GSI3_SK" in item:
+            item["gsi3_sk"] = item.pop("GSI3_SK")
 
         menu_type_value = item.get("menu_type")
 

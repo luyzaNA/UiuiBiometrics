@@ -44,8 +44,10 @@ const getNotificationRoute = (type: string, metadata?: Record<string, any>): str
     switch (type) {
         case 'DOCTOR_PENDING_ASSESSMENT':
             return '/doctor/review/assessments';
+
         case 'DOCTOR_NEW_REVIEW':
             return '/doctor/reviews';
+
         case 'PATIENT_DOCTOR_NOTES':
             console.log("metadata", metadata);
             if (metadata?.cognitoSub && metadata?.assessmentId) {
@@ -53,6 +55,15 @@ const getNotificationRoute = (type: string, metadata?: Record<string, any>): str
             }
             return '/';
 
+        case 'RETAKE_QUIZ':
+            if (metadata?.menuId) {
+                const targetPerson = metadata?.targetPerson || metadata?.targetPerspm || "";
+                const ageStr = metadata?.age ? `&age=${metadata.age}` : "";
+                const genderStr = metadata?.gender ? `&gender=${metadata.gender}` : "";
+
+                return `/quiz?menuId=${metadata.menuId}&target=${targetPerson}${ageStr}${genderStr}&step=4`;
+            }
+            return '/quiz';
         default:
             return '/';
     }

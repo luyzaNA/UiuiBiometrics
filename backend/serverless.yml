@@ -180,6 +180,11 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
+  cronProcessExpiredMenus:
+    handler: src/http_handlers/menu/cron_expired_menus
+    events:
+      - schedule: rate(1 minute)
+
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
 
@@ -202,6 +207,10 @@ resources:
             AttributeType: S
           - AttributeName: GSI2_SK
             AttributeType: S
+          - AttributeName: GSI3_PK
+            AttributeType: S
+          - AttributeName: GSI3_SK
+            AttributeType: S
         KeySchema:
           - AttributeName: PK
             KeyType: HASH
@@ -221,6 +230,14 @@ resources:
               - AttributeName: GSI2_PK
                 KeyType: HASH
               - AttributeName: GSI2_SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: GSI3
+            KeySchema:
+              - AttributeName: GSI3_PK
+                KeyType: HASH
+              - AttributeName: GSI3_SK
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

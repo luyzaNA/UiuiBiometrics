@@ -62,6 +62,7 @@ class NotificationType(str, Enum):
     DOCTOR_PENDING_ASSESSMENT = "DOCTOR_PENDING_ASSESSMENT"
     DOCTOR_NEW_REVIEW = "DOCTOR_NEW_REVIEW"
     PATIENT_DOCTOR_NOTES = "PATIENT_DOCTOR_NOTES"
+    RETAKE_QUIZ = "RETAKE_QUIZ"
 
 NOTIFICATION_TEMPLATES = {
     NotificationType.DOCTOR_PENDING_ASSESSMENT: {
@@ -77,6 +78,11 @@ NOTIFICATION_TEMPLATES = {
     NotificationType.PATIENT_DOCTOR_NOTES: {
         "title": "Medical Feedback",
         "message": "Your doctor has reviewed your assessment.",
+        "role": Role.USER.value
+    },
+    NotificationType.RETAKE_QUIZ: {
+        "title": "Retake quiz",
+        "message": "Your monitoring period has ended. Please retake the assessment to get a new protocol.",
         "role": Role.USER.value
     }
 }

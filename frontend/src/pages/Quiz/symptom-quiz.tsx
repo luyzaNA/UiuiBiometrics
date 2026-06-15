@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, CheckCircle2, RefreshCw, Sparkles, UserCheck } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import { RecipientStep, type RecipientType } from "@/components/symptom-quiz/recipient-step.tsx";
 import { AgeStep } from "@/components/symptom-quiz/age-step.tsx";
@@ -17,13 +18,16 @@ import { VisionStep, type AnalysisEntry } from "@/components/symptom-quiz/image-
 
 export default function SymptomQuizWizard() {
     const { t } = useTranslation();
+
+    const [searchParams] = useSearchParams();
+
     const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
     const [recipientType, setRecipientType] = useState<RecipientType>(null);
     const [personName, setPersonName] = useState<string>("");
 
     const [age, setAge] = useState<number>(25);
-    const [name, setName] = useState<string>(null);
+    const [name, setName] = useState<string | null>(null);
     const [gender, setGender] = useState<"male" | "female" | null>(null);
 
     const [visionAnalyses, setVisionAnalyses] = useState<AnalysisEntry[]>([]);
@@ -39,16 +43,63 @@ export default function SymptomQuizWizard() {
     const [includeVisionData, setIncludeVisionData] = useState<boolean>(false);
 
     useEffect(() => {
+        const targetParam = searchParams.get("target");
+        const ageParam = searchParams.get("age");
+        const genderParam = searchParams.get("gender");
+        const stepParam = searchParams.get("step");
+
+        let hasPreloadedData = false;
+
+        if (targetParam) {
+            if (targetParam.toLowerCase() === "principal" || targetParam.toLowerCase() === "me") {
+                setRecipientType("me");
+            } else {
+                setRecipientType("other");
+                setPersonName(targetParam);
+            }
+            hasPreloadedData = true;
+        }
+
+        if (ageParam) {
+            setAge(Number(ageParam));
+            hasPreloadedData = true;
+        }
+
+        if (genderParam) {
+            const mappedGender = (genderParam === "masculine" || genderParam === "male")
+                ? "male"
+                : "female";
+            setGender(mappedGender);
+            hasPreloadedData = true;
+        }
+
+        if (stepParam) {
+            const targetStep = Number(stepParam) as 1 | 2 | 3 | 4 | 5 | 6;
+            if ([1, 2, 3, 4, 5, 6].includes(targetStep)) {
+                setStep(targetStep);
+            }
+        } else if (hasPreloadedData) {
+            setStep(4);
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
         const fetchUserProfile = async () => {
             try {
                 const profileData = await profileService.getMe();
                 if (profileData) {
                     setProfile(profileData);
-                    if (profileData.age) setAge(profileData.age);
-                    if (profileData.fullName) setName(profileData.fullName);
 
-                    if (profileData.gender === Gender.MASCULINE) setGender("male");
-                    if (profileData.gender === Gender.FEMININE) setGender("female");
+                    if (!searchParams.get("age") && profileData.age) {
+                        setAge(profileData.age);
+                    }
+                    if (profileData.fullName) {
+                        setName(profileData.fullName);
+                    }
+                    if (!searchParams.get("gender")) {
+                        if (profileData.gender === Gender.MASCULINE) setGender("male");
+                        if (profileData.gender === Gender.FEMININE) setGender("female");
+                    }
                 }
             } catch (error) {
                 console.error("Could not load profile for pre-filling:", error);
@@ -56,7 +107,7 @@ export default function SymptomQuizWizard() {
         };
 
         fetchUserProfile();
-    }, []);
+    }, [searchParams]);
 
     const handleVisionNext = (detectedSymptoms?: Record<string, number>) => {
         if (detectedSymptoms) {
@@ -107,7 +158,9 @@ export default function SymptomQuizWizard() {
         } finally {
             setIsAnalyzing(false);
         }
-    };    const handleSendForAnalysisClick = () => {
+    };
+
+    const handleSendForAnalysisClick = () => {
         if (recipientType === "other") {
             triggerAiAnalysis();
             return;
