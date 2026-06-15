@@ -135,10 +135,10 @@ export default function SymptomQuizWizard() {
             });
 
             const targetPerson = recipientType === "me" ? "Principal" : (personName || "Unknown");
+            const base64Images = includeVisionData ? visionAnalyses.map(analysis => analysis.imageSrc) : [];
 
-            const base64Images = includeVisionData
-                ? visionAnalyses.map(analysis => analysis.imageSrc)
-                : [];
+            const assessmentId = searchParams.get("assessmentId");
+            console.log("NBYUUU NEREGEEEE", assessmentId);
 
             const payload: CreateAssessmentRequest = {
                 target_person: targetPerson,
@@ -146,7 +146,10 @@ export default function SymptomQuizWizard() {
                 fullName: name,
                 gender: gender === "female" ? "feminine" : "masculine",
                 symptoms: formattedSymptoms,
-                images: base64Images
+                images: base64Images,
+                parentAssessmentId: assessmentId,
+
+                ...(assessmentId && { parentAssessmentId: assessmentId })
             };
 
             const result = await assessmentService.create(payload);
@@ -159,7 +162,6 @@ export default function SymptomQuizWizard() {
             setIsAnalyzing(false);
         }
     };
-
     const handleSendForAnalysisClick = () => {
         if (recipientType === "other") {
             triggerAiAnalysis();

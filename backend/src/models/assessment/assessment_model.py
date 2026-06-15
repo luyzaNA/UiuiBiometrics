@@ -147,6 +147,11 @@ class AssessmentModel(BaseModel):
         description="List of presigned URLs for the uploaded assessment images."
     )
 
+    parent_assessment_id: Optional[UUID] = Field(
+        default=None,
+        description="The id of old assessment."
+    )
+
     created_at: int = timestamp_field(
         description="Unix timestamp when the assessment session was completed."
     )

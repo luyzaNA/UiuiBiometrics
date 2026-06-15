@@ -25,6 +25,9 @@ class CreateAssessmentRequest(BaseModel):
         default_factory=list,
         description="List of base64 encoded images."
     )
+    parentAssessmentId : Optional[str] = Field(
+        description="The parent assessment id for retake quiz functionality"
+    )
 
 class UpdateDoctorNotesRequest(BaseModel):
     """Payload received when a doctor adds notes to an assessment."""

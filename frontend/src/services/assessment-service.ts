@@ -8,6 +8,7 @@ export interface CreateAssessmentRequest {
     symptoms: Record<string, number>;
     images?: string[];
     fullName: string;
+    parentAssessmentId?: string;
 }
 
 export const assessmentService = {
@@ -84,5 +85,13 @@ export const assessmentService = {
             }
         });
         return response.data;
-    }
+    },
+    /**
+     * GET /api/assessments/latest-comparison?target_person={targetPerson}
+     */
+    async getLatestComparison(targetPerson: string): Promise<any> {
+        const encodedPerson = encodeURIComponent(targetPerson);
+        const response = await apiClient.get<any>(`/assessments/latest-comparison?target_person=${encodedPerson}`);
+        return response.data;
+    },
 };
