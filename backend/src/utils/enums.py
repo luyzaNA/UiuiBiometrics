@@ -57,3 +57,26 @@ class MenuStatus(str, Enum):
     ACTIVE = "ACTIVE"
     ARCHIVED = "ARCHIVED"
     COMPLETED = "COMPLETED"
+
+class NotificationType(str, Enum):
+    DOCTOR_PENDING_ASSESSMENT = "DOCTOR_PENDING_ASSESSMENT"
+    DOCTOR_NEW_REVIEW = "DOCTOR_NEW_REVIEW"
+    PATIENT_DOCTOR_NOTES = "PATIENT_DOCTOR_NOTES"
+
+NOTIFICATION_TEMPLATES = {
+    NotificationType.DOCTOR_PENDING_ASSESSMENT: {
+        "title": "Pending Assessments",
+        "message": "You have new assessments waiting for review.",
+        "role": Role.DOCTOR.value
+    },
+    NotificationType.DOCTOR_NEW_REVIEW: {
+        "title": "New Reviews",
+        "message": "A patient left you a new review.",
+        "role": Role.DOCTOR.value
+    },
+    NotificationType.PATIENT_DOCTOR_NOTES: {
+        "title": "Medical Feedback",
+        "message": "Your doctor has reviewed your assessment.",
+        "role": Role.USER.value
+    }
+}

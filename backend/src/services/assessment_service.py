@@ -20,6 +20,9 @@ from src.utils.logger import get_logger
 from src.utils.clinical_rules import evaluate_medical_red_flags, evaluate_multi_deficiency_alerts
 from src.utils.settings import AVATAR_BUCKET
 
+from src.services.notification_service import NotificationService
+from src.utils.enums import NotificationType
+
 logger = get_logger(__name__)
 
 if os.environ.get("IS_OFFLINE") == "true":
@@ -81,6 +84,7 @@ def get_signed_url_from_s3(key: str | None) -> str | None:
 class AssessmentService:
     def __init__(self):
         self.assessment_repository = AssessmentRepository()
+        self.notification_service = NotificationService()
 
     def create_assessment(self, request: CreateAssessmentRequest, cognito_sub: str) -> AssessmentModel:
         current_date: int = current_millis()
@@ -193,7 +197,7 @@ class AssessmentService:
 
         current_date = current_millis()
 
-        return self.assessment_repository.assign_to_doctor(
+        updated_assessment = self.assessment_repository.assign_to_doctor(
             cognito_sub=cognito_sub,
             assessment_id=assessment_id,
             doctor_details=doctor_details,
@@ -202,6 +206,53 @@ class AssessmentService:
             created_at=current_date
         )
 
+        doctor_id = getattr(doctor_details, "doctor_id", None) if doctor_details else None
+
+        if doctor_id:
+            try:
+                self.notification_service.create_notification(
+                    cognito_sub=doctor_id,
+                    notif_type=NotificationType.DOCTOR_PENDING_ASSESSMENT
+                )
+            except Exception as e:
+                logger.warning(f"[NOTIFICATIONS] Failed to notify doctor {doctor_id}: {str(e)}")
+
+        return updated_assessment
+
+    def update_doctor_notes(self, cognito_sub: str, assessment_id: str, doctor_notes: str) -> AssessmentModel:
+        assessment = self.assessment_repository.get_by_id(cognito_sub, assessment_id)
+
+        if not assessment.doctor_details or not assessment.doctor_details.doctor_id:
+            raise ValueError("Assessment is not assigned to any doctor.")
+
+        current_time = current_millis()
+        new_status = AssessmentStatus.DOCTOR_REVIEWED
+
+        status_val = new_status.value if hasattr(new_status, "value") else new_status
+        new_gsi2_sk = f"STATUS#{status_val}#{assessment.created_at}"
+
+        updated_assessment = self.assessment_repository.update_assessment_notes_and_status(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            doctor_notes=doctor_notes,
+            new_status=new_status,
+            updated_at=current_time,
+            gsi2_sk=new_gsi2_sk
+        )
+
+        try:
+            self.notification_service.create_notification(
+                cognito_sub=assessment.cognito_sub,
+                notif_type=NotificationType.PATIENT_DOCTOR_NOTES,
+                metadata={
+                    "assessmentId": assessment_id,
+                    "cognitoSub": assessment.cognito_sub
+                }
+            )
+        except Exception as e:
+            logger.warning(f"[NOTIFICATIONS] Failed to notify patient {assessment.cognito_sub}: {str(e)}")
+
+        return updated_assessment
     def get_history_by_target_person(self, cognito_sub: str, target_person: str) -> list[AssessmentModel]:
         """
         Retrieves the assessment history for a specific target person and generates presigned S3 URLs.
@@ -309,30 +360,6 @@ class AssessmentService:
             ]
 
         return assessments
-
-    def update_doctor_notes(self, cognito_sub: str, assessment_id: str, doctor_notes: str) -> AssessmentModel:
-        """
-        Adds doctor notes to an assessment and transitions its status to DOCTOR_REVIEWED.
-        """
-        assessment = self.assessment_repository.get_by_id(cognito_sub, assessment_id)
-
-        if not assessment.doctor_details or not assessment.doctor_details.doctor_id:
-            raise ValueError("Assessment is not assigned to any doctor.")
-
-        current_time = current_millis()
-        new_status = AssessmentStatus.DOCTOR_REVIEWED
-
-        status_val = new_status.value if hasattr(new_status, "value") else new_status
-        new_gsi2_sk = f"STATUS#{status_val}#{assessment.created_at}"
-
-        return self.assessment_repository.update_assessment_notes_and_status(
-            cognito_sub=cognito_sub,
-            assessment_id=assessment_id,
-            doctor_notes=doctor_notes,
-            new_status=new_status,
-            updated_at=current_time,
-            gsi2_sk=new_gsi2_sk
-        )
 
     def get_reviewed_assessments_stats(self, doctor_id: str) -> dict:
         """

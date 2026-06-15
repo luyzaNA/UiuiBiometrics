@@ -6,7 +6,9 @@ from src.http_handlers.doctor_request import CreateDoctorProfileRequest, UpdateD
 from src.models.profile.doctor.profile_doctor_model import DoctorProfileModel
 from src.repositories.doctor_repository import DoctorRepository
 from src.repositories.profile_repository import ProfileRepository
+from src.services.notification_service import NotificationService
 from src.services.profile_service import upload_avatar_if_exists, get_signed_url_from_s3
+from src.utils.enums import NotificationType
 from src.utils.time import current_millis
 from src.utils.logger import get_logger
 from src.http_handlers.doctor_request import CreateDoctorReviewRequest
@@ -26,31 +28,32 @@ class DoctorService:
     def __init__(self):
         self.doctor_repository = DoctorRepository()
         self.profile_repository = ProfileRepository()
+        self.notification_service = NotificationService()
 
 
     def create_profile(self, request: CreateDoctorProfileRequest, cognito_sub: str) -> DoctorProfileModel:
-            """Creates a new doctor profile partition using the Cognito sub as PK."""
-            current_date: int = current_millis()
-            avatar_key = upload_avatar_if_exists(request.avatar, cognito_sub)
-            avatar_url = get_signed_url_from_s3(avatar_key) if avatar_key else None
+        """Creates a new doctor profile partition using the Cognito sub as PK."""
+        current_date: int = current_millis()
+        avatar_key = upload_avatar_if_exists(request.avatar, cognito_sub)
+        avatar_url = get_signed_url_from_s3(avatar_key) if avatar_key else None
 
-            new_doctor = DoctorProfileModel(
-                pk=f"DOCTOR#{cognito_sub}",
-                sk="PROFILE#METADATA",
-                profile_id=uuid4(),
-                cognito_sub=cognito_sub,
-                age=request.age,
-                full_name=request.fullName,
-                gender=request.gender,
-                bio=request.bio,
-                price=request.price,
-                avatar_url=avatar_url,
-                avatar_key=avatar_key,
-                created_at=current_date,
-                updated_at=current_date
-            )
+        new_doctor = DoctorProfileModel(
+            pk=f"DOCTOR#{cognito_sub}",
+            sk="PROFILE#METADATA",
+            profile_id=uuid4(),
+            cognito_sub=cognito_sub,
+            age=request.age,
+            full_name=request.fullName,
+            gender=request.gender,
+            bio=request.bio,
+            price=request.price,
+            avatar_url=avatar_url,
+            avatar_key=avatar_key,
+            created_at=current_date,
+            updated_at=current_date
+        )
 
-            return self.doctor_repository.create_profile(new_doctor)
+        return self.doctor_repository.create_profile(new_doctor)
 
     def get_doctor_by_sub(self, cognito_sub: str) -> DoctorProfileModel:
         """Retrieve a doctor profile based on Cognito Sub and inject dynamic presigned avatar URL."""
@@ -97,7 +100,7 @@ class DoctorService:
         return doctor
 
     def add_review(self, doctor_sub: str, reviewer: User, request: CreateDoctorReviewRequest):
-        """Calculează noua medie a doctorului și adaugă review-ul cu datele din profil."""
+        """Calculates the doctor's new average rating and adds the review using profile data."""
         doctor = self.get_doctor_by_sub(doctor_sub)
 
         current_total = doctor.total_reviews
@@ -120,12 +123,21 @@ class DoctorService:
             comment=request.comment
         )
 
+
         self.doctor_repository.add_review_and_update_stats(doctor_sub, review, round(new_avg, 2), new_total)
+
+        try:
+            self.notification_service.create_notification(
+                cognito_sub=doctor_sub,
+                notif_type=NotificationType.DOCTOR_NEW_REVIEW
+            )
+        except Exception as e:
+            logger.warning(f"[NOTIFICATIONS] Failed to notify doctor {doctor_sub} about new review: {str(e)}")
 
         return review
 
     def get_doctor_profile_with_reviews(self, doctor_sub: str) -> dict:
-        """Ia doctorul și review-urile și injectează URL-ul avatarului."""
+        """Retrieves the doctor profile and reviews, then injects the presigned avatar URL."""
         data = self.doctor_repository.get_doctor_with_reviews(doctor_sub)
 
         doctor = data["profile"]
@@ -136,4 +148,3 @@ class DoctorService:
             "profile": doctor.model_dump(exclude={"gsi2_pk", "gsi2_sk", "pk", "sk", "avatar_key"}),
             "reviews": [r.model_dump() for r in data["reviews"]]
         }
-

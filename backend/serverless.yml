@@ -167,7 +167,19 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
-
+  notificationRouter:
+    handler: src/http_handlers/notification/routes.handler
+    events:
+      - httpApi:
+          path: /api/notifications
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
 
