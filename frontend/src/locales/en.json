@@ -696,7 +696,10 @@
   "Manage your administrator account details." : "Manage your administrator account details.",
   "System Admin" : "System Admin",
   "Role updated successfully": "Role updated successfully",
-  "Failed to update role": "Failed to update role"
+  "Failed to update role": "Failed to update role",
+  "You" : "You",
+  "Get Help" :  "Help",
+  "Send an email to our team and we will get back to you as soon as possible." : "Send an email to our team and we will get back to you as soon as possible."
 }
 
 

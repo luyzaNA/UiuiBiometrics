@@ -1,0 +1,1 @@
+export const EMAIL_FOR_HELP = "andreea.luyza.nica@gmail.com"
