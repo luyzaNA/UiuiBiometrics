@@ -60,7 +60,7 @@ const CustomTooltip = ({ active, payload, label, t, type }: any) => {
             : label;
 
         return (
-            <div className="bg-background/95 backdrop-blur-md border border-foreground/10 p-4 rounded-2xl shadow-xl">
+            <div className="bg-background/95 backdrop-blur-md border border-foreground/10 p-4 rounded-2xl shadow-xl z-50">
                 <p className="font-bold text-foreground mb-3">{t(translationKey)}</p>
                 <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-4 justify-between">
@@ -112,8 +112,16 @@ const CategorizedChart = ({ title, rawData, type }: { title: string, rawData: an
     const tabs = Object.keys(processedData);
     const chartData = processedData[activeTab] || [];
 
+    const formatYAxisTick = (val: string) => {
+        const keyToTranslate = type === 'symptoms' && SYMPTOM_MAPPER[val] ? SYMPTOM_MAPPER[val] : val;
+        const translated = t(keyToTranslate);
+        return translated.length > 14 ? `${translated.substring(0, 14)}...` : translated;
+    };
+
+    const dynamicChartHeight = Math.max(300, chartData.length * 65);
+
     return (
-        <div className="bg-secondary/10 border border-foreground/5 p-6 rounded-[2rem] shadow-sm flex flex-col transition-all duration-300 min-h-[460px]">
+        <div className="bg-secondary/10 border border-foreground/5 p-4 sm:p-6 rounded-[2rem] shadow-sm flex flex-col transition-all duration-300">
             <div className="flex flex-col gap-4 mb-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">{t(title)}</h3>
 
@@ -136,37 +144,24 @@ const CategorizedChart = ({ title, rawData, type }: { title: string, rawData: an
                 )}
             </div>
 
-            <div className="h-[280px] w-full mt-auto">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={5}>
+            <div className="w-full max-h-[450px] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
+                <ResponsiveContainer width="100%" height={dynamicChartHeight}>
+                    <BarChart layout="vertical" data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }} barGap={6}>
                         <defs>
-                            <linearGradient id={`colorCurrent-${type}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
-                                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.85} />
+                            <linearGradient id={`colorCurrent-${type}`} x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#a855f7" stopOpacity={0.85} />
+                                <stop offset="100%" stopColor="#7c3aed" stopOpacity={1} />
                             </linearGradient>
-                            <linearGradient id={`colorInitial-${type}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#cbd5e1" stopOpacity={1} />
-                                <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.5} />
+                            <linearGradient id={`colorInitial-${type}`} x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#cbd5e1" stopOpacity={0.5} />
+                                <stop offset="100%" stopColor="#94a3b8" stopOpacity={1} />
                             </linearGradient>
                         </defs>
 
-                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="currentColor" opacity={0.06} />
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="currentColor" opacity={0.15} />
 
                         <XAxis
-                            dataKey="name"
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={(val) => {
-                                const keyToTranslate = type === 'symptoms' && SYMPTOM_MAPPER[val]
-                                    ? SYMPTOM_MAPPER[val]
-                                    : val;
-                                return t(keyToTranslate);
-                            }}
-                            tick={{ fill: 'currentColor', opacity: 0.6, fontSize: 10, fontWeight: 600 }}
-                            dy={10}
-                        />
-
-                        <YAxis
+                            type="number"
                             domain={[0, 1]}
                             axisLine={false}
                             tickLine={false}
@@ -174,10 +169,24 @@ const CategorizedChart = ({ title, rawData, type }: { title: string, rawData: an
                             tick={{ fill: 'currentColor', opacity: 0.4, fontSize: 11 }}
                         />
 
-                        <Tooltip content={<CustomTooltip t={t} type={type} />} cursor={{ fill: 'currentColor', opacity: 0.03 }} />
+                        <YAxis
+                            type="category"
+                            dataKey="name"
+                            axisLine={false}
+                            tickLine={false}
+                            width={110}
+                            tickFormatter={formatYAxisTick}
+                            tick={{ fill: 'currentColor', opacity: 0.9, fontSize: 11, fontWeight: 700 }}
+                        />
+
+                        <Tooltip
+                            content={<CustomTooltip t={t} type={type} />}
+                            cursor={{ fill: 'currentColor', opacity: 0.08 }}
+                            isAnimationActive={false}
+                        />
 
                         <Legend
-                            wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 600, opacity: 0.7 }}
+                            wrapperStyle={{ paddingTop: '10px', paddingBottom: '10px', fontSize: '11px', fontWeight: 600, opacity: 0.7 }}
                             iconType="circle"
                         />
 
@@ -185,21 +194,25 @@ const CategorizedChart = ({ title, rawData, type }: { title: string, rawData: an
                             dataKey="initial"
                             name={t("Previous")}
                             fill={`url(#colorInitial-${type})`}
-                            radius={[5, 5, 5, 5]}
-                            maxBarSize={28}
+                            radius={[0, 4, 4, 0]}
+                            maxBarSize={16}
                             animationDuration={1200}
                         />
                         <Bar
                             dataKey="current"
                             name={t("Current")}
                             fill={`url(#colorCurrent-${type})`}
-                            radius={[5, 5, 5, 5]}
-                            maxBarSize={28}
+                            radius={[0, 4, 4, 0]}
+                            maxBarSize={16}
                             animationDuration={1200}
                         />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
+
+            <p className="text-[10px] text-muted-foreground mt-4 italic text-center opacity-60">
+                {t("* Barele gri reprezintă starea anterioară, barele colorate starea actuală.")}
+            </p>
         </div>
     );
 };

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Users, Check, ArrowRight, ChevronDown } from "lucide-react";
+import { User, Users, Check, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { assessmentService } from "@/services/assessment-service.ts";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 
 export type RecipientType = "me" | "other" | null;
 
@@ -137,19 +138,22 @@ export function RecipientStep({
                                             <label className="text-[10px] font-mono font-black tracking-widest text-secondary/40 uppercase min-h-[16px] flex items-center">
                                                 {t("Existing Profile")}
                                             </label>
-                                            <div className="relative">
-                                                <select
-                                                    value={existingPersons.includes(personName) ? personName : ""}
-                                                    onChange={(e) => setPersonName(e.target.value)}
-                                                    className="w-full appearance-none px-4 py-3 pr-10 bg-secondary-foreground/20 border border-secondary/10 rounded-xl font-mono text-xs text-secondary focus:outline-none focus:border-primary transition-colors cursor-pointer"
-                                                >
-                                                    <option value="">{t("Select...")}</option>
+
+                                            <Select
+                                                value={existingPersons.includes(personName) ? personName : undefined}
+                                                onValueChange={(value) => setPersonName(value)}
+                                            >
+                                                <SelectTrigger className="w-full px-4 py-6 bg-secondary-foreground/20 border border-secondary/10 rounded-xl font-mono text-xs text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors">
+                                                    <SelectValue placeholder={t("Select...")} />
+                                                </SelectTrigger>
+                                                <SelectContent className="z-[150]">
                                                     {existingPersons.map((name) => (
-                                                        <option key={name} value={name}>{name}</option>
+                                                        <SelectItem key={name} value={name}>
+                                                            {name}
+                                                        </SelectItem>
                                                     ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/50 pointer-events-none" />
-                                            </div>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     )}
 

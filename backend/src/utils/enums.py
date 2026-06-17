@@ -82,7 +82,7 @@ NOTIFICATION_TEMPLATES = {
     },
     NotificationType.RETAKE_QUIZ: {
         "title": "Retake quiz",
-        "message": "Your monitoring period has ended. Please retake the assessment to get a new protocol.",
+        "message": "Your monitoring period has ended. Please retake the assessment to observe your progress.",
         "role": Role.USER.value
     }
 }

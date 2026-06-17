@@ -185,7 +185,10 @@ export function Header() {
     };
 
     return (
-        <header className="fixed top-0 z-[100] w-full bg-navbar backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500">
+        <header
+            className="fixed top-0 z-[100] w-full bg-navbar backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-colors duration-500"
+            style={{ paddingRight: "var(--removed-body-scroll-bar-size, 0px)" }}
+        >
             <div className="absolute bottom-0 left-0 w-full h-[1px] bg-secondary/5 z-20" />
             <nav>
                 <Container className="relative flex justify-between items-center py-8">
@@ -228,7 +231,12 @@ export function Header() {
 
                                 <AnimatePresence>
                                     {isNotifOpen && (
-                                        <motion.div variants={dropdownAnimation} initial="initial" animate="animate" exit="exit" className="absolute right-0 top-full w-80 pt-3 z-[110]">
+                                        <motion.div
+                                            variants={dropdownAnimation}
+                                            initial="initial"
+                                            animate="animate"
+                                            exit="exit"
+                                            className="absolute -right-6 sm:right-0 top-full w-[calc(100vw-2rem)] sm:w-80 max-w-[320px] pt-3 z-[110]">
                                             <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
                                                 <div className="flex items-center justify-between px-4 py-3 border-b border-secondary/5">
                                                     <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("Notifications")}</span>
@@ -278,7 +286,7 @@ export function Header() {
                                         {isOpen && (
                                             <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col h-full overflow-y-auto pr-1 custom-scrollbar">
                                                 <motion.div variants={itemVariants} className="flex justify-center mb-10 shrink-0">
-                                                    <div className="relative p-4 rounded-3xl bg-secondary/5 border border-secondary/10 shadow-inner">
+                                                    <div className="relative p-4 rounded-3xl">
                                                         <img src="/logo.svg" alt="Logo" className="w-32 h-32 object-contain" />
                                                     </div>
                                                 </motion.div>
@@ -308,7 +316,7 @@ export function Header() {
                                                                     {i18n.language}
                                                                 </button>
                                                             } />
-                                                        </div> d
+                                                        </div>
                                                         <a href={`mailto:${EMAIL_FOR_HELP}`}
                                                            className="flex items-center justify-between px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10 active:bg-primary/10 transition-colors">
                                                             <div className="flex items-center gap-2">

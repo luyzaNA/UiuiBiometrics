@@ -84,8 +84,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 relative pb-10">
-
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 animate-in fade-in duration-500 relative pb-10">
             {isLoading && (
                 <div className="absolute inset-0 z-50 flex items-start justify-center pt-20 bg-background/50 backdrop-blur-sm rounded-xl">
                     <div className="flex items-center gap-2 text-primary font-bold bg-background p-4 rounded-xl shadow-lg">
@@ -104,8 +103,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1 bg-gradient-to-br from-primary/20 to-background border border-secondary/10 shadow-2xl overflow-hidden h-fit sticky top-6">
-                    <CardHeader className="flex flex-col items-center text-center pb-2">
+                <Card className="lg:col-span-1 bg-gradient-to-br from-primary/20 to-background border border-secondary/10 shadow-2xl overflow-hidden h-fit lg:sticky lg:top-6">                    <CardHeader className="flex flex-col items-center text-center pb-2">
                         <div className="w-24 h-24 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl mb-4 bg-secondary/10">
                             <img
                                 src={profile.avatarUrl || "/placeholder-avatar.png"}
@@ -123,8 +121,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                     </CardHeader>
 
                     <CardContent className="space-y-4 pt-4">
-                        <div className="bg-secondary/5 border border-secondary/5 p-3 rounded-xl flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                        <div className="bg-secondary/5 border border-secondary/5 p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">                            <div className="flex items-center gap-2">
                                 <Star className="text-amber-400 fill-amber-400" size={14} />
                                 <span className="text-sm text-secondary/80 font-bold">{profile.averageRating?.toFixed(2) || "No reviews yet"}</span>
                             </div>
@@ -144,7 +141,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                             </div>
                         </div>
 
-                        <div className="bg-primary/10 border border-primary/20 p-3 rounded-xl flex items-center justify-between">
+                        <div className="bg-primary/10 border border-primary/20 p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{t("Consultation fee")}</span>
                             <span className="text-lg font-black text-secondary">{profile.price || 0} RON</span>
                         </div>
@@ -201,7 +198,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
 
                         <Card className="border border-primary/20 bg-primary/5 shadow-sm">
                             <CardContent className="pt-6 space-y-4">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                                     <span className="text-xs font-bold text-secondary/60 uppercase">{t("Your Rating")}:</span>
                                     <div className="flex gap-1">
                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -253,11 +250,11 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                                     </p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     {reviews.map((review, index) => (
                                         <Card key={index} className="border border-secondary/10 bg-secondary/[0.01]">
                                             <CardContent className="p-4 space-y-3 h-full">
-                                                <div className="flex justify-between items-start">
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                                     <div>
                                                         <p className="text-sm font-bold text-secondary capitalize">{review.reviewerName}</p>
                                                         <p className="text-[10px] text-secondary/40 font-bold uppercase tracking-wider mt-0.5">
@@ -279,7 +276,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                                                     </div>
                                                 </div>
                                                 {review.comment && (
-                                                    <p className="text-sm text-secondary/80 italic border-l-2 border-primary/30 pl-3">
+                                                    <p className="text-sm text-secondary/80 italic border-l-2 border-primary/30 pl-3 break-words">
                                                         "{review.comment}"
                                                     </p>
                                                 )}

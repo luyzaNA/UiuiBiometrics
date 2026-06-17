@@ -701,7 +701,12 @@
   "Failed to update role": "Eroare la actualizarea rolului",
   "You" : "Contul tău",
   "Get Help" : "Ajutor",
-  "Send an email to our team and we will get back to you as soon as possible." : "Scrie un mail către echipa noastră și vom reveni în cel mai scurt timp."
+  "Send an email to our team and we will get back to you as soon as possible." : "Scrie un mail către echipa noastră și vom reveni în cel mai scurt timp.",
+  "Completed" : "Completat",
+  "Visual Analysis" : "Analiză vizuală",
+  "Image analyzed successfully!" : "Imaginea a fost analizată cu succes",
+  "Retake quiz": "Reia testul",
+  "Your monitoring period has ended. Please retake the assessment to observe your progress.": "Perioada ta de urmare a meniului a expirat. Te rugăm să reiei evaluarea pentru a observa progresul."
 
 
 
