@@ -698,7 +698,11 @@
   "Manage your administrator account details." : "Gestionează detaliile contului tău de administrator.",
   "System Admin" : "Administrator sistem",
   "Role updated successfully": "Rolul a fost actualizat cu succes",
-  "Failed to update role": "Eroare la actualizarea rolului"
+  "Failed to update role": "Eroare la actualizarea rolului",
+  "You" : "Contul tău",
+  "Get Help" : "Ajutor",
+  "Send an email to our team and we will get back to you as soon as possible." : "Scrie un mail către echipa noastră și vom reveni în cel mai scurt timp."
+
 
 
 

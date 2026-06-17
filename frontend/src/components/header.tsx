@@ -16,7 +16,8 @@ import {
     LogOut,
     ChevronDown,
     Bell,
-    CheckCheck
+    CheckCheck,
+    HelpCircle
 } from "lucide-react";
 import { LanguageSelect } from "@/components/language-select.tsx";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,7 @@ import { doctorService } from "@/services/doctor-service.ts";
 import { getInitial } from "@/utils/get-initiasl-from-name.ts";
 import { getFirstName } from "@/utils/get-first-name.ts";
 import { notificationService } from "@/services/notifiaction-service.ts";
+import {EMAIL_FOR_HELP} from "@/utils/get-help.ts";
 
 interface AppNotification {
     id: string;
@@ -295,7 +297,7 @@ export function Header() {
                                                         </motion.div>
                                                     ))}
 
-                                                    <motion.div variants={itemVariants} className="mt-4 shrink-0">
+                                                    <motion.div variants={itemVariants} className="mt-4 shrink-0 flex flex-col gap-3">
                                                         <div className="flex items-center justify-between px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10">
                                                             <div className="flex items-center gap-3">
                                                                 <Globe className="w-4 h-4 text-primary/60" />
@@ -306,7 +308,15 @@ export function Header() {
                                                                     {i18n.language}
                                                                 </button>
                                                             } />
-                                                        </div>
+                                                        </div> d
+                                                        <a href={`mailto:${EMAIL_FOR_HELP}`}
+                                                           className="flex items-center justify-between px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10 active:bg-primary/10 transition-colors">
+                                                            <div className="flex items-center gap-2">
+                                                                <HelpCircle className="w-4 h-4 text-primary/60" />
+                                                                <span className="text-XS font-black text-primary/70 uppercase tracking-widest">{t("Get Help")}</span>
+                                                            </div>
+                                                            <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary/60" />
+                                                        </a>
                                                     </motion.div>
                                                 </div>
 
@@ -341,7 +351,18 @@ export function Header() {
                             </Sheet>
                         </div>
 
-                        <div className="hidden lg:flex items-center gap-8">
+                        <div className="hidden lg:flex items-center gap-6">
+
+                            <a href={`mailto:${EMAIL_FOR_HELP}`}
+                               className="relative bg-transparent hover:bg-secondary/5 group flex items-center gap-2.5 h-auto p-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary transition-all rounded-md cursor-pointer">
+                                <HelpCircle strokeWidth={1.5} className="w-4 h-4" />
+                                <span>{t("Get Help")}</span>
+                                <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2 px-3 py-2 bg-navbar/95 backdrop-blur-md border border-secondary/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] text-[10px] font-medium normal-case tracking-normal text-muted-foreground text-center opacity-0 scale-95 pointer-events-none transition-all duration-300 ease-out group-hover:opacity-100 group-hover:scale-100 z-[135]">
+                                    {t("Send an email to our team and we will get back to you as soon as possible.")}
+                                    <div className="absolute left-1/2 bottom-full -translate-x-1/2 translate-y-[5px] w-2 h-2 bg-navbar border-t border-l border-secondary/10 rotate-45" />
+                                </div>
+                            </a>
+
                             <LanguageSelect trigger={
                                 <Button className="bg-transparent hover:bg-secondary/5 group flex items-center gap-2.5 h-auto p-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary transition-all">
                                     <Globe strokeWidth={1} className="w-3.5 h-3.5" />
@@ -349,7 +370,7 @@ export function Header() {
                                 </Button>
                             } />
 
-                            <div className="h-4 w-[1px] bg-secondary/10" />
+                            <div className="h-4 w-[1px] bg-secondary/10 mx-1" />
 
                             {isAuthenticated ? (
                                 <div className="flex items-center gap-6">
