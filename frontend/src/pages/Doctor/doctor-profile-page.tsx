@@ -22,9 +22,6 @@ const DoctorProfileSchema = z.object({
     age: z.string().refine((val) => val !== "", { message: t("Age is required") })
         .refine((val) => Number(val) > 0 && Number(val) <= 120, { message: t("Please enter a valid age") }),
     gender: z.string().min(1, { message: t("Gender is required") }),
-    price: z.string()
-        .refine((val) => val.trim() !== "", { message: t("Consultation price is required") })
-        .refine((val) => Number(val) > 0, { message: t("Price must be greater than 0") }),
     bio: z.string().max(500, { message: t("Bio cannot exceed 500 characters") }).optional(),
 });
 
@@ -53,7 +50,7 @@ export default function DoctorDashboardPage() {
         formState: { errors },
     } = useForm<DoctorProfileFormValues>({
         resolver: zodResolver(DoctorProfileSchema),
-        defaultValues: { fullName: '', age: '', gender: '', price: '', bio: '' }
+        defaultValues: { fullName: '', age: '', gender: '', bio: '' }
     });
 
     const handleCameraClick = () => fileInputRef.current?.click();
@@ -90,7 +87,6 @@ export default function DoctorDashboardPage() {
                 setValue('fullName', profileData.fullName || '');
                 setValue('age', profileData.age?.toString() || '');
                 setValue('gender', profileData.gender || '');
-                setValue('price', profileData.price?.toString() || '');
                 setValue('bio', profileData.bio || '');
             } catch (error) {
                 setProfile(null);
@@ -108,7 +104,6 @@ export default function DoctorDashboardPage() {
                 fullName: data.fullName,
                 age: Number(data.age),
                 gender: data.gender as Gender,
-                price: Number(data.price),
                 bio: data.bio,
                 avatar: avatarBase64 || undefined,
             };
@@ -241,9 +236,7 @@ export default function DoctorDashboardPage() {
                                             <p className="text-sm font-medium text-foreground">{t("Rate")}</p>
                                         </div>
                                         <p className="text-md font-bold text-foreground">
-                                            {profile?.price !== undefined && profile?.price !== null && Number(profile.price) > 0
-                                                ? `${profile.price} RON`
-                                                : t("Not set")}
+                                           30 RON
                                         </p>
                                     </div>
                                 </div>
@@ -357,23 +350,7 @@ export default function DoctorDashboardPage() {
                                             )}
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
-                                                {t("Consultation Rate")}
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    {...register("price")}
-                                                    className="w-full pl-4 pr-14 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-foreground"
-                                                    placeholder={t("e.g. 200")}
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
-                                                    RON
-                                                </span>
-                                            </div>
-                                            {errors.price && <p className="text-xs text-destructive font-medium px-1">{errors.price.message}</p>}
-                                        </div>
+
                                     </div>
 
                                     <div className="space-y-2">

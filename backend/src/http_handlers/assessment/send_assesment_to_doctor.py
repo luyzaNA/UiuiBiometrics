@@ -43,7 +43,6 @@ def handler(event, context, user: User):
             doctor_details = DoctorDetails(
                 doctor_id=doctor_id,
                 full_name=doctor.full_name,
-                price=float(doctor.price),
                 bio=doctor.bio,
                 avatar_key=getattr(doctor, "avatar_key", None),
                 avatar_url=None
@@ -53,7 +52,6 @@ def handler(event, context, user: User):
             doctor_details = DoctorDetails(
                 doctor_id="POOL",
                 full_name="Specialist",
-                price=0.0,
                 bio="In progress",
                 avatar_key=None,
                 avatar_url=None

@@ -6,6 +6,8 @@ import uuid
 from uuid import uuid4
 import boto3
 import json
+
+import stripe
 from openai import OpenAI
 from botocore.exceptions import ClientError
 
@@ -636,3 +638,5 @@ class AssessmentService:
                 for key in all_deficiency_keys
             ]
         }
+
+

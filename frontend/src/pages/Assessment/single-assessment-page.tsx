@@ -305,7 +305,7 @@ export default function AssessmentPage({ data }: AssessmentPageProps) {
                                             {t("Verified Specialist")}
                                         </span>
                                         <span className="text-[10px] text-secondary/40">
-                                            {t("Consultation fee")}: {data.doctorDetails.price} RON
+                                            {t("Consultation fee")}: {"30 RON"}
                                         </span>
                                     </div>
                                 </div>

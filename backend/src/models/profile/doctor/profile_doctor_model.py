@@ -16,11 +16,6 @@ class DoctorProfileModel(ProfileModel):
         default=None,
         description="Professional bio and experience."
     )
-
-    price: int = Field(
-        default=0,
-        description="Consultation price."
-    )
  
     average_rating: float = Field(
         default=5.0,

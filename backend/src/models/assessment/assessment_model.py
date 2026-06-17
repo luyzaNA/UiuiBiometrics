@@ -19,9 +19,7 @@ class DoctorDetails(BaseModel):
     full_name: str = Field(
         description="Doctor's full name."
     )
-    price: float = Field(
-        description="The consultation price/fee charged by the doctor for this specific review."
-    )
+
     bio: Optional[str] = Field(
         default=None,
         description="A short biography or professional description of the doctor."

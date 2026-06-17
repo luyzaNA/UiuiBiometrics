@@ -42,7 +42,6 @@ def handler(event, context, user: User):
                 "doctorId": doctor.get("doctor_id"),
                 "full_name": doctor.get("full_name"),
                 "bio": doctor.get("bio"),
-                "price": doctor.get("price"),
                 "avatarKey": avatar_key,
                 "avatarUrl": get_signed_url_from_s3(avatar_key) if avatar_key else None,
             }

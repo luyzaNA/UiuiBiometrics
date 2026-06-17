@@ -8,7 +8,6 @@ export interface CreateDoctorProfileRequest {
     gender: Gender;
     bio?: string;
     avatar?: string;
-    price: number;
     fullName: string;
 }
 
@@ -17,7 +16,6 @@ export interface UpdateDoctorProfileRequest {
     gender?: Gender;
     bio?: string;
     avatar?: string;
-    price?: number;
     fullName?: string;
 }
 
@@ -116,6 +114,13 @@ export const doctorService = {
     },
     /** GET /api/doctor/assessments/pending/count */
     async getPendingCount(): Promise<{ data: PendingCountStatsI }> {
-        return await apiClient.get< PendingCountStatsI>("/doctor/assessments/pending/count");
+        return await apiClient.get<PendingCountStatsI>("/doctor/assessments/pending/count");
+    },
+
+    async checkout(assessmentId, doctorId): Promise<{url: string}> {
+        const response = await apiClient.post<{ url: string }>(`/payment/create-checkout-session`, {
+            assessmentId, doctorId
+        });
+        return response.data;
     },
 };
