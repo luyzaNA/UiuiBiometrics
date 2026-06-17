@@ -5,5 +5,4 @@ export interface DoctorProfileI extends ProfileI {
     isDoctor: boolean;
     averageRating: number;
     totalReviews: number;
-    price: number
 }

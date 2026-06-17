@@ -65,7 +65,6 @@ class AssessmentRepository(BaseRepository):
             doctor_obj = DoctorDetails(
                 doctor_id=raw_doctor.get("doctor_id"),
                 full_name=raw_doctor.get("full_name"),
-                price=float(raw_doctor.get("price", 0.0)),
                 bio=raw_doctor.get("bio"),
                 avatar_key=raw_doctor.get("avatar_key"),
                 avatar_url=None
@@ -143,9 +142,6 @@ class AssessmentRepository(BaseRepository):
 
         doctor_dict = doctor_details.model_dump()
         doctor_dict["avatar_url"] = None
-
-        if doctor_dict.get("price"):
-            doctor_dict["price"] = Decimal(str(doctor_dict["price"]))
 
         response = self.table.update_item(
             Key={
@@ -345,3 +341,45 @@ class AssessmentRepository(BaseRepository):
         )
 
         return response.get("Count", 0)
+
+    def mark_payment_completed(
+            self,
+            cognito_sub: str,
+            assessment_id: str,
+            payment_reference: str,
+            updated_at: int,
+            created_at: int
+    ):
+        gsi2_sk = f"STATUS#{AssessmentStatus.PENDING_DOCTOR.value}#{created_at}"
+
+        response = self.table.update_item(
+            Key={
+                "PK": f"USER#{cognito_sub}",
+                "SK": f"ASSESS#{assessment_id}"
+            },
+            UpdateExpression="""
+                SET payment_reference = :payment_reference,
+                    #status = :status,
+                    updated_at = :updated_at,
+                    GSI2_SK = :gsi2_sk
+            """,
+            ExpressionAttributeNames={
+                "#status": "status"
+            },
+            ExpressionAttributeValues={
+                ":payment_reference": payment_reference,
+                ":status": AssessmentStatus.PENDING_DOCTOR.value,
+                ":updated_at": updated_at,
+                ":gsi2_sk": gsi2_sk
+            },
+            ReturnValues="ALL_NEW"
+        )
+
+        attrs = response["Attributes"]
+
+        attrs["PK"] = f"USER#{cognito_sub}"
+        attrs["SK"] = f"ASSESS#{assessment_id}"
+        attrs["assessment_id"] = assessment_id
+        attrs["cognito_sub"] = cognito_sub
+
+        return self.convert_to_assessment_model(attrs)

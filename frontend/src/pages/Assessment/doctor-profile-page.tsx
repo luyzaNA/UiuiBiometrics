@@ -143,7 +143,7 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
 
                         <div className="bg-primary/10 border border-primary/20 p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{t("Consultation fee")}</span>
-                            <span className="text-lg font-black text-secondary">{profile.price || 0} RON</span>
+                            <span className="text-lg font-black text-secondary">30 RON</span>
                         </div>
                     </CardContent>
                 </Card>

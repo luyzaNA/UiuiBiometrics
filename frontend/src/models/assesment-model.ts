@@ -12,7 +12,6 @@ export interface DoctorDetailsI {
     fullName: string;
     avatarUrl?: string;
     bio: string;
-    price: number;
     doctorId: string;
 }
 

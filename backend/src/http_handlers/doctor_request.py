@@ -7,7 +7,6 @@ class CreateDoctorProfileRequest(BaseModel):
     gender: Gender = Field(...)
     bio: Optional[str] = Field(default=None)
     avatar: Optional[str] = Field(default=None)
-    price: int = Field(default=0, ge=0)
     fullName: str = Field(default="", description="Doctor's full name")
 
 class UpdateDoctorProfileRequest(BaseModel):
@@ -15,7 +14,6 @@ class UpdateDoctorProfileRequest(BaseModel):
     gender: Optional[Gender] = Field(default=None)
     bio: Optional[str] = Field(default=None)
     avatar: Optional[str] = Field(default=None)
-    price: Optional[int] = Field(default=None, ge=0)
     fullName: Optional[str] = Field(default=None, description="Doctor's full name")
 
 class CreateDoctorReviewRequest(BaseModel):

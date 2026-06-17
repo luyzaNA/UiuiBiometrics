@@ -99,8 +99,7 @@ class DoctorRepository(BaseRepository):
             gender=None,
             bio=None,
             avatar_key=None,
-            avatar_url=None,
-            price=None
+            avatar_url=None
     ) -> DoctorProfileModel:
         """
         Update doctor profile fields dynamically.
@@ -125,10 +124,6 @@ class DoctorRepository(BaseRepository):
         if bio is not None:
             update_parts.append("bio = :bio")
             values[":bio"] = bio
-
-        if price is not None:
-            update_parts.append("price = :price")
-            values[":price"] = price
 
         if avatar_key is not None:
             update_parts.append("avatar_key = :avatar_key")
@@ -178,7 +173,6 @@ class DoctorRepository(BaseRepository):
 
             bio=item.get("bio"),
 
-            price=int(item.get("price", 0)),
             average_rating=float(item.get("average_rating", 0.0)),
             total_reviews=int(item.get("total_reviews", 0))
         )

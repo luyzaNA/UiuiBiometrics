@@ -13,6 +13,8 @@ provider:
     STAGE: ${self:provider.stage}
     AVATAR_BUCKET: uiui-avatars-${self:provider.stage}
     USER_POOL_ID: "eu-north-1_aBOOx7l1A"
+    STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
+    FRONTEND_URL: http://localhost:5173
 
   iamRoleStatements:
     - Effect: Allow
@@ -201,7 +203,17 @@ functions:
           method: ANY
           authorizer:
             name: serviceAuthorizer
-
+  createCheckoutSession:
+    handler: src/http_handlers/payment/routes.handler
+    events:
+      - httpApi:
+          path: /api/webhook
+          method: POST
+      - httpApi:
+          path: /api/payment/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
 

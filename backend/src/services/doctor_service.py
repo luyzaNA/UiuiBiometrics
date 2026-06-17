@@ -46,7 +46,6 @@ class DoctorService:
             full_name=request.fullName,
             gender=request.gender,
             bio=request.bio,
-            price=request.price,
             avatar_url=avatar_url,
             avatar_key=avatar_key,
             created_at=current_date,
@@ -89,7 +88,6 @@ class DoctorService:
             bio=request.bio,
             avatar_key=avatar_key,
             avatar_url=avatar_url,
-            price=request.price,
             updated_at=current_date
         )
         print(doctor)
