@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import {userAuthLoader, doctorAuthLoader} from "@/loaders/auth-loader.ts";
+import {userAuthLoader, doctorAuthLoader, adminAuthLoader} from "@/loaders/auth-loader.ts";
 
 export const router = createBrowserRouter([
     {
@@ -157,6 +157,35 @@ export const router = createBrowserRouter([
                                 Component: (await import('@/pages/Doctor/doctor-reviews-page.tsx')).default,
                             }
                         },
+                    }
+                ]
+            },
+            {
+                loader: adminAuthLoader,
+                children: [
+                    {
+                        path: "admin/dashboard",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Admin/admin-dashboard-page.tsx')).default,
+                            }
+                        },
+                    },
+                    {
+                        path: "admin/users",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Admin/users-page.tsx')).default,
+                            }
+                        },
+                    },
+                    {
+                        path: "admin/profile",
+                        lazy: async () => {
+                            return {
+                                Component: (await import('@/pages/Admin/admin-profile.tsx')).default,
+                            }
+                        }
                     }
                 ]
             }

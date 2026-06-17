@@ -77,6 +77,7 @@ export function Header() {
     const [isNotifOpen, setIsNotifOpen] = useState(false);
 
     const { user, isAuthenticated, login, logout } = useUser();
+    const isRegularUser = isAuthenticated && !user?.isAdmin;
 
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [name, setName] = useState<string | null>(null);
@@ -114,7 +115,7 @@ export function Header() {
     }, [isAuthenticated, isDoctor]);
 
     useEffect(() => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated || !isRegularUser) {
             setNotifications([]);
             return;
         }
@@ -141,7 +142,7 @@ export function Header() {
         checkUpdates();
         const intervalId = setInterval(checkUpdates, 10000);
         return () => clearInterval(intervalId);
-    }, [isAuthenticated, t]);
+    }, [isAuthenticated, isRegularUser, t]);
 
     const markAllAsRead = async () => {
         try {
@@ -211,7 +212,7 @@ export function Header() {
 
                     <div className="flex items-center gap-4 lg:gap-6 z-10">
 
-                        {isAuthenticated && (
+                        {isRegularUser && (
                             <div className="lg:hidden relative">
                                 <Button
                                     variant="ghost"
@@ -352,53 +353,55 @@ export function Header() {
 
                             {isAuthenticated ? (
                                 <div className="flex items-center gap-6">
-                                    <div
-                                        className="relative"
-                                        onMouseEnter={() => setIsNotifOpen(true)}
-                                        onMouseLeave={() => setIsNotifOpen(false)}
-                                    >
-                                        <button className="relative p-2 rounded-full hover:bg-secondary/5 transition-colors z-[120]">
-                                            <Bell strokeWidth={1.5} className="w-5 h-5 text-primary" />
-                                            <NotificationBadge count={notifications.length} className="-top-0.5 -right-0.5" />
-                                        </button>
+                                    {isRegularUser && (
+                                        <div
+                                            className="relative"
+                                            onMouseEnter={() => setIsNotifOpen(true)}
+                                            onMouseLeave={() => setIsNotifOpen(false)}
+                                        >
+                                            <button className="relative p-2 rounded-full hover:bg-secondary/5 transition-colors z-[120]">
+                                                <Bell strokeWidth={1.5} className="w-5 h-5 text-primary" />
+                                                <NotificationBadge count={notifications.length} className="-top-0.5 -right-0.5" />
+                                            </button>
 
-                                        <AnimatePresence>
-                                            {isNotifOpen && (
-                                                <motion.div variants={dropdownAnimation} initial="initial" animate="animate" exit="exit" className="absolute right-0 top-full w-80 pt-3 z-[110]">
-                                                    <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-                                                        <div className="flex items-center justify-between px-4 py-3 border-b border-secondary/5">
-                                                            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("Notifications")}</span>
-                                                            {notifications.length > 0 && (
-                                                                <button onClick={markAllAsRead} className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer">
-                                                                    <CheckCheck className="w-3 h-3" />
-                                                                    {t("Mark all as read")}
-                                                                </button>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="max-h-[300px] overflow-y-auto">
-                                                            {notifications.length === 0 ? (
-                                                                <div className="px-4 py-8 text-center text-muted-foreground text-sm">
-                                                                    {t("No new notifications")}
-                                                                </div>
-                                                            ) : (
-                                                                notifications.map(notif => (
-                                                                    <button
-                                                                        key={notif.id}
-                                                                        onClick={() => handleNotificationClick(notif)}
-                                                                        className="w-full flex flex-col gap-1 p-4 text-left hover:bg-secondary/5 transition-colors border-b border-secondary/5 last:border-0 hover:cursor-pointer"
-                                                                    >
-                                                                        <span className="text-sm font-semibold text-secondary-foreground/70">{notif.title}</span>
-                                                                        <span className="text-xs text-muted-foreground leading-relaxed">{notif.message}</span>
+                                            <AnimatePresence>
+                                                {isNotifOpen && (
+                                                    <motion.div variants={dropdownAnimation} initial="initial" animate="animate" exit="exit" className="absolute right-0 top-full w-80 pt-3 z-[110]">
+                                                        <div className="overflow-hidden rounded-2xl border border-secondary/10 bg-navbar backdrop-blur-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                                                            <div className="flex items-center justify-between px-4 py-3 border-b border-secondary/5">
+                                                                <span className="text-xs font-bold uppercase tracking-wider text-primary">{t("Notifications")}</span>
+                                                                {notifications.length > 0 && (
+                                                                    <button onClick={markAllAsRead} className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer">
+                                                                        <CheckCheck className="w-3 h-3" />
+                                                                        {t("Mark all as read")}
                                                                     </button>
-                                                                ))
-                                                            )}
+                                                                )}
+                                                            </div>
+
+                                                            <div className="max-h-[300px] overflow-y-auto">
+                                                                {notifications.length === 0 ? (
+                                                                    <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+                                                                        {t("No new notifications")}
+                                                                    </div>
+                                                                ) : (
+                                                                    notifications.map(notif => (
+                                                                        <button
+                                                                            key={notif.id}
+                                                                            onClick={() => handleNotificationClick(notif)}
+                                                                            className="w-full flex flex-col gap-1 p-4 text-left hover:bg-secondary/5 transition-colors border-b border-secondary/5 last:border-0 hover:cursor-pointer"
+                                                                        >
+                                                                            <span className="text-sm font-semibold text-secondary-foreground/70">{notif.title}</span>
+                                                                            <span className="text-xs text-muted-foreground leading-relaxed">{notif.message}</span>
+                                                                        </button>
+                                                                    ))
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    )}
 
                                     <div
                                         className="relative"
@@ -414,7 +417,7 @@ export function Header() {
                                                 )}
                                             </div>
                                             <div className="flex flex-col items-start">
-                                                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">{name}</span>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">{name || t("Admin")}</span>
                                                 <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest leading-none">{t("Account")}</span>
                                             </div>
                                             <ChevronDown className={`w-3.5 h-3.5 text-primary/50 transition-transform duration-500 ${isProfileOpen ? 'rotate-180' : ''}`} />

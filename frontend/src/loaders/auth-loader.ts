@@ -1,3 +1,5 @@
+import {redirect} from "react-router-dom";
+
 const OIDC_STORAGE_KEY = import.meta.env.VITE_OIDC_STORAGE_KEY;
 const PUBLIC_HOME_PATH = import.meta.env.VITE_PUBLIC_HOME_PATH || "/home";
 
@@ -105,7 +107,6 @@ export async function baseAuthLoader() {
 
     return checkTokenAndRedirect();
 }
-
 export async function userAuthLoader() {
     const payload = await baseAuthLoader();
 
@@ -115,15 +116,13 @@ export async function userAuthLoader() {
 
     if (groups.includes("doctor")) {
         console.warn("Doctors are restricted from patient routes.");
-        window.location.href = "/doctor/dashboard";
-        throw new Error("Redirecting doctor to their dashboard.");
+        return redirect("/doctor/dashboard");
     }
 
-    // if (groups.includes("admin")) {
-    //     console.warn("Admins are restricted from patient routes.");
-    //     window.location.href = "/admin/dashboard";
-    //     throw new Error("Redirecting admin to admin panel.");
-    // }
+    if (groups.includes("admin")) {
+        console.warn("Admins are restricted from patient routes.");
+        return redirect("/admin/dashboard");
+    }
 
     return payload;
 }
@@ -137,8 +136,22 @@ export async function doctorAuthLoader() {
 
     if (!groups.includes("doctor")) {
         console.warn("User access denied. Requires 'doctor' role.");
-        window.location.href = PUBLIC_HOME_PATH;
-        throw new Error("Redirecting non-doctor user.");
+        return redirect(PUBLIC_HOME_PATH);
+    }
+
+    return payload;
+}
+
+export async function adminAuthLoader() {
+    const payload = await baseAuthLoader();
+
+    if (!payload) return null;
+
+    const groups = (payload["cognito:groups"] as string[]) || [];
+
+    if (!groups.includes("admin")) {
+        console.warn("User access denied. Requires 'admin' role.");
+        return redirect(PUBLIC_HOME_PATH);
     }
 
     return payload;

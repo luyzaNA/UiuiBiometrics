@@ -36,6 +36,9 @@ provider:
       Action:
         - cognito-idp:AdminGetUser
         - cognito-idp:AdminListGroupsForUser
+        - cognito-idp:ListUsers
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminRemoveUserFromGroup
       Resource:
         - "arn:aws:cognito-idp:${self:provider.region}:*:userpool/eu-north-1_aBOOx7l1A"
 
@@ -184,6 +187,20 @@ functions:
     handler: src/http_handlers/menu/cron_expired_menus.handler
     events:
       - schedule: rate(1 minute)
+  adminRouter:
+    handler: src/http_handlers/admin/routes.handler
+    timeout: 29
+    events:
+      - httpApi:
+          path: /api/admin
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin/{proxy+}
+          method: ANY
+          authorizer:
+            name: serviceAuthorizer
 
 plugins:
   ${self:custom.plugins.${self:provider.stage}.list}
