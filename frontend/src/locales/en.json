@@ -699,7 +699,12 @@
   "Failed to update role": "Failed to update role",
   "You" : "You",
   "Get Help" :  "Help",
-  "Send an email to our team and we will get back to you as soon as possible." : "Send an email to our team and we will get back to you as soon as possible."
+  "Send an email to our team and we will get back to you as soon as possible." : "Send an email to our team and we will get back to you as soon as possible.",
+  "Completed" : "Completed",
+  "Visual Analysis": "Visual Analysis",
+  "Image analyzed successfully!" : "Image analyzed successfully!",
+  "Retake quiz": "Retake quiz",
+  "Your monitoring period has ended. Please retake the assessment to observe your progress." :   "Your monitoring period has ended. Please retake the assessment to observe your progress."
 }
 
 

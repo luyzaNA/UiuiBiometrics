@@ -25,7 +25,7 @@ export default function TargetedFoodsProtocol({ menuData, showBack = true }: Tar
     const deficiencyTargets = menuData?.deficiencyTargets || menuData?.deficiency_targets || [];
 
     return (
-        <div className="max-w-4xl mx-auto px-0 md:px-6 py-4 md:py-10 animate-fadeIn bg-background">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-10 animate-fadeIn bg-background">
             <div className="mb-12">
                 {showBack && (
                     <button

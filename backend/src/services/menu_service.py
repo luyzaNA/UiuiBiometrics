@@ -265,7 +265,7 @@ class MenuService:
             
             MEAL GENERATION RULES
             
-            Generate EXACTLY 6 {human_readable_category} choices for this single deficiency layout.
+            Generate EXACTLY 4 {human_readable_category} choices for this single deficiency layout.
             The meals should collectively target the listed deficiencies using natural foods.
             
             ABSORPTION RULES

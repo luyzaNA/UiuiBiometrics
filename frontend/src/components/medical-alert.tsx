@@ -17,7 +17,7 @@ export const MedicalAlert = ({ redFlags, assessmentId }: MedicalAlertProps) => {
     };
 
     return (
-        <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fadeIn h-screen">
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fadeIn min-h-screen">
             <div className="bg-secondary border border-destructive/20 rounded-3xl p-8 md:p-12 shadow-[0_10px_40px_rgba(0,0,0,0.08)] space-y-6">
                 <div className="mx-auto p-4 bg-destructive text-secondary rounded-2xl shadow-lg shadow-destructive/30 w-fit animate-pulse">
                     <ShieldAlert size={40} />

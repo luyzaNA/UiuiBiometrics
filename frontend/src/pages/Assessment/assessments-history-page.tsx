@@ -18,6 +18,7 @@ import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-sect
 import MealBankProtocol from "@/pages/Menu/meal-base/section/meal-base-section.tsx";
 import { DoctorAssessmentsList } from "@/pages/Assessment/doctor-assessments-list-page.tsx";
 import { ComparisonCharts } from "@/pages/Assessment/sections/comparison-charts-section.tsx";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 
 export default function AssessmentsHistoryPage() {
     const { t } = useTranslation();
@@ -36,9 +37,10 @@ export default function AssessmentsHistoryPage() {
     const [selectedPerson, setSelectedPerson] = useState<string>("Principal");
     const [selectedView, setSelectedView] = useState<string>("ALL");
 
+    const [isSelectOpen, setIsSelectOpen] = useState(false);
+
     const [comparisonData, setComparisonData] = useState<any>(null);
     const [isLoadingComparison, setIsLoadingComparison] = useState(false);
-
 
     const uniquePersons = useMemo(() => {
         return Array.from(new Set(assessments.map((a) => a.targetPerson).filter(Boolean)));
@@ -120,7 +122,6 @@ export default function AssessmentsHistoryPage() {
         }
     }, [selectedView, selectedPerson]);
 
-
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -131,9 +132,17 @@ export default function AssessmentsHistoryPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 pt-6 space-y-8 min-h-screen pb-20 animate-fadeIn">
+        <div className="max-w-5xl mx-auto px-4 pt-6 space-y-8 min-h-screen pb-20 animate-fadeIn relative">
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary p-5 rounded-3xl border border-foreground/5 shadow-sm">
+            {isSelectOpen && (
+                <div
+                    className="fixed inset-0 z-[140] bg-background/50 backdrop-blur-md flex items-center justify-center transition-all duration-300"
+                    style={{ height: '100vh', width: '100vw' }}
+                    aria-hidden="true"
+                />
+            )}
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary p-5 rounded-3xl border border-foreground/5 shadow-sm relative z-[145]">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-2xl">
                         <Activity className="text-primary" size={24} />
@@ -145,55 +154,82 @@ export default function AssessmentsHistoryPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative group">
-                        <select
-                            value={selectedPerson}
-                            onChange={(e) => {
-                                setSelectedPerson(e.target.value);
-                                setSelectedView("ALL");
-                            }}
-                            className="w-full sm:w-auto appearance-none bg-background border border-foreground/10 text-foreground text-sm font-bold py-2.5 pl-4 pr-10 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                        >
+                    <Select
+                        value={selectedPerson}
+                        onOpenChange={setIsSelectOpen}
+                        onValueChange={(value) => {
+                            setSelectedPerson(value);
+                            setSelectedView("ALL");
+                        }}
+                    >
+                        <SelectTrigger className="w-full sm:w-[220px] bg-background border border-foreground/10 text-foreground text-base md:text-sm font-bold py-6 sm:py-5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all">
+                            <div className="flex items-center gap-2">
+                                <Users size={14} className="opacity-50" />
+                                <SelectValue placeholder={t("Select person")} />
+                            </div>
+                        </SelectTrigger>
+
+                        <SelectContent className="z-[150]">
                             {uniquePersons.map((person) => (
-                                <option key={person} value={person}>
+                                <SelectItem key={person} value={person}>
                                     {person === "Principal" ? t("My Profile") : person}
-                                </option>
+                                </SelectItem>
                             ))}
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50"><Users size={14}/></div>
-                    </div>
+                        </SelectContent>
+                    </Select>
 
                     <div className="relative">
-                        <select
+                        <Select
                             value={selectedView}
-                            onChange={(e) => setSelectedView(e.target.value)}
-                            className="w-full sm:w-auto appearance-none bg-background border border-foreground/10 text-foreground text-sm font-bold py-2.5 pl-10 pr-10 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            onOpenChange={setIsSelectOpen}
+                            onValueChange={(value) => setSelectedView(value)}
                         >
-                            <optgroup label={t("Overview")}>
-                                <option value="ALL" className="hover:cursor-pointer"> {t("Health Trends")}</option>
-                            </optgroup>
-                            <optgroup label={t("Medical Options")}>
-                                <option value="DOCTOR_REVIEWS" className="hover:cursor-pointer"> {t("Doctor Review")}</option>
-                            </optgroup>
-                            <optgroup label={t("Menus")}>
-                                <option value="ACTIVE_MENU" className="hover:cursor-pointer" > {t("Active menu")}</option>
-                                <option value="HISTORY_MENU" className="hover:cursor-pointer"> {t("History of menus")}</option>
-                            </optgroup>
-                            <optgroup label={t("Individual quizzes")} className="hover:cursor-pointer">
-                                {personAssessments.map((assessment, idx) => (
-                                    <option key={assessment.assessmentId} value={assessment.assessmentId}>
-                                        {formatDateMs(assessment.createdAt)} {idx === 0 ? `(${t("Latest")})` : ""}
-                                    </option>
-                                ))}
-                            </optgroup>
-                        </select>
+                            <SelectTrigger className="w-full sm:w-[240px] bg-background border border-foreground/10 text-foreground text-base md:text-sm font-bold py-6 sm:py-5 pl-10 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all">
+                                <SelectValue placeholder={t("Select view")} />
+                            </SelectTrigger>
+
+                            <SelectContent className="z-[150] max-h-[300px]">
+                                <SelectGroup>
+                                    <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{t("Overview")}</SelectLabel>
+                                    <SelectItem value="ALL">{t("Health Trends")}</SelectItem>
+                                </SelectGroup>
+
+                                <SelectSeparator />
+
+                                <SelectGroup>
+                                    <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{t("Medical Options")}</SelectLabel>
+                                    <SelectItem value="DOCTOR_REVIEWS">{t("Doctor Review")}</SelectItem>
+                                </SelectGroup>
+
+                                <SelectSeparator />
+
+                                <SelectGroup>
+                                    <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{t("Menus")}</SelectLabel>
+                                    <SelectItem value="ACTIVE_MENU">{t("Active menu")}</SelectItem>
+                                    <SelectItem value="HISTORY_MENU">{t("History of menus")}</SelectItem>
+                                </SelectGroup>
+
+                                {personAssessments && personAssessments.length > 0 && (
+                                    <>
+                                        <SelectSeparator />
+                                        <SelectGroup>
+                                            <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{t("Individual quizzes")}</SelectLabel>
+                                            {personAssessments.map((assessment, idx) => (
+                                                <SelectItem key={assessment.assessmentId} value={assessment.assessmentId}>
+                                                    {formatDateMs(assessment.createdAt)} {idx === 0 ? `(${t("Latest")})` : ""}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </>
+                                )}
+                            </SelectContent>
+                        </Select>
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary"><Calendar size={16} /></div>
                     </div>
                 </div>
             </div>
 
             <div className="transition-all duration-500">
-
                 {selectedView === "ALL" && (
                     <div className="space-y-6">
                         <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -266,17 +302,28 @@ export default function AssessmentsHistoryPage() {
                                                     {t("Menu from")} {formatDateMs(menu.createdAt)}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    {menu.deficiencies?.length || 0} {t("targets addressed")}
+                                                    {menu.deficiencies?.length ?? menu.deficiencyTargets?.length ?? 0}{" "}
+                                                    {t("targets addressed")}
                                                 </p>
                                             </div>
-                                            <span className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full ${menu.status === 'ACTIVE' ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-secondary'}`}>
+                                            <span
+                                                className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full 
+                                                    ${menu.status === 'COMPLETED'
+                                                    ? 'text-emerald-600 bg-emerald-500/10'
+                                                    : menu.status === 'ACTIVE'
+                                                        ? 'text-primary bg-primary/10'
+                                                        : 'text-muted-foreground bg-secondary'
+                                                }`
+                                                }
+                                            >
                                                 {menu.status === "ACTIVE"
                                                     ? t("Active")
-                                                    : menu.status === "COMPLETE"
-                                                        ? t("Complete")
+                                                    : menu.status === "COMPLETED"
+                                                        ? t("Completed")
                                                         : t("Archived")
                                                 }
                                             </span>
+
                                         </div>
                                     ))}
                                 </div>

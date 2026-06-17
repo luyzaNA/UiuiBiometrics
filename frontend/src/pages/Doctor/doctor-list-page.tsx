@@ -9,6 +9,7 @@ import { assessmentService } from "@/services/assessment-service.ts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { DoctorProfileI } from "@/models/doctor-model.ts";
 import {toast} from "sonner";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 
 type SortOption = 'none' | 'price-asc' | 'price-desc' | 'rating-desc';
 
@@ -101,16 +102,20 @@ export default function DoctorsPage() {
 
                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                     <SlidersHorizontal className="w-4 h-4 text-primary" />
-                    <select
+                    <Select
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as SortOption)}
-                        className="bg-secondary-foreground text-secondary border border-secondary/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary cursor-pointer"
+                        onValueChange={(value) => setSortBy(value as SortOption)}
                     >
-                        <option value="none">{t("Sort by: Default")}</option>
-                        <option value="price-asc">{t("Price: Low to High")}</option>
-                        <option value="price-desc">{t("Price: High to Low")}</option>
-                        <option value="rating-desc">{t("Highest Rated")}</option>
-                    </select>
+                        <SelectTrigger className="w-[180px] bg-secondary-foreground text-secondary border border-secondary/20 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
+                            <SelectValue placeholder={t("Sort by: Default")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">{t("Sort by: Default")}</SelectItem>
+                            <SelectItem value="price-asc">{t("Price: Low to High")}</SelectItem>
+                            <SelectItem value="price-desc">{t("Price: High to Low")}</SelectItem>
+                            <SelectItem value="rating-desc">{t("Highest Rated")}</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </motion.div>
 

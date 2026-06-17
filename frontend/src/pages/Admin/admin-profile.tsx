@@ -18,11 +18,12 @@ import { profileService } from "@/services/profile-service.ts";
 import { useTranslation } from "react-i18next";
 import { t } from "i18next";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { formatDateMs, formatDateUnix } from "@/utils/form-data.ts";
 import { toast } from "sonner";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 
 const AdminProfileSchema = z.object({
     fullName: z.string().min(2, {
@@ -64,6 +65,7 @@ export default function AdminProfilePage() {
         register,
         handleSubmit,
         setValue,
+        control,
         formState: { errors },
     } = useForm<AdminProfileFormValues>({
         resolver: zodResolver(AdminProfileSchema),
@@ -346,19 +348,26 @@ export default function AdminProfilePage() {
                                         <label className="text-xs font-semibold text-foreground uppercase tracking-wide px-1">
                                             {t("Gender")}
                                         </label>
-                                        <div className="relative">
-                                            <select
-                                                {...register("gender")}
-                                                className="w-full px-4 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-foreground appearance-none cursor-pointer"
-                                            >
-                                                <option value="" disabled>{t("Select gender")}</option>
-                                                <option value={Gender.FEMININE}>{t("Feminine")}</option>
-                                                <option value={Gender.MASCULINE}>{t("Masculine")}</option>
-                                            </select>
-                                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-secondary/50">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                                            </div>
-                                        </div>
+
+                                        <Controller
+                                            control={control}
+                                            name="gender"
+                                            render={({ field }) => (
+                                                <Select
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                >
+                                                    <SelectTrigger className="w-full px-4 py-6 bg-secondary/5 border border-secondary/10 rounded-xl text-base md:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all">
+                                                        <SelectValue placeholder={t("Select gender")} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="z-[150]">
+                                                        <SelectItem value={Gender.FEMININE}>{t("Feminine")}</SelectItem>
+                                                        <SelectItem value={Gender.MASCULINE}>{t("Masculine")}</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+
                                         {errors.gender && (
                                             <p className="text-xs text-destructive font-medium px-1">
                                                 {errors.gender.message}
