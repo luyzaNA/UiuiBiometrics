@@ -666,7 +666,41 @@
   "Vit_K": "Vitamina K",
   "Vit_A": "Vitamina A",
   "latestQuizComparisonTitle": "Evoluția stării tale",
-  "latestQuizComparisonDesc": "Uite ce frumos se vede progresul tău! Aceste grafice îți arată exact cum s-a schimbat starea ta și cum s-au optimizat nutrienții după ce ai urmat recomandările din ultimul meniu activ. Fiecare alegere sănătoasă pe care ai făcut-o a contat!"
+  "latestQuizComparisonDesc": "Uite ce frumos se vede progresul tău! Aceste grafice îți arată exact cum s-a schimbat starea ta și cum s-au optimizat nutrienții după ce ai urmat recomandările din ultimul meniu activ. Fiecare alegere sănătoasă pe care ai făcut-o a contat!",
+  "Loading users...": "Se încarcă utilizatorii...",
+  "Failed to load users data": "Eroare la încărcarea datelor utilizatorilor",
+  "Please try again later.": "Vă rugăm să încercați din nou mai târziu.",
+  "User Management": "Management utilizatori",
+  "View and manage registered accounts": "Vizualizează și gestionează conturile înregistrate",
+  "Search by email...": "Caută după email...",
+  "User Details": "Detalii utilizator",
+  "Roles": "Roluri",
+  "Joined Date": "Data Înscrierii",
+  "No users found matching your criteria.": "Nu s-au găsit utilizatori care să corespundă criteriilor.",
+  "ADMIN": "Administrator",
+  "DOCTOR": "Medic",
+  "USER": "Utilizator",
+  "View Profile": "Vezi profil",
+  "Showing": "Se afișează",
+  "users": "utilizatori",
+  "Account Type": "Tip de cont",
+  "Email & Password" : "Email & parolă",
+  "Total Users": "Total utilizatori",
+  "Total registered accounts": "Total conturi înregistrate",
+  "Active Doctors": "Medici Activi",
+  "Registered medical staff": "Personal medical înregistrat",
+  "Administration Panel": "Panou de administrare",
+  "View, search, and manage all registered accounts in the system.": "Vizualizează, caută și gestionează toate conturile înregistrate în sistem.",
+  "Manage Users": "Gestionează utilizatori",
+  "Update your administrator profile, personal details, and preferences.": "Actualizează-ți profilul de administrator, datele personale și preferințele.",
+  "Go to admin panel": "Mergi la panoul de administrare",
+  "Admin Settings" : "Profilul administratorului",
+  "Manage your administrator account details." : "Gestionează detaliile contului tău de administrator.",
+  "System Admin" : "Administrator sistem",
+  "Role updated successfully": "Rolul a fost actualizat cu succes",
+  "Failed to update role": "Eroare la actualizarea rolului"
+
+
 
 
 
