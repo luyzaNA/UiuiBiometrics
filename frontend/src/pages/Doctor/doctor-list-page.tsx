@@ -2,7 +2,7 @@ import {useState, useEffect, useMemo, useRef} from 'react';
 import {motion} from 'framer-motion';
 import {useTranslation} from "react-i18next";
 import {Search, Star, User, SlidersHorizontal, Loader2} from 'lucide-react';
-import {useSearchParams} from 'react-router-dom';
+import {useNavigate, useSearchParams} from 'react-router-dom';
 
 import {doctorService} from "@/services/doctor-service.ts";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
@@ -28,6 +28,7 @@ export default function DoctorsPage() {
 
 
     const paymentHandled = useRef(false);
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (paymentHandled.current) return;
@@ -42,7 +43,9 @@ export default function DoctorsPage() {
 
             setTimeout(() => {
                 toast.success(t("Payment successful! Your report has been sent to the doctor."));
-            }, 1500);
+            }, 1000);
+            navigate('/dashboard');
+
         }
 
         if (paymentCanceled) {

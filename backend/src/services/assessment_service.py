@@ -639,4 +639,35 @@ class AssessmentService:
             ]
         }
 
+    def fulfill_assessment_payment(
+            self,
+            cognito_sub: str,
+            assessment_id: str,
+            payment_reference: str,
+            doctor_details: DoctorDetails
+    ) -> AssessmentModel:
+        """
+        Processes the successful payment for an assessment, marks it as paid,
+        and automatically sends it to the selected doctor.
+        """
+        logger.info(f"[PAYMENT_FULFILLMENT] Fulfilling payment for assessment {assessment_id}")
+
+        assessment = self.assessment_repository.get_by_id(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id
+        )
+
+        self.assessment_repository.mark_payment_completed(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            payment_reference=payment_reference,
+            updated_at=current_millis(),
+            created_at=assessment.created_at,
+        )
+
+        return self.send_to_doctor(
+            cognito_sub=cognito_sub,
+            assessment_id=assessment_id,
+            doctor_details=doctor_details
+        )
 

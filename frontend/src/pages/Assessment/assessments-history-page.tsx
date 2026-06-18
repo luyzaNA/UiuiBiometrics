@@ -136,14 +136,12 @@ export default function AssessmentsHistoryPage() {
 
             {isSelectOpen && (
                 <div
-                    className="fixed inset-0 z-[140] bg-background/50 backdrop-blur-md flex items-center justify-center transition-all duration-300"
-                    style={{ height: '100vh', width: '100vw' }}
+                    className="fixed inset-0 z-40 bg-background/50 backdrop-blur-md transition-all duration-300"
                     aria-hidden="true"
                 />
             )}
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary p-5 rounded-3xl border border-foreground/5 shadow-sm relative z-[145]">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary p-5 rounded-3xl border border-foreground/5 shadow-sm relative z-10">                <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-2xl">
                         <Activity className="text-primary" size={24} />
                     </div>

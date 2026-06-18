@@ -1,8 +1,12 @@
 import { LineChart, Wallet, ShieldAlert, History, Apple, CheckCircle2 } from "lucide-react";
 import {useTranslation} from "react-i18next";
+import {useUser} from "@/hooks/use-user.ts";
+import {useNavigate} from "react-router-dom";
 
 export default function FeaturesSection() {
     const {t} = useTranslation();
+    const {isAuthenticated, login} = useUser();
+    const navigate = useNavigate();
 
     return (
         <section className="relative min-h-screen w-full bg-secondary-foreground py-24 px-6 overflow-hidden font-sans border-t border-secondary/5">
@@ -89,7 +93,16 @@ export default function FeaturesSection() {
                         <h4 className="text-secondary font-bold uppercase tracking-tighter">{t("Ready to reclaim your energy?")}</h4>
                         <p className="text-secondary/30 text-[10px] uppercase tracking-widest">{t("Over 10 micronutrient combinations analyzed.")}</p>
                     </div>
-                    <button className="px-10 py-4 bg-secondary text-secondary-foreground font-black text-[10px] tracking-[0.3em] rounded-full hover:bg-primary hover:text-secondary hover:cursor-pointer transition-all transform hover:-translate-y-1 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                    <button
+                        onClick={() => {
+                            if (isAuthenticated) {
+                                navigate('/quiz');
+                                window.scrollTo(0, 0);
+                            } else {
+                                login();
+                            }
+                        }}
+                        className="px-10 py-4 bg-secondary text-secondary-foreground font-black text-[10px] tracking-[0.3em] rounded-full hover:bg-primary hover:text-secondary hover:cursor-pointer transition-all transform hover:-translate-y-1 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                             {t("START EVALUATION NOW")}
                     </button>
                 </div>
