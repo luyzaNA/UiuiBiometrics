@@ -4,14 +4,9 @@ import base64
 
 from src.http_handlers.common import ok, bad_request
 from src.models.assessment.assessment_model import DoctorDetails
-from src.repositories.assessment_repository import AssessmentRepository
 from src.services.assessment_service import AssessmentService
 from src.services.doctor_service import DoctorService
-from src.services.notification_service import NotificationService
-from src.utils.time import current_millis
 
-repository = AssessmentRepository()
-notification_service = NotificationService()
 assessment_service = AssessmentService()
 doctor_service = DoctorService()
 
@@ -35,9 +30,9 @@ def handler(event, context):
             signature,
             os.environ["STRIPE_WEBHOOK_SECRET"]
         )
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.error.SignatureVerificationError:
         return {"statusCode": 400, "body": "Invalid payload"}
-    except ValueError as e:
+    except ValueError:
         return {"statusCode": 400, "body": "Invalid payload"}
 
     if stripe_event["type"] != "checkout.session.completed":
@@ -49,21 +44,7 @@ def handler(event, context):
     user_sub = session["metadata"]["user_sub"]
     doctor_id = session["metadata"]["doctor_id"]
 
-    assessment = repository.get_by_id(
-        user_sub,
-        assessment_id
-    )
-
-    repository.mark_payment_completed(
-        cognito_sub=user_sub,
-        assessment_id=assessment_id,
-        payment_reference=session["payment_intent"],
-        updated_at=current_millis(),
-        created_at=assessment.created_at,
-    )
-
     doctor = doctor_service.get_doctor_by_sub(doctor_id)
-
     if not doctor:
         return bad_request("Doctor not found")
 
@@ -75,9 +56,10 @@ def handler(event, context):
         avatar_url=None
     )
 
-    assessment_service.send_to_doctor(
+    assessment_service.fulfill_assessment_payment(
         cognito_sub=user_sub,
         assessment_id=assessment_id,
+        payment_reference=session["payment_intent"],
         doctor_details=doctor_details
     )
 

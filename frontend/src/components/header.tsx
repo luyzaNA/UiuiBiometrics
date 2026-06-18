@@ -32,7 +32,7 @@ import { doctorService } from "@/services/doctor-service.ts";
 import { getInitial } from "@/utils/get-initiasl-from-name.ts";
 import { getFirstName } from "@/utils/get-first-name.ts";
 import { notificationService } from "@/services/notifiaction-service.ts";
-import {EMAIL_FOR_HELP} from "@/utils/get-help.ts";
+import { EMAIL_FOR_HELP } from "@/utils/get-help.ts";
 
 interface AppNotification {
     id: string;
@@ -87,7 +87,23 @@ export function Header() {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
     const isDoctor = user?.["groups"]?.includes("doctor");
+    const isAdmin = user?.["groups"]?.includes("admin") || user?.isAdmin;
     const profileRoute = isDoctor ? "/doctor/profile" : "/profile";
+
+    const handleDashboardClick = () => {
+        if (!isAuthenticated) {
+            login();
+            return;
+        }
+
+        if (isAdmin) {
+            navigate("/admin/dashboard");
+        } else if (isDoctor) {
+            navigate("/doctor/dashboard");
+        } else {
+            navigate("/dashboard");
+        }
+    };
 
     useEffect(() => {
         const loadHeaderProfile = async () => {
@@ -169,11 +185,6 @@ export function Header() {
         });
     };
 
-    const navItems = [
-        { label: t("Home"), href: "/#home" },
-        { label: t("Experience"), href: "/#how-it-works" },
-        { label: t("Science"), href: "/#science" },
-    ];
 
     const NotificationBadge = ({ count, className = "" }: { count: number; className?: string }) => {
         if (count === 0) return null;
@@ -200,19 +211,25 @@ export function Header() {
                                 </div>
                             </Link>
                         </div>
-
-                        <div className="hidden lg:flex lg:items-center lg:gap-10">
-                            {navItems.map((item) => (
+                        {isAuthenticated && (
+                            <div className="hidden lg:flex lg:items-center lg:gap-10">
                                 <Link
-                                    key={item.href}
-                                    to={item.href}
+                                    to="/#home"
                                     className="relative text-[11px] font-medium uppercase tracking-[0.2em] text-secondary-foreground hover:text-primary transition-colors group py-2"
                                 >
-                                    {item.label}
+                                    {t("Home")}
                                     <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary -translate-x-1/2 group-hover:w-full transition-all duration-300 shadow-[0_0_8px_#e89df5]" />
                                 </Link>
-                            ))}
-                        </div>
+
+                                <button
+                                    onClick={handleDashboardClick}
+                                    className="relative text-[11px] font-medium uppercase tracking-[0.2em] text-secondary-foreground hover:text-primary transition-colors group py-2 bg-transparent border-none outline-none cursor-pointer"
+                                >
+                                    {t("Dashboard")}
+                                    <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary -translate-x-1/2 group-hover:w-full transition-all duration-300 shadow-[0_0_8px_#e89df5]" />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-4 lg:gap-6 z-10">
@@ -292,18 +309,35 @@ export function Header() {
                                                 </motion.div>
 
                                                 <div className="flex flex-col gap-3 relative z-10 shrink-0">
-                                                    {navItems.map((item) => (
-                                                        <motion.div key={item.href} variants={itemVariants}>
-                                                            <SheetClose asChild>
-                                                                <Link to={item.href} className="relative flex items-center justify-between px-6 py-5 rounded-2xl bg-secondary/[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-all">
-                                                                    <span className="text-lg font-bold tracking-tight text-secondary-foreground/90">{item.label}</span>
-                                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                        <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary" />
-                                                                    </div>
-                                                                </Link>
-                                                            </SheetClose>
-                                                        </motion.div>
-                                                    ))}
+                                                    {isAuthenticated && (
+                                                    <>
+                                                        <motion.div variants={itemVariants}>
+                                                        <SheetClose asChild>
+                                                            <Link to="/#home" className="relative flex items-center justify-between px-6 py-5 rounded-2xl bg-secondary/[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-all">
+                                                                <span className="text-lg font-bold tracking-tight text-secondary-foreground/90">{t("Home")}</span>
+                                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                    <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary" />
+                                                                </div>
+                                                            </Link>
+                                                        </SheetClose>
+                                                    </motion.div>
+
+
+                                                    <motion.div variants={itemVariants}>
+                                                        <SheetClose asChild>
+                                                            <button
+                                                                onClick={handleDashboardClick}
+                                                                className="w-full text-left relative flex items-center justify-between px-6 py-5 rounded-2xl bg-secondary/[0.03] border border-secondary/5 active:bg-secondary/[0.08] transition-all cursor-pointer"
+                                                            >
+                                                                <span className="text-lg font-bold tracking-tight text-secondary-foreground/90">{t("Dashboard")}</span>
+                                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                    <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary" />
+                                                                </div>
+                                                            </button>
+                                                        </SheetClose>
+                                                    </motion.div>
+                                                    </>
+                                                )}
 
                                                     <motion.div variants={itemVariants} className="mt-4 shrink-0 flex flex-col gap-3">
                                                         <div className="flex items-center justify-between px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10">
@@ -321,7 +355,7 @@ export function Header() {
                                                            className="flex items-center justify-between px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10 active:bg-primary/10 transition-colors">
                                                             <div className="flex items-center gap-2">
                                                                 <HelpCircle className="w-4 h-4 text-primary/60" />
-                                                                <span className="text-XS font-black text-primary/70 uppercase tracking-widest">{t("Get Help")}</span>
+                                                                <span className="text-xs font-black text-primary/70 uppercase tracking-widest">{t("Get Help")}</span>
                                                             </div>
                                                             <ArrowRight strokeWidth={2} className="w-4 h-4 text-primary/60" />
                                                         </a>
@@ -339,13 +373,13 @@ export function Header() {
                                                                     </Link>
                                                                 </SheetClose>
 
-                                                                <button onClick={() => { setIsOpen(false); logout(); }} className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-destructive/5 border border-destructive/10 active:bg-destructive/10 transition-all text-destructive">
+                                                                <button onClick={() => { setIsOpen(false); logout(); }} className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-destructive/5 border border-destructive/10 active:bg-destructive/10 transition-all text-destructive cursor-pointer outline-none">
                                                                     <LogOut strokeWidth={1.5} className="w-5 h-5" />
                                                                     <span className="text-[10px] font-bold uppercase tracking-widest">{t("Logout")}</span>
                                                                 </button>
                                                             </div>
                                                         ) : (
-                                                            <motion.button whileTap={{ scale: 0.96 }} onClick={() => login()} className="flex items-center justify-center gap-3 py-5 px-6 rounded-2xl bg-primary shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:shadow-none transition-all">
+                                                            <motion.button whileTap={{ scale: 0.96 }} onClick={() => login()} className="flex items-center justify-center gap-3 py-5 px-6 rounded-2xl bg-primary shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:shadow-none transition-all cursor-pointer">
                                                                 <User strokeWidth={2} className="w-5 h-5 text-secondary" />
                                                                 <span className="text-sm font-black uppercase tracking-[0.2em] text-secondary">{t("Login")}</span>
                                                             </motion.button>
@@ -446,7 +480,7 @@ export function Header() {
                                                 )}
                                             </div>
                                             <div className="flex flex-col items-start">
-                                                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">{name || t("Admin")}</span>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">{name || t("User")}</span>
                                                 <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest leading-none">{t("Account")}</span>
                                             </div>
                                             <ChevronDown className={`w-3.5 h-3.5 text-primary/50 transition-transform duration-500 ${isProfileOpen ? 'rotate-180' : ''}`} />

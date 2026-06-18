@@ -1,6 +1,6 @@
 {
   "The greatest wealth is the intelligence of the human body.": "Cea mai mare bogăție este inteligența corpului uman.",
-  "Home": "Concept",
+  "Home": "Acasă",
   "Experience": "Poveste",
   "Science": "Bio-Știință",
   "Precision": "Precizie",
@@ -706,12 +706,11 @@
   "Visual Analysis" : "Analiză vizuală",
   "Image analyzed successfully!" : "Imaginea a fost analizată cu succes",
   "Retake quiz": "Reia testul",
-  "Your monitoring period has ended. Please retake the assessment to observe your progress.": "Perioada ta de urmare a meniului a expirat. Te rugăm să reiei evaluarea pentru a observa progresul."
-
-
-
-
-
-
-
+  "Your monitoring period has ended. Please retake the assessment to observe your progress.": "Perioada ta de urmare a meniului a expirat. Te rugăm să reiei evaluarea pentru a observa progresul.",
+  "Payment successful! Your report has been sent to the doctor.": "Plată reușită! Raportul tău a fost trimis către medic.",
+  "Payment was canceled. You can try again when you're ready.": "Plata a fost anulată. Poți încerca din nou când ești gata.",
+  "Could not initiate payment. Please try again later.": "Nu s-a putut iniția plata. Te rugăm să încerci din nou mai târziu.",
+  "No active assessment report to send.": "Nu există niciun raport de evaluare activ de trimis.",
+  "Processing...": "Se procesează...",
+  "Pay & Send": "Plătește și Trimite"
 }
