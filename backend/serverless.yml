@@ -4,7 +4,6 @@ service: backend
 
 provider:
   name: aws
-  runtime: python3.11
   region: eu-north-1
   stage: ${opt:stage, 'dev'}
   memorySize: 1024
@@ -14,7 +13,15 @@ provider:
     AVATAR_BUCKET: uiui-avatars-${self:provider.stage}
     USER_POOL_ID: "eu-north-1_aBOOx7l1A"
     STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
+    VISION_API_KEY: ${env:VISION_API_KEY}
     FRONTEND_URL: http://localhost:5173
+
+  ecr:
+    images:
+      uiui-app-image:
+        path: ./
+        platform: linux/amd64
+        provenance: false
 
   iamRoleStatements:
     - Effect: Allow
@@ -44,8 +51,21 @@ provider:
       Resource:
         - "arn:aws:cognito-idp:${self:provider.region}:*:userpool/eu-north-1_aBOOx7l1A"
 
-
   httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:5173
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowCredentials: false
     authorizers:
       serviceAuthorizer:
         type: jwt
@@ -61,23 +81,20 @@ custom:
 
   pythonRequirements:
     dockerizePip: true
-    zip: true
-    slim: true
+    layer: false
 
   plugins:
     local:
       list: [
         serverless-s3-local,
         serverless-dynamodb,
-        serverless-offline,
-        serverless-python-requirements
+        serverless-offline
       ]
-    dev:
-      list: [ serverless-python-requirements ]
+    dev: []
     acc:
-      list: [ serverless-python-requirements ]
+      list: []
     prod:
-      list: [ serverless-python-requirements ]
+      list: []
 
   s3:
     host: localhost
@@ -101,121 +118,371 @@ custom:
           - table: uiui-biometrics-${self:provider.stage}
             sources: [ ./offline/migrations/uiui.json ]
 
+package:
+  patterns:
+    - '!**'
+    - src/**
+
 functions:
-  profileRouter:
-    handler: src/http_handlers/profile/routes.handler
+  profileRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.profile.routes.handler" ]
     events:
       - httpApi:
           path: /api/profile
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/profile/{proxy+}
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/profile/{proxy+}
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
 
-  assessmentRouter:
-    handler: src/http_handlers/assessment/routes.handler
+  assessmentRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.assessment.routes.handler" ]
     timeout: 25
+    memorySize: 2048
     events:
+      -
       - httpApi:
           path: /api/assessments
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/assessments/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  visionRouter:
-    handler: src/http_handlers/vision/routes.handler
+      - httpApi:
+          path: /api/assessments/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/assessments/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  visionRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.vision.routes.handler" ]
     timeout: 29
     events:
       - httpApi:
           path: /api/analyze
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/analyze/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  menuRouter:
-    handler: src/http_handlers/menu/routes.handler
+      - httpApi:
+          path: /api/analyze/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/analyze/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  menuRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.menu.routes.handler" ]
     timeout: 29
     events:
       - httpApi:
           path: /api/menu
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/menu/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  doctorRouter:
-    handler: src/http_handlers/doctor/routes.handler
+      - httpApi:
+          path: /api/menu/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/menu/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  doctorRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.doctor.routes.handler" ]
     timeout: 29
     events:
       - httpApi:
           path: /api/doctor
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/doctor/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  notificationRouter:
-    handler: src/http_handlers/notification/routes.handler
+      - httpApi:
+          path: /api/doctor/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/doctor/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  notificationRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.notification.routes.handler" ]
     events:
       - httpApi:
           path: /api/notifications
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/notifications/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  cronProcessExpiredMenus:
-    handler: src/http_handlers/menu/cron_expired_menus.handler
+      - httpApi:
+          path: /api/notifications/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/notifications/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  cronProcessExpiredMenusV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.menu.cron_expired_menus.handler" ]
     events:
       - schedule: rate(1 minute)
-  adminRouter:
-    handler: src/http_handlers/admin/routes.handler
+
+  adminRouterV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.admin.routes.handler" ]
     timeout: 29
     events:
       - httpApi:
           path: /api/admin
-          method: ANY
+          method: GET
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin
+          method: DELETE
           authorizer:
             name: serviceAuthorizer
       - httpApi:
           path: /api/admin/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-  createCheckoutSession:
-    handler: src/http_handlers/payment/routes.handler
+      - httpApi:
+          path: /api/admin/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/admin/{proxy+}
+          method: DELETE
+          authorizer:
+            name: serviceAuthorizer
+
+  createCheckoutSessionV2:
+    image:
+      name: uiui-app-image
+      command: [ "src.http_handlers.payment.routes.handler" ]
     events:
       - httpApi:
           path: /api/webhook
           method: POST
       - httpApi:
           path: /api/payment/{proxy+}
-          method: ANY
+          method: GET
           authorizer:
             name: serviceAuthorizer
-plugins:
-  ${self:custom.plugins.${self:provider.stage}.list}
+      - httpApi:
+          path: /api/payment/{proxy+}
+          method: POST
+          authorizer:
+            name: serviceAuthorizer
+      - httpApi:
+          path: /api/payment/{proxy+}
+          method: PUT
+          authorizer:
+            name: serviceAuthorizer
 
 resources:
   Resources:
@@ -277,10 +544,6 @@ resources:
         BucketName: uiui-avatars-${self:provider.stage}
         CorsConfiguration:
           CorsRules:
-            - AllowedHeaders:
-                - "*"
-              AllowedMethods:
-                - GET
-                - PUT
-              AllowedOrigins:
-                - "*"
+            - AllowedHeaders: [ "*" ]
+              AllowedMethods: [ GET, PUT ]
+              AllowedOrigins: [ "*" ]

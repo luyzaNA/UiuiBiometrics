@@ -9,7 +9,6 @@ def handler(event, context):
     Invoked via EventBridge rule (e.g., daily at 00:00).
     """
     try:
-        print("weatsddvdvfvf")
         logger.info("[CRON_EXPIRED_MENUS] Starting automated review process...")
 
         menu_service = MenuService()
