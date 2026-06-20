@@ -15,7 +15,7 @@ provider:
     STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
     STRIPE_WEBHOOK_SECRET: ${env:STRIPE_WEBHOOK_SECRET}
     VISION_API_KEY: ${env:VISION_API_KEY}
-    FRONTEND_URL: http://localhost:5173
+    FRONTEND_URL: https://d2lndt521kfd7b.cloudfront.net
 
   ecr:
     images:
@@ -57,7 +57,7 @@ provider:
   httpApi:
     cors:
       allowedOrigins:
-        - http://localhost:5173
+        - https://d2lndt521kfd7b.cloudfront.net
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -172,7 +172,7 @@ functions:
     image:
       name: uiui-app-image
       command: [ "src.http_handlers.assessment.routes.handler" ]
-    timeout: 30
+    timeout: 180
     memorySize: 3008
     events:
       - schedule:
