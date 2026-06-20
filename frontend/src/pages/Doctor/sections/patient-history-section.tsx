@@ -135,7 +135,7 @@ export function PatientHistorySection({ targetPerson, cognitoSub, excludeAssessm
                                     </div>
                                     {assessment.wellnessScore > 0 && (
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[10px] uppercase font-bold text-secondary/40">{t("Wellness")}</span>
+                                            <span className="text-[10px] uppercase font-bold text-secondary/40">{t("Wellness score")}</span>
                                             <span className="text-xl font-bold text-primary">{assessment.wellnessScore.toFixed(1)}</span>
                                         </div>
                                     )}

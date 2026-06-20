@@ -5,7 +5,6 @@ import uuid
 import concurrent.futures
 from typing import List, Optional, Union
 
-import openai
 from openai import OpenAI
 from src.models.menu.meal_base_menu import MealBaseMenuModel, MealOptionDef
 from src.models.menu.food_base_menu import FoodBaseMenuModel, DeficiencyTargetDef
@@ -20,19 +19,19 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+API_KEY = os.environ.get("VISION_API_KEY")
+
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://llm.wavespeed.ai/v1",
+    max_retries=3,
+)
 
 class MenuService:
     """
     Unified service managing business logic, AI generation, and persistence
     for all nutritional menu types (Food Items & Meals).
     """
-
-    API_KEY = os.environ.get("VISION_API_KEY")
-
-    client = OpenAI(
-        api_key=API_KEY,
-        base_url="https://llm.wavespeed.ai/v1"
-    )
 
     def __init__(self):
         self.repository = MenuRepository()
@@ -41,7 +40,7 @@ class MenuService:
 
 
     def generate_and_create_food_menu(self, assessment_id: str, deficiencies_list: list, cognito_sub: str) -> FoodBaseMenuModel:
-        if not self.API_KEY:
+        if not API_KEY:
             raise ValueError("VISION_API_KEY missing in environment variables.")
 
         review_after_days = calculate_review_days(deficiencies_list)
@@ -170,7 +169,7 @@ class MenuService:
         for attempt in range(max_retries):
             try:
                 logger.info("[DEBUG] Trimit cererea către Wavespeed API...")
-                response = self.client.chat.completions.create(
+                response = client.chat.completions.create(
                     model="openai/gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
                     response_format={"type": "json_object"},
@@ -231,7 +230,7 @@ class MenuService:
         Generates EXACTLY 3 targeted meals for a single specific category (e.g., breakfast).
         Prevents context bloating, eliminates timeouts, and limits output tokens.
         """
-        if not self.API_KEY:
+        if not API_KEY:
             raise ValueError("VISION_API_KEY missing in environment variables.")
 
         category_map = {
@@ -324,7 +323,7 @@ class MenuService:
         for attempt in range(max_retries):
             try:
                 logger.info(f"[MENU_SERVICE] Requesting isolated category '{category}' from AI engine...")
-                response = self.client.chat.completions.create(
+                response = client.chat.completions.create(
                     model="openai/gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
                     response_format={"type": "json_object"},

@@ -64,9 +64,9 @@ export const doctorService = {
         return response.data;
     },
 
-    /** PUT /api/doctor/profile/{id} */
+    /** PATCH /api/doctor/profile/{id} */
     async update(data: UpdateDoctorProfileRequest): Promise<DoctorProfileI> {
-        const response = await apiClient.put<DoctorProfileI>(`/doctor/profile`, data);
+        const response = await apiClient.patch<DoctorProfileI>(`/doctor/profile`, data);
         return response.data;
     },
 

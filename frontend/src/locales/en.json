@@ -638,7 +638,7 @@
   "Clinical Overview": "Clinical Overview",
   "Symptom Evolution": "Symptom Evolution",
   "Deficiency Trends": "Deficiency Trends",
-  "Physician Consensus": "Physician Consensus",
+  "Physician Consensus": "Physician consensus",
   "Actionable Recommendations": "Actionable Recommendations",
   "AI History Analysis": "History analysis",
   "Get an intelligent overview of the patient's past assessments. The AI analyzes symptom evolution, deficiency trends, and highlights critical insights.": "Get an intelligent overview of the patient's past assessments. The AI analyzes symptom evolution, deficiency trends, and highlights critical insights.",
@@ -703,7 +703,18 @@
   "Visual Analysis": "Visual Analysis",
   "Image analyzed successfully!" : "Image analyzed successfully!",
   "Retake quiz": "Retake quiz",
-  "Your monitoring period has ended. Please retake the assessment to observe your progress." :   "Your monitoring period has ended. Please retake the assessment to observe your progress."
+  "Your monitoring period has ended. Please retake the assessment to observe your progress." :   "Your monitoring period has ended. Please retake the assessment to observe your progress.",
+  "Your doctor has reviewed your assessment.": "Your doctor has reviewed your assessment.",
+  "Choosing the right ingredients to naturally balance your levels of:": "Choosing the right ingredients to naturally balance your levels of:",
+  "Preparing your menu": "Preparing your menu",
+  "Catch the Magic!": "Catch the magic!",
+  "Move & Tap to Catch!": "Move & tap to catch!",
+  "Crafting your menu": "Creating your menu",
+  "AI Status": "Generation status",
+  "Replenishing your levels": "Replenishing your levels",
+  "Wellness score": "Wellness score",
+  "Warning: Red Flags Identified": "Warning: Red flags identified",
+  "Key Findings": "Key findings"
 }
 
 

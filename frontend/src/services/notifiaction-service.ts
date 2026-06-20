@@ -22,13 +22,13 @@ export const notificationService = {
         return response.data;
     },
 
-    /** PUT /api/notifications/{sk}/read */
+    /** PATCH /api/notifications/{sk}/read */
     async markAsRead(sk: string): Promise<void> {
         const encodedSk = encodeURIComponent(sk);
         await apiClient.patch(`/notifications/${encodedSk}/read`);
     },
 
-    /** PUT /api/notifications/read-all */
+    /** PATCH /api/notifications/read-all */
     async markAllAsRead(): Promise<void> {
         await apiClient.patch("/notifications/read-all");
     }

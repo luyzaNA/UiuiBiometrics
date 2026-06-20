@@ -7,7 +7,6 @@ from uuid import uuid4
 import boto3
 import json
 
-import stripe
 from openai import OpenAI
 from botocore.exceptions import ClientError
 
@@ -25,6 +24,15 @@ from src.utils.settings import AVATAR_BUCKET
 
 from src.services.notification_service import NotificationService
 from src.utils.enums import NotificationType
+
+
+API_KEY = os.environ.get("VISION_API_KEY")
+
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://llm.wavespeed.ai/v1",
+    max_retries=3,
+)
 
 logger = get_logger(__name__)
 
@@ -427,14 +435,6 @@ class AssessmentService:
         and generates a structured medical summary using GPT-4o.
         Includes a synthesis of previous physician notes and recommendations.
         """
-        api_key = os.environ.get("VISION_API_KEY")
-        if not api_key:
-            raise ValueError("VISION_API_KEY missing in environment variables.")
-
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://llm.wavespeed.ai/v1"
-        )
 
         assessments = self.get_history_by_target_person(
             cognito_sub=cognito_sub,
@@ -482,79 +482,136 @@ class AssessmentService:
                     "doctor_notes": record.doctor_notes
                 })
 
-        prompt = f"""
-    You are an expert clinical AI assistant specializing in internal medicine and functional nutrition.
-    
-    PATIENT PROFILE
-    {json.dumps(patient_metadata, indent=2)}
-    
-    HISTORICAL DATA TIMELINE (Ordered from newest to oldest)
-    {json.dumps(history_payload, indent=2)}
-    
-    PREVIOUS PHYSICIAN NOTES
-    {json.dumps(doctor_notes_history, indent=2)}
-    
-    TASK
-    
-    Analyze the complete patient history and generate a clinically useful summary for the attending physician.
-    
-    You must analyze:
-    
-    1. Symptom evolution across all assessments.
-    2. Nutritional deficiency trends over time.
-    3. Wellness score progression.
-    4. Historical physician observations and recommendations.
-    5. Consistency between physician opinions and objective assessment findings.
-    
-    SPECIAL INSTRUCTIONS ABOUT PHYSICIAN NOTES
-    
-    If physician notes exist:
-    
-    - Summarize the key medical observations made by previous physicians.
-    - Identify recurring concerns mentioned across multiple assessments.
-    - Detect recurring recommendations or treatment directions.
-    - Highlight any documented improvements or deteriorations.
-    - Extract clinical patterns that physicians repeatedly noticed.
-    - Do NOT copy physician notes verbatim.
-    - Create a concise medical synthesis suitable for another physician reviewing the case.
-    - Mention areas where physician observations align with symptom and deficiency trends.
-    
-    CRITICAL INSTRUCTIONS
-    
-    * Return ONLY valid JSON matching the schema below.
-    * Do not include markdown.
-    * Do not include explanations outside JSON.
-    * All patient-facing or physician-facing text must be available in BOTH English ("en") and Romanian ("ro").
-    * Keep summaries concise but clinically meaningful.
-    * Base conclusions only on the supplied historical data.
-    
-    JSON SCHEMA
+            prompt = f"""
+        You are an expert clinical AI assistant specializing in internal medicine and functional nutrition.
+        
+        PATIENT PROFILE
+        {json.dumps(patient_metadata, indent=2)}
+        
+        HISTORICAL DATA TIMELINE (Ordered from newest to oldest)
+        {json.dumps(history_payload, indent=2)}
+        
+        PREVIOUS PHYSICIAN NOTES
+        {json.dumps(doctor_notes_history, indent=2)}
+        
+        TASK
+        
+        Review the complete patient history and generate a concise, clinically useful physician summary.
+        
+        Analyze:
+        
+        1. Symptom progression across assessments.
+        2. Wellness score progression.
+        3. Nutritional deficiency patterns.
+        4. Historical physician observations.
+        5. Consistency between physician observations and assessment findings.
+        
+        CASE CLASSIFICATION
+        
+        Before generating the report, classify the case into ONE category:
+        
+        1. "red_flag"
+           Use when historical evidence suggests a potentially significant clinical concern requiring further medical investigation.
+        
+        2. "deficiency_pattern"
+           Use when the findings are predominantly consistent with nutritional deficiency patterns and there are no major clinical warning signs.
+        
+        3. "mixed"
+           Use when both nutritional deficiencies and clinically concerning patterns coexist and both deserve attention.
+        
+        RED FLAG DETECTION RULES
+        
+        A case should be classified as "red_flag" when one or more of the following are present:
+        
+        * Progressive worsening of symptoms over time.
+        * Significant decline in wellness scores.
+        * Persistent severe symptoms across multiple assessments.
+        * Repeated physician concerns suggesting additional investigation.
+        * Failure to improve despite previous recommendations.
+        * Neurological warning signs.
+        * Cardiovascular warning signs.
+        * Gastrointestinal alarm symptoms.
+        * Multiple body systems becoming symptomatic simultaneously.
+        * Historical patterns suggesting a potentially serious underlying condition.
+        * Any trend that would reasonably justify additional diagnostic investigation.
+        
+        IMPORTANT
+        
+        Red flag detection has priority over deficiency analysis.
+        
+        If the case is classified as "red_flag":
+        
+        * Focus the report on the concerning clinical pattern.
+        * Do NOT attempt to explain the overall picture primarily through nutritional deficiencies.
+        * Deficiency analysis should be secondary.
+        * Recommendations should focus on further evaluation and investigation.
+        
+        SECTION RULES
+        
+        Avoid repetition.
+        
+        Each section must provide NEW information.
+        
+        clinical_overview:
+        
+        * High-level summary only.
+        * Do not repeat recommendations.
+        * Do not repeat detailed evidence.
+        
+        key_findings:
+        
+        * Provide the most important objective findings from the history.
+        * Use short evidence-based observations.
+        * Include symptom trends, wellness trends, physician trends, or deficiency trends when relevant.
+        
+        physician_consensus:
+        
+        * Summarize physician observations only.
+        * Do not repeat symptom evolution already described in key_findings.
+        
+        clinical_recommendations:
+        
+        * Focus only on next actions or areas requiring attention.
+        * Do not repeat the overview.
+        
+        CRITICAL INSTRUCTIONS
+        
+        * Return ONLY valid JSON.
+        * Do not return markdown.
+        * Do not return explanations outside JSON.
+        * Base conclusions strictly on supplied data.
+        * Do not invent findings.
+        * If evidence is insufficient, explicitly state uncertainty.
+        * All text must be available in English and Romanian.
+        * Keep responses concise and clinically meaningful.
+        
+        JSON SCHEMA
+        JSON SCHEMA
     
     {{
-      "clinical_overview": {{
-        "en": "Brief high-level summary of the current clinical state.",
-        "ro": "Rezumat scurt, la nivel înalt, al stării clinice actuale."
-      }},
-      "symptom_evolution": {{
-        "en": "Analysis of how symptoms changed, improved, or worsened over time.",
-        "ro": "Analiza modului în care simptomele s-au schimbat, îmbunătățit sau înrăutățit în timp."
-      }},
-      "deficiency_trends": {{
-        "en": "Identification of persistent, resolving, or newly appearing nutritional deficiencies.",
-        "ro": "Identificarea deficiențelor nutriționale persistente, în curs de rezolvare sau nou apărute."
-      }},
-      "physician_consensus": {{
-        "en": "Summary of historical physician observations, conclusions and recurring recommendations.",
-        "ro": "Rezumat al observațiilor medicilor, concluziilor și recomandărilor recurente din istoricul pacientului."
-      }},
-      "clinical_recommendations": [
-        {{
-          "en": "Actionable focus area for the doctor during next consultation.",
-          "ro": "Zonă de acțiune recomandată pentru medic la următoarea consultație."
+        "case_classification": "red_flag",
+    
+        "clinical_overview": {{
+            "en": "High-level clinical summary.",
+            "ro": "Rezumat clinic la nivel înalt."
+        }},
+    
+        "key_findings": {{
+            "en": "Specific evidence-based finding.",
+            "ro": "Constatare specifică bazată pe dovezi."
+        }},
+    
+        "physician_consensus": {{
+            "en": "Summary of historical physician observations and recurring themes.",
+             "ro": "Rezumat al observațiilor medicilor și al temelor recurente."
+        }},
+    
+        "clinical_recommendations": {{
+            "en": "Recommended focus area for the next consultation.",
+            "ro": "Zonă recomandată de investigat la următoarea consultație."
         }}
-      ]
     }}
-    """
+        """
 
         try:
             logger.info(

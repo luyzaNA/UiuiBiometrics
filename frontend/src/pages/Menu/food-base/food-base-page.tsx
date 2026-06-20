@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import TargetedFoodsProtocol from "@/pages/Menu/food-base/section/food-base-section.tsx";
 import { toast } from "sonner";
 import { type CreateMenuRequest, menuService } from "@/services/menu-service.ts";
+import {FoodBasedMenuLoader} from "@/components/food-based-menu-loader.tsx";
 
 export default function TargetedFoodsPage() {
     const { t, i18n } = useTranslation();
@@ -105,20 +106,11 @@ export default function TargetedFoodsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 animate-fadeIn bg-background">
-                <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin mb-8" />
-                <h2 className="text-xl font-light tracking-wide text-foreground mb-3">
-                    {t("We're busy selecting the perfect foods to support your energy and well-being. This will just take a moment!")}
-                </h2>
-                <div className="flex gap-3 justify-center items-center opacity-60 text-sm font-medium tracking-widest uppercase">
-                    {targetDeficiencies.map((def, idx) => (
-                        <span key={def.nutrient} className="flex items-center gap-3">
-                            {idx > 0 && <span className="w-1 h-1 bg-foreground/30 rounded-full" />}
-                            {t(def.nutrient)}
-                        </span>
-                    ))}
-                </div>
-            </div>
+            <FoodBasedMenuLoader
+                isLoading={isLoading}
+                targetDeficiencies={targetDeficiencies}
+                t={t}
+            />
         );
     }
 

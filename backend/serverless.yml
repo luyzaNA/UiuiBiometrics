@@ -6,13 +6,14 @@ provider:
   name: aws
   region: eu-north-1
   stage: ${opt:stage, 'dev'}
-  memorySize: 1024
+  timeout: 29
   environment:
     DYNAMODB_TABLE: uiui-biometrics-${self:provider.stage}
     STAGE: ${self:provider.stage}
     AVATAR_BUCKET: uiui-avatars-${self:provider.stage}
     USER_POOL_ID: "eu-north-1_aBOOx7l1A"
     STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
+    STRIPE_WEBHOOK_SECRET: ${env:STRIPE_WEBHOOK_SECRET}
     VISION_API_KEY: ${env:VISION_API_KEY}
     FRONTEND_URL: http://localhost:5173
 
@@ -48,6 +49,8 @@ provider:
         - cognito-idp:ListUsers
         - cognito-idp:AdminAddUserToGroup
         - cognito-idp:AdminRemoveUserFromGroup
+        - cognito-idp:DescribeUserPool
+        - cognito-idp:ListUsersInGroup
       Resource:
         - "arn:aws:cognito-idp:${self:provider.region}:*:userpool/eu-north-1_aBOOx7l1A"
 
@@ -118,11 +121,6 @@ custom:
           - table: uiui-biometrics-${self:provider.stage}
             sources: [ ./offline/migrations/uiui.json ]
 
-package:
-  patterns:
-    - '!**'
-    - src/**
-
 functions:
   profileRouterV2:
     image:
@@ -141,7 +139,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/profile
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -161,7 +159,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/profile/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -174,10 +172,12 @@ functions:
     image:
       name: uiui-app-image
       command: [ "src.http_handlers.assessment.routes.handler" ]
-    timeout: 25
-    memorySize: 2048
+    timeout: 30
+    memorySize: 3008
     events:
-      -
+      - schedule:
+            rate: rate(2 minutes)
+            enabled: true
       - httpApi:
           path: /api/assessments
           method: GET
@@ -190,7 +190,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/assessments
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -210,7 +210,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/assessments/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -237,7 +237,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/analyze
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -257,7 +257,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/analyze/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -284,7 +284,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/menu
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -304,7 +304,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/menu/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -331,7 +331,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/doctor
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -351,7 +351,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/doctor/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -377,7 +377,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/notifications
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -397,7 +397,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/notifications/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -412,7 +412,6 @@ functions:
       command: [ "src.http_handlers.menu.cron_expired_menus.handler" ]
     events:
       - schedule: rate(1 minute)
-
   adminRouterV2:
     image:
       name: uiui-app-image
@@ -431,7 +430,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/admin
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -451,7 +450,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/admin/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
       - httpApi:
@@ -480,7 +479,7 @@ functions:
             name: serviceAuthorizer
       - httpApi:
           path: /api/payment/{proxy+}
-          method: PUT
+          method: PATCH
           authorizer:
             name: serviceAuthorizer
 

@@ -22,7 +22,7 @@ ROUTES = [
     ("GET", "doctor/assessments/pending/count", get_number_of_assessments_handler),
     ("POST", "doctor/profile", create_doctor_handler),
     ("POST", "doctor/{doctor_id}/reviews", add_doctor_review_handler),
-    ("PUT", "doctor/profile", update_doctor_handler)
+    ("PATCH", "doctor/profile", update_doctor_handler)
 ]
 router = Router(base_path="/api")
 

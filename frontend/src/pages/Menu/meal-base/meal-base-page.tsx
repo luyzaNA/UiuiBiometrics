@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { menuService } from "@/services/menu-service.ts";
 import { toast } from "sonner";
 import MealBankProtocol from "@/pages/Menu/meal-base/section/meal-base-section.tsx";
-import { Loader2, Check, Sparkles, ChefHat, Apple } from "lucide-react";
+import {MealsBasedMenuLoader} from "@/components/meal-based-menu-loader.tsx";
 
 export default function MealBankCreatePage() {
     const { t, i18n } = useTranslation();
@@ -146,95 +146,16 @@ export default function MealBankCreatePage() {
     };
 
     if (isLoading) {
-        const steps = [
-            { id: 20, label: t("Formulating Breakfast Recipes") },
-            { id: 45, label: t("Balancing Lunch Nutrition") },
-            { id: 70, label: t("Designing Therapeutic Dinners") },
-            { id: 90, label: t("Compiling Synergistic Snacks") },
-            { id: 98, label: t("Final Alignment & Verification") }
-        ];
-
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12 animate-fadeIn selection:bg-primary/20">
-                <div className="w-full max-w-md bg-secondary/20 border border-foreground/5 p-8 rounded-3xl shadow-xl backdrop-blur-sm space-y-8 relative overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none animate-pulse" />
-                    <div className="flex flex-col items-center text-center space-y-3 relative z-10">
-                        <div className="p-4 bg-primary/10 rounded-2xl relative group mb-2">
-                            <ChefHat className="text-primary animate-pulse" size={28} />
-                            <Sparkles className="text-primary/60 absolute -top-1 -right-1 animate-spin" style={{ animationDuration: '4s' }} size={14} />
-                        </div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                            {t("Meal Blueprint")}
-                        </h2>
-                        <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-                            {loadingMessage || t("Designing your personalized nutritional profile based on your biomarkers.")}
-                        </p>
-                    </div>
-
-                    <div className="space-y-3 relative z-10">
-                        <div className="flex justify-between items-end px-1">
-                            <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60">{t("Generating status")}</span>
-                            <span className="text-3xl font-extralight tracking-tighter text-primary font-mono">{loadingProgress}%</span>
-                        </div>
-                        <div className="w-full h-2 bg-foreground/10 rounded-full overflow-hidden p-[2px]">
-                            <div
-                                className="h-full bg-primary rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(var(--primary),0.5)]"
-                                style={{ width: `${loadingProgress}%` }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="border-t border-foreground/5 pt-5 space-y-3.5 relative z-10">
-                        {steps.map((step) => {
-                            const isDone = loadingProgress > step.id;
-                            const isCurrent = loadingProgress === step.id || (loadingProgress < step.id && (steps[steps.indexOf(step) - 1]?.id ? loadingProgress > steps[steps.indexOf(step) - 1].id : true));
-
-                            return (
-                                <div
-                                    key={step.id}
-                                    className={`flex items-center gap-3 transition-all duration-300 ${isDone ? 'opacity-100' : isCurrent ? 'opacity-100 translate-x-1' : 'opacity-30'}`}
-                                >
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
-                                        isDone ? 'bg-primary/20 border-primary text-primary scale-100' :
-                                            isCurrent ? 'border-primary bg-background shadow-[0_0_8px_rgba(var(--primary),0.3)]' : 'border-foreground/20'
-                                    }`}>
-                                        {isDone ? (
-                                            <Check size={11} className="stroke-[3]" />
-                                        ) : isCurrent ? (
-                                            <Loader2 size={10} className="animate-spin text-primary" />
-                                        ) : (
-                                            <span className="w-1 h-1 bg-foreground/40 rounded-full" />
-                                        )}
-                                    </div>
-                                    <span className={`text-xs font-medium tracking-wide ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-                                        {step.label}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="mt-8 text-center space-y-3 max-w-lg animate-fadeIn" style={{ animationDelay: '200ms' }}>
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground/50">
-                        <Apple size={14} />
-                        <span className="text-[10px] font-bold tracking-widest uppercase">{t("Targeting Vulnerabilities")}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 justify-center items-center">
-                        {targetDeficiencies.map((def) => (
-                            <span
-                                key={def.nutrient}
-                                className="text-[11px] font-semibold bg-foreground/[0.03] text-foreground/70 border border-foreground/5 px-3 py-1 rounded-xl shadow-sm tracking-wide"
-                            >
-                                {t(def.nutrient)}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <MealsBasedMenuLoader
+                isLoading={isLoading}
+                loadingProgress={loadingProgress}
+                loadingMessage={loadingMessage}
+                targetDeficiencies={targetDeficiencies}
+                t={t}
+            />
         );
     }
-
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 animate-fadeIn bg-background">

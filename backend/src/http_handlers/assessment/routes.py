@@ -9,6 +9,7 @@ from src.http_handlers.assessment.get_assessment_history_summary import handler 
 from src.http_handlers.assessment.get_assesment_for_comparation import handler as get_latest_comparison_handler
 from src.http_handlers.assessment.send_assesment_to_doctor import handler as send_to_doctor_handler
 from src.http_handlers.assessment.update_doctor_assessement import handler as update_doctor_notes_handler
+from src.utils.deficiencies_detection import preload_ml_model
 
 from src.utils.generic_router import Router
 
@@ -20,8 +21,8 @@ ROUTES = [
     ("GET", "assessments/{cognitoSub}/history/summary", get_history_summary_handler),
     ("GET", "assessments/{cognitoSub}/{assessmentId}", get_assessment_by_id_handler),
     ("GET", "assessments/latest-comparison", get_latest_comparison_handler),
-    ("PUT", "assessments/{assessmentId}/send-to-doctor", send_to_doctor_handler),
-    ("PUT", "assessments/{cognitoSub}/{assessmentId}/doctor-notes", update_doctor_notes_handler)
+    ("PATCH", "assessments/{assessmentId}/send-to-doctor", send_to_doctor_handler),
+    ("PATCH", "assessments/{cognitoSub}/{assessmentId}/doctor-notes", update_doctor_notes_handler)
 ]
 
 router = Router(base_path="/api")
@@ -30,4 +31,7 @@ for method, path, handler in ROUTES:
     router.add(method, path, handler)
 
 def handler(event, context):
+    if event.get("source") == "aws.events":
+        preload_ml_model()
+
     return router.dispatch(event, context)

@@ -14,7 +14,8 @@ API_KEY = os.environ.get("VISION_API_KEY")
 
 client = OpenAI(
     api_key=API_KEY,
-    base_url="https://llm.wavespeed.ai/v1"
+    base_url="https://llm.wavespeed.ai/v1",
+    max_retries=3,
 )
 @inject_user()
 @require_role_categories({RoleCategory.USER})
