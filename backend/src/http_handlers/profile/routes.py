@@ -8,7 +8,7 @@ from src.utils.generic_router import Router
 ROUTES = [
     ("GET", "profile/me", get_me_handler),
     ("POST", "profile", create_profile_handler),
-    ("PUT", "profile/{id}", update_profile_handler),
+    ("PATCH", "profile/{id}", update_profile_handler),
 ]
 
 router = Router(base_path="/api")

@@ -5,9 +5,11 @@ import stripe
 from src.auth.auth import inject_user, require_roles
 from src.models.user import User
 from src.utils.enums import Role
+from src.utils.logger import get_logger
 
 stripe_key = os.environ.get('STRIPE_SECRET_KEY')
 client = stripe.StripeClient(stripe_key)
+logger = get_logger(__name__)
 
 @inject_user()
 @require_roles({Role.USER})
@@ -37,16 +39,18 @@ def handler(event, context, user: User):
                 'doctor_id': doctor_id
             }
         })
+        logger.info("[CREATE_CHECKOUT_SESSION]: %s", event)
+
         return {
-            "statusCode": 200,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Credentials": True,
-            },
-            "body": json.dumps({
-                "url": checkout_session.url
-            })
-        }
+                "statusCode": 200,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Credentials": True,
+                },
+                "body": json.dumps({
+                    "url": checkout_session.url
+                })
+            }
 
     except Exception as e:
         return {

@@ -37,13 +37,13 @@ export const profileService = {
     },
 
     /**
-     * PUT /api/profile/{id}
+     * PATCH /api/profile/{id}
      */
     async update(
         profileId: string,
         data: UpdateProfileRequest
     ): Promise<ProfileI> {
-        const response = await apiClient.put<ProfileI>(
+        const response = await apiClient.patch<ProfileI>(
             `/profile/${profileId}`,
             data
         );

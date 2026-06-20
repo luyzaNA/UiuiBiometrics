@@ -24,8 +24,7 @@ export default function DoctorsPage() {
     const [loading, setLoading] = useState<boolean>(true);
 
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [sortBy, setSortBy] = useState<SortOption>('none');
-
+    const [sortBy, setSortBy] = useState<SortOption | undefined>(undefined);
 
     const paymentHandled = useRef(false);
     const navigate = useNavigate()
@@ -129,12 +128,14 @@ export default function DoctorsPage() {
                     />
                 </div>
 
+
                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                     <SlidersHorizontal className="w-4 h-4 text-primary"/>
                     <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                         <SelectTrigger
-                            className="w-[180px] bg-secondary-foreground text-secondary border border-secondary/20 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
+                            className="w-[180px] bg-secondary-foreground border border-secondary/20 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
                             <SelectValue placeholder={t("Sort by: Default")}/>
+
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="rating-desc">{t("Highest Rated")}</SelectItem>

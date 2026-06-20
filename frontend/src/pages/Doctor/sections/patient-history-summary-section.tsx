@@ -1,16 +1,23 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, Loader2, BrainCircuit, Activity, CheckCircle } from "lucide-react";
+import { Sparkles, Loader2, BrainCircuit, Activity, CheckCircle, AlertTriangle, Stethoscope } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { assessmentService } from "@/services/assessment-service.ts";
 
 interface AISummary {
+    caseClassification: "red_flag" | "deficiency_pattern" | "mixed";
     clinicalOverview: { en: string; ro: string };
-    symptomEvolution: { en: string; ro: string };
-    deficiencyTrends: { en: string; ro: string };
+    keyFindings: { en: string; ro: string };
     physicianConsensus: { en: string; ro: string };
-    clinicalRecommendations: Array<{ en: string; ro: string }>;
+    clinicalRecommendations: { en: string; ro: string };
 }
+
+const parseKeyFindings = (text: string) => {
+    return text
+        .split(/(?:^|\s)(?=[1-9]\d*\.\s)/)
+        .map(item => item.trim())
+        .filter(Boolean);
+};
 
 export function PatientHistorySummary({ cognitoSub, targetPerson }: { cognitoSub: string; targetPerson: string }) {
     const { t, i18n } = useTranslation();
@@ -33,6 +40,8 @@ export function PatientHistorySummary({ cognitoSub, targetPerson }: { cognitoSub
             setIsLoading(false);
         }
     };
+
+    const isRedFlag = summary?.caseClassification === "red_flag";
 
     return (
         <div className="w-full flex flex-col gap-4 my-6 border-b border-secondary/10 pb-6">
@@ -85,60 +94,71 @@ export function PatientHistorySummary({ cognitoSub, targetPerson }: { cognitoSub
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-4">
+                            {isRedFlag && (
+                                <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl flex items-start gap-3">
+                                    <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                        <h4 className="font-bold text-sm">
+                                            {t("Warning: Red Flags Identified")}
+                                        </h4>
+                                        <p className="text-sm opacity-90 mt-1">
+                                            {summary.clinicalOverview?.[lang]}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
-                            <div className="flex flex-col gap-2">
-                                <h4 className="text-sm font-bold text-primary flex items-center gap-2">
-                                    <Activity className="w-4 h-4" /> {t("Clinical Overview")}
-                                </h4>
-                                <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-                                    {summary.clinicalOverview?.[lang] || "N/A"}
-                                </p>
-                            </div>
+                            {!isRedFlag && summary.clinicalOverview && (
+                                <div className="p-4 bg-card rounded-xl border">
+                                    <p className="text-sm text-card-foreground">
+                                        {summary.clinicalOverview[lang]}
+                                    </p>
+                                </div>
+                            )}
 
-                            <div className="flex flex-col gap-2">
-                                <h4 className="text-sm font-bold text-primary flex items-center gap-2">
-                                    <Activity className="w-4 h-4" /> {t("Symptom Evolution")}
-                                </h4>
-                                <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-                                    {summary.symptomEvolution?.[lang] || "N/A"}
-                                </p>
-                            </div>
+                            {summary.keyFindings && (
+                                <div className="p-4 bg-card rounded-xl border">
+                                    <h4 className="text-sm font-bold flex items-center gap-2 mb-3  text-secondary-foreground/70">
+                                        <Activity className="w-4 h-4 text-primary" />
+                                        {t("Key Findings")}
+                                    </h4>
+                                    <ul className="flex flex-col gap-2">
+                                        {parseKeyFindings(summary.keyFindings[lang]).map((finding, idx) => (
+                                            <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                                                <span className="text-primary font-bold">•</span>
+                                                <span>{finding.replace(/^[1-9]\d*\.\s*/, '')}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
 
-                            <div className="flex flex-col gap-2">
-                                <h4 className="text-sm font-bold text-primary flex items-center gap-2">
-                                    <Activity className="w-4 h-4" /> {t("Deficiency Trends")}
-                                </h4>
-                                <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-                                    {summary.deficiencyTrends?.[lang] || "N/A"}
-                                </p>
-                            </div>
+                            {summary.physicianConsensus && (
+                                <div className="p-4 bg-muted/50 rounded-xl border">
+                                    <h4 className="text-sm font-bold flex items-center gap-2 mb-2 text-secondary-foreground/70">
+                                        <Stethoscope className="w-4 h-4 text-primary" />
+                                        {t("Physician Consensus")}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground italic">
+                                        "{summary.physicianConsensus[lang]}"
+                                    </p>
+                                </div>
+                            )}
 
-                            <div className="flex flex-col gap-2">
-                                <h4 className="text-sm font-bold text-primary flex items-center gap-2">
-                                    <BrainCircuit className="w-4 h-4" /> {t("Physician Consensus")}
-                                </h4>
-                                <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-                                    {summary.physicianConsensus?.[lang] || "N/A"}
-                                </p>
-                            </div>
-
+                            {summary.clinicalRecommendations && (
+                                <div className="mt-2 bg-secondary/5 rounded-2xl p-5 border border-secondary/10">
+                                    <h4 className="text-sm font-bold text-secondary-foreground mb-3 flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-primary" />
+                                        {t("Actionable Recommendations")}
+                                    </h4>
+                                    <div className="text-sm text-secondary-foreground/80 flex items-start gap-2">
+                                        <span className="text-primary mt-0.5">•</span>
+                                        <span>{summary.clinicalRecommendations[lang]}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {summary.clinicalRecommendations && summary.clinicalRecommendations.length > 0 && (
-                            <div className="mt-2 bg-secondary/5 rounded-2xl p-5 border border-secondary/10">
-                                <h4 className="text-sm font-bold text-secondary-foreground mb-3 flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4 text-primary" /> {t("Actionable Recommendations")}
-                                </h4>
-                                <ul className="flex flex-col gap-2">
-                                    {summary.clinicalRecommendations.map((rec, idx) => (
-                                        <li key={idx} className="text-sm text-secondary-foreground/80 flex items-start gap-2">
-                                            <span className="text-primary mt-0.5">•</span>
-                                            <span>{rec[lang]}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

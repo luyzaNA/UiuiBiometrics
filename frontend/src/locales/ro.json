@@ -312,6 +312,7 @@
   "The percentage indicates the estimated risk level of having a deficiency for each specific micronutrient.": "Procentul reprezintă riscul estimat de carență pentru fiecare micronutrient.",
   "WELLNESS SCORE (%)": "SCOR DE BUNĂSTARE (%)",
   "EVOLUTION IN TIME": "EVOLUȚIA ÎN TIMP",
+  "Wellness score": "Scor de bunăstare",
   "Wellness score evolution in time": "Evoluția scorului de bunăstare în funcție de timp",
   "Select profile and the desired assessment": "Selectează profilul și evaluarea dorită",
   "My Profile": "Profilul meu",
@@ -712,5 +713,17 @@
   "Could not initiate payment. Please try again later.": "Nu s-a putut iniția plata. Te rugăm să încerci din nou mai târziu.",
   "No active assessment report to send.": "Nu există niciun raport de evaluare activ de trimis.",
   "Processing...": "Se procesează...",
-  "Pay & Send": "Plătește și Trimite"
+  "Pay & Send": "Plătește și Trimite",
+  "Your doctor has reviewed your assessment." : "Doctorul ți-a lasat o recomandare",
+  "Choosing the right ingredients to naturally balance your levels of:": "Alegem ingredientele potrivite pentru a-ți echilibra natural nivelul de:",
+  "Preparing your menu": "Îți pregătim meniul",
+  "Catch the Magic!": "Prinde magia!",
+  "Move & Tap to Catch!": "Mișcă și apasă pentru a prinde!",
+  "Crafting your menu": "Crearea meniului tău",
+  "AI Status": "Status generare",
+  "Replenishing your levels": "Refacerea nivelurilor tale",
+  "Warning: Red Flags Identified": "Atenție: Semnale de alarmă identificate",
+  "Key Findings": "Constatări principale"
+
+
 }

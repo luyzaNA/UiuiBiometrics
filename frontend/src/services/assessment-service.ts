@@ -36,10 +36,10 @@ export const assessmentService = {
         return response.data;
     },
     /**
-     * PUT /api/assessments/{id}/send-to-doctor
+     * PATCH /api/assessments/{id}/send-to-doctor
      */
     async sendToDoctor(assessmentId: string, doctorId: string = "UNASSIGNED"): Promise<any> {
-        const response = await apiClient.put<any>(`/assessments/${assessmentId}/send-to-doctor`, {
+        const response = await apiClient.patch<any>(`/assessments/${assessmentId}/send-to-doctor`, {
             doctor_id: doctorId
         });
         return response.data;
@@ -67,10 +67,10 @@ export const assessmentService = {
         return response.data;
     },
     /**
-     * PUT /api/assessments/{cognitoSub}/{assessmentId}/doctor-notes
+     * PATCH /api/assessments/{cognitoSub}/{assessmentId}/doctor-notes
      */
     async updateDoctorNotes(cognitoSub: string, assessmentId: string, doctorNotes: string): Promise<any> {
-        const response = await apiClient.put<any>(`/assessments/${cognitoSub}/${assessmentId}/doctor-notes`, {
+        const response = await apiClient.patch<any>(`/assessments/${cognitoSub}/${assessmentId}/doctor-notes`, {
             doctor_notes: doctorNotes
         });
         return response.data;
