@@ -48,6 +48,7 @@ def handler(event, context, user: User):
                     - Skin_Rash_or_Redness
                     - Oral_Ulcers
                     - Brittle_Nails
+                    - Dry_Eyes
                     
                     DO NOT infer, guess, or estimate symptoms that are not directly visible.
                     

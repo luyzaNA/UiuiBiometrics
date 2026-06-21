@@ -137,7 +137,7 @@ export default function DoctorPatientsPage({ onSelectPatient }: DoctorPatientsPa
 
 
                                             <p className="text-[10px] uppercase tracking-widest text-secondary/40 mt-0.5">
-                                                {patient.age} {t("years")} • {t(patient.gender.toLowerCase())}
+                                                {patient.age} {t("years")} • {patient.gender === "feminine" ? t("woman") : t("man")}
                                             </p>
                                         </div>
                                     </div>

@@ -335,7 +335,7 @@ export default function SymptomQuizWizard() {
                                             const config = INTENSITY_MAP[intensity] || INTENSITY_MAP.default;
                                             return (
                                                 <div key={symptom} className="flex justify-between items-center p-4 hover:bg-secondary/[0.04] transition-colors">
-                                                    <span className="font-medium text-sm capitalize">
+                                                    <span className="font-medium text-sm">
                                                         {t(symptom)}
                                                     </span>
                                                     <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${config.styles}`}>

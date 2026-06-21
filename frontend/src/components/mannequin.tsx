@@ -111,7 +111,12 @@ export default function BodySymptomSelector({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     <div className="lg:col-span-5 group relative bg-secondary/[0.02] border border-secondary/10 rounded-3xl p-8 overflow-hidden">
-                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-primary/20 animate-[scan_4s_ease-in-out_infinite] pointer-events-none" />
+
+                        <div
+                            className="absolute left-0 w-full h-[2px] bg-primary/40 shadow-[0_0_15px_var(--primary)] pointer-events-none z-20"
+                            style={{ animation: "scan-vertical 10s ease-in-out infinite" }}
+                        />
+
                         <AnimatePresence>
                             {hoveredPart && (
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-6 left-8 z-30 flex flex-col items-start font-mono">
@@ -139,6 +144,15 @@ export default function BodySymptomSelector({
                                                 if (normalized) setSelectedPart(normalized);
                                                 else if (id === "body") setSelectedPart("skin");
                                                 else setSelectedPart(null);
+
+                                                if (window.innerWidth < 1024) {
+                                                    setTimeout(() => {
+                                                        document.getElementById("symptoms-list")?.scrollIntoView({
+                                                            behavior: "smooth",
+                                                            block: "start"
+                                                        });
+                                                    }, 150);
+                                                }
                                             }}
                                             onMouseOver={(e: any) => {
                                                 const id = e.target.id || e.target.parentElement?.id;
@@ -163,7 +177,7 @@ export default function BodySymptomSelector({
                         </div>
                     </div>
 
-                    <div className="lg:col-span-7 flex flex-col gap-6">
+                    <div id="symptoms-list" className="lg:col-span-7 flex flex-col gap-6 scroll-mt-6">
                         <div className="sm:hidden mb-4">
                             <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
                         </div>
@@ -252,7 +266,7 @@ export default function BodySymptomSelector({
             <AnimatePresence>
                 {hoveredPart && view === "physical" && (
                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                                className="pointer-events-none fixed z-50 bg-secondary-foreground/95 border border-primary/50 text-primary px-4 py-2 rounded-lg text-[10px] font-mono tracking-widest uppercase shadow-[0_0_20px_rgba(173,123,189,0.3)] backdrop-blur-md flex items-center gap-3"
+                                className="hidden md:flex pointer-events-none fixed z-50 bg-secondary-foreground/95 border border-primary/50 text-primary px-4 py-2 rounded-lg text-[10px] font-mono tracking-widest uppercase shadow-[0_0_20px_rgba(173,123,189,0.3)] backdrop-blur-md items-center gap-3"
                                 style={{ left: mousePos.x + 20, top: mousePos.y + 20 }}>
                         <Target className="w-4 h-4 animate-spin-slow" />
                         <span className="font-black text-xs"> {t(NORMALIZE_PART[hoveredPart] || `${hoveredPart}`)} </span>
@@ -262,6 +276,11 @@ export default function BodySymptomSelector({
 
             <style>{`
                 .biometric-scanner svg [id] { cursor: crosshair; }
+                @keyframes scan-vertical {
+                    0%, 100% { top: 0%; opacity: 0; }
+                    10%, 90% { opacity: 0.2; }
+                    50% { top: 98%; opacity: 0.6; }
+                }
             `}</style>
         </section>
     );

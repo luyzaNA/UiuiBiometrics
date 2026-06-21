@@ -162,33 +162,39 @@ export default function DoctorReviews() {
                                     transition={{ duration: 0.3, delay: idx * 0.05 }}
                                 >
                                     <Card className="bg-secondary/5 border-secondary/10 hover:border-secondary/20 transition-all duration-300 group ">
-                                        <CardContent className="p-6 space-y-4">
+                                        <CardContent className="p-6 space-y-4 bg-secondary-foreground rounded-xl">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm tracking-wide">
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm tracking-wide shrink-0">
                                                         {getInitials(review.reviewerName)}
                                                     </div>
-                                                    <div>
+
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-sm font-semibold text-secondary tracking-wide">
+                                                            {review.reviewerName}
+                                                        </span>
+
                                                         <div className="flex gap-0.5 text-amber-400">
                                                             {[1, 2, 3, 4, 5].map((star) => (
                                                                 <Star
                                                                     key={star}
-                                                                    className={`w-3.5 h-3.5 ${star <= review.rating ? 'fill-current' : 'text-muted-foreground/10'}`}
+                                                                    className={`w-3.5 h-3.5 ${star <= review.rating ? 'fill-current' : 'text-muted-foreground/20'}`}
                                                                 />
                                                             ))}
                                                         </div>
-                                                        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">
+
+                                                        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5">
                                                             {formatChartFullDate(review.createdAt)}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <p className="text-secondary/70 text-sm italic font-medium">
+                                            <p className="text-secondary/70 text-sm italic font-medium pt-1">
                                                 {review.comment ? (
                                                     `"${review.comment}"`
                                                 ) : (
-                                                    <span className="text-secondary/70 font-normal not-italic">
+                                                    <span className="text-secondary/50 font-normal not-italic">
                                                     {t("Rating left without a text comment.")}
                                                 </span>
                                                 )}

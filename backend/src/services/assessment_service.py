@@ -661,7 +661,7 @@ class AssessmentService:
         ]
 
         retakes = [a for a in person_assessments if a.parent_assessment_id]
-        sorted(retakes, key=lambda x: x.created_at, reverse=True)
+        retakes = sorted(retakes, key=lambda x: x.created_at, reverse=True) # Atribui rezultatul înapoi
 
         if not retakes:
             raise NotFoundException(f"Nu există chestionare de follow-up pentru {target_person}.")
@@ -677,6 +677,9 @@ class AssessmentService:
         all_symptom_keys = set(old.symptoms.keys()) | set(new.symptoms.keys())
         all_deficiency_keys = set(old.predicted_deficiencies.keys()) | set(new.predicted_deficiencies.keys())
 
+        def is_relevant(val_old, val_new):
+            return (val_old or 0.0) > 0.01 or (val_new or 0.0) > 0.01
+
         return {
             "symptoms": [
                 {
@@ -685,6 +688,7 @@ class AssessmentService:
                     "current": new.symptoms.get(key, 0.0)
                 }
                 for key in all_symptom_keys
+                if is_relevant(old.symptoms.get(key), new.symptoms.get(key))
             ],
             "deficiencies": [
                 {
@@ -693,6 +697,7 @@ class AssessmentService:
                     "current": new.predicted_deficiencies.get(key, 0.0)
                 }
                 for key in all_deficiency_keys
+                if is_relevant(old.predicted_deficiencies.get(key), new.predicted_deficiencies.get(key))
             ]
         }
 

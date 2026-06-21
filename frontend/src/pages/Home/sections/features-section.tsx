@@ -1,4 +1,4 @@
-import { LineChart, Wallet, ShieldAlert, History, Apple, CheckCircle2 } from "lucide-react";
+import {LineChart, ShieldAlert, History, CheckCircle2, ListChecks, Target} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {useUser} from "@/hooks/use-user.ts";
 import {useNavigate} from "react-router-dom";
@@ -52,20 +52,26 @@ export default function FeaturesSection() {
                     </div>
                     <div className="bg-secondary/[0.03] border border-secondary/10 rounded-3xl p-8 relative overflow-hidden group hover:border-primary/40 transition-all">
                         <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Wallet className="w-32 h-32 text-secondary" />
+                            <ListChecks className="w-32 h-32 text-secondary" />
                         </div>
-
                         <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-                            <Apple className="text-primary w-6 h-6" />
+                            <Target className="text-primary w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-bold text-secondary mb-4 italic">{t("Tailored nutrition")}</h3>
+                        <h3 className="text-xl font-bold text-secondary mb-4 italic">
+                            {t("Flexible Generation")}
+                        </h3>
                         <p className="text-secondary/50 text-sm leading-relaxed mb-6">
-                            {t("We generate smart shopping lists that respect your budget and automatically exclude any allergens.")}
+                            {t("Choose what fits you best: generate a precise list of ingredients optimized to fix multiple deficiencies simultaneously, or get a complete, structured daily menu.")}
                         </p>
-
                         <div className="space-y-3">
-                            {[t("Gluten-free"), t("Budget: friendly"), t("Dairy-free")].map((tag) => (
-                                <div key={tag} className="flex items-center gap-2 text-[10px] font-bold text-secondary/40 uppercase tracking-widest bg-secondary/5 w-fit px-3 py-1 rounded-full border border-secondary/5">
+                            {[
+                                t("Targeted Ingredients"),
+                                t("Complete Menus"),
+                                t("Maximum Coverage")
+                            ].map((tag) => (
+                                <div
+                                    key={tag}
+                                    className="flex items-center gap-2 text-[10px] font-bold text-secondary/40 uppercase tracking-widest bg-secondary/5 w-fit px-3 py-1 rounded-full border border-secondary/5">
                                     <CheckCircle2 className="w-3 h-3 text-primary" /> {tag}
                                 </div>
                             ))}

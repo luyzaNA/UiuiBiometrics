@@ -45,6 +45,8 @@ def upload_avatar_if_exists(avatar: str | None, cognito_sub: str) -> str | None:
             ext = "jpg"
 
         key = f"avatars/{cognito_sub}/{uuid.uuid4()}.{ext}"
+
+        print(key)
         image_bytes = base64.b64decode(base64_data)
 
         s3.put_object(
