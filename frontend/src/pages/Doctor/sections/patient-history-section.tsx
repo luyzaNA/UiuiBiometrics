@@ -123,7 +123,7 @@ export function PatientHistorySection({ targetPerson, cognitoSub, excludeAssessm
                                             {formatDateMs(assessment.createdAt)}
                                         </span>
                                         <span className="text-xs text-secondary/40">
-                                            ({assessment.age} {t("years")}, {t(assessment.gender.toLowerCase())})
+                                            ({assessment.age} {t("years")}, {assessment.gender === "feminine" ? t("woman") : t("man")})
                                         </span>
                                     </div>
                                 </div>
@@ -157,7 +157,7 @@ export function PatientHistorySection({ targetPerson, cognitoSub, excludeAssessm
                                                 return (
                                                     <div key={symptom} className="flex flex-col gap-1">
                                                         <div className="flex justify-between text-xs text-secondary/70">
-                                                            <span className="capitalize">{t(correctSymptomKey)}</span>
+                                                            <span>{t(correctSymptomKey)}</span>
                                                             <span>{(value * 10).toFixed(0)}/10</span>
                                                         </div>
                                                         <div className="h-1.5 w-full bg-secondary/10 rounded-full overflow-hidden">

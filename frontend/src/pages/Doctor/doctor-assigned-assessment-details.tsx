@@ -22,6 +22,7 @@ import { PatientHistorySection } from "@/pages/Doctor/sections/patient-history-s
 import { toast } from "sonner";
 
 import { PatientHistorySummary } from "@/pages/Doctor/sections/patient-history-summary-section.tsx";
+import {profileService} from "@/services/profile-service.ts";
 
 export default function AssessmentDetailsPage() {
     const { cognitoSub, id } = useParams<{ cognitoSub: string; id: string }>();
@@ -29,6 +30,7 @@ export default function AssessmentDetailsPage() {
     const { t } = useTranslation();
 
     const [assessment, setAssessment] = useState<AssessmentI | null>(null);
+    const [patientFullName, setPatientFullName] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
     const [showHistory, setShowHistory] = useState(false);
     const [notes, setNotes] = useState("");
@@ -41,6 +43,11 @@ export default function AssessmentDetailsPage() {
                 setIsLoading(true);
                 const data = await assessmentService.getById(cognitoSub, id);
                 setAssessment(data);
+
+                const patientData = await profileService.getById(cognitoSub);
+
+                if (patientData?.fullName)
+                    setPatientFullName(patientData.fullName);
 
                 if (data.doctorNotes) {
                     setNotes(data.doctorNotes);
@@ -105,9 +112,6 @@ export default function AssessmentDetailsPage() {
                     <h1 className="text-2xl font-bold text-foreground">
                         {t("Assessment Details")}
                     </h1>
-                    <p className="text-sm text-secondary/60 mt-1">
-                        ID: <span className="font-mono text-xs">{assessment.assessmentId}</span>
-                    </p>
                 </div>
                 <div className="px-4 py-2 bg-secondary/10 rounded-lg text-sm font-medium">
                     {t("Status")}: <span className="text-primary">{t(assessment.status)}</span>
@@ -122,7 +126,11 @@ export default function AssessmentDetailsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <p className="text-xs text-secondary/60 uppercase">{t("Name")}</p>
-                        <p className="font-medium">{assessment.targetPerson}</p>
+                        <p className="font-medium">
+                            {assessment.targetPerson === "Principal"
+                                ? (patientFullName || t("Principal"))
+                                : assessment.targetPerson}
+                        </p>
                     </div>
                     <div>
                         <p className="text-xs text-secondary/60 uppercase">{t("Age")}</p>
@@ -130,7 +138,7 @@ export default function AssessmentDetailsPage() {
                     </div>
                     <div>
                         <p className="text-xs text-secondary/60 uppercase">{t("Gender")}</p>
-                        <p className="font-medium">{assessment.gender}</p>
+                        <p className="font-medium capitalize">{assessment.gender === "female" ? t("woman") : t("man")}</p>
                     </div>
                     <div>
                         <p className="text-xs text-secondary/60 uppercase">{t("Date")}</p>

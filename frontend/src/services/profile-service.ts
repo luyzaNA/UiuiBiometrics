@@ -21,13 +21,12 @@ export const profileService = {
     },
 
     /**
-     * GET /api/profile/{id}
+     * GET /api/profile/{cognitoSub}
      */
-    async getById(profileId: string): Promise<ProfileI> {
-        const response = await apiClient.get<ProfileI>(`/profile/${profileId}`);
+    async getById(cognitoSub: string): Promise<ProfileI> {
+        const response = await apiClient.get<ProfileI>(`/profile/${cognitoSub}`);
         return response.data;
     },
-
     /**
      * POST /api/profile
      */

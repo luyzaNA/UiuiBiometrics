@@ -275,9 +275,13 @@ export default function DoctorProfilePage({ doctorId, onBack }: DoctorProfilePag
                                                         ))}
                                                     </div>
                                                 </div>
-                                                {review.comment && (
+                                                {review.comment ? (
                                                     <p className="text-sm text-secondary/80 italic border-l-2 border-primary/30 pl-3 break-words">
                                                         "{review.comment}"
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-sm text-secondary/30 border-l-2 border-primary/30 pl-3 break-words">
+                                                        {t("No comments left")}
                                                     </p>
                                                 )}
                                             </CardContent>

@@ -88,7 +88,7 @@ export function Header() {
 
     const isDoctor = user?.["groups"]?.includes("doctor");
     const isAdmin = user?.["groups"]?.includes("admin") || user?.isAdmin;
-    const profileRoute = isDoctor ? "/doctor/profile" : "/profile";
+    const profileRoute = isDoctor ? "/doctor/profile" :  isAdmin ? "/admin/profile" : "/profile";
 
     const handleDashboardClick = () => {
         if (!isAuthenticated) {

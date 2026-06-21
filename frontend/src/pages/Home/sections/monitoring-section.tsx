@@ -38,7 +38,7 @@ export default function MonitoringSection() {
                         </h2>
                     </div>
                     <p className="text-secondary/50 text-base leading-relaxed max-w-md font-medium">
-                        {t("Nutritional gaps aren't always felt—they are manifested. Upload photos of your nails or skin, and our system decodes them as visual biomarkers")}.
+                        {t("Nutritional gaps aren't always felt—they are manifested. Upload photos of your nails, eyes, hair or skin, and our system decodes them as visual biomarkers")}.
                         <br /><br />
                         {t("It is the most intuitive way to witness how cellular-level nutrition transforms your exterior, day by day.")}
                     </p>

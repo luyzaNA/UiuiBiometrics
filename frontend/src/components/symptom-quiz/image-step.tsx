@@ -180,7 +180,7 @@ export const VisionStep: React.FC<VisionStepProps> = ({ analyses, setAnalyses, o
                                 >
                                     <button
                                         onClick={() => handleRemoveAnalysis(analysis.id)}
-                                        className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground p-2 md:p-1 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all shadow-md z-10"
                                         title={t("Discard")}
                                     >
                                         <XCircle className="w-4 h-4" />
