@@ -83,8 +83,7 @@ const CustomTooltip = ({ active, payload, label, t, type }: any) => {
                     <div className={`mt-3 pt-3 border-t border-foreground/5 text-xs font-bold flex items-center justify-between ${isImprovement ? 'text-emerald-500' : 'text-rose-500'}`}>
                         <span>{t("Evolution")}:</span>
                         <span>
-                            {isImprovement ? "↓" : "↑"} {Math.abs(diffPercent)}% {isImprovement ? t("Improved") : t("Worse")}
-                        </span>
+                            {isImprovement ? "↓" : "↑"} {diffPercent}% {isImprovement ? t("Improved") : t("Worse")}                        </span>
                     </div>
                 )}
             </div>
@@ -101,20 +100,17 @@ const CategorizedChart = ({ title, rawData, type }: { title: string, rawData: an
         const grouped: Record<string, any[]> = { "All": [] };
 
         rawData.forEach(item => {
-            // FIX IMPORTANT: Ignorăm elementele care nu au avut valoare nici în trecut, nici în prezent.
             const hasInitialValue = typeof item.initial === 'number' && item.initial > 0;
             const hasCurrentValue = typeof item.current === 'number' && item.current > 0;
 
             if (!hasInitialValue && !hasCurrentValue) {
-                return; // Trecem peste simptomele inactive total
+                return;
             }
 
             const category = type === 'deficiencies' ? getDeficiencyCategory(item.name) : getSymptomCategory(item.name);
 
-            // Adăugăm în tab-ul general "All"
             grouped["All"].push(item);
 
-            // Adăugăm în tab-ul specific categoriei
             if (!grouped[category]) grouped[category] = [];
             grouped[category].push(item);
         });
